@@ -58,9 +58,9 @@ export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any
   };
 
   return (
-    <Screen padded>
+    <Screen padded={false}>
       <BackgroundGlow />
-      <View className="flex-1 py-4">
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
         <OnboardingHeader
           current={2}
           total={4}
@@ -92,8 +92,19 @@ export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any
 
         {error ? <Text className="text-status-error text-sm mb-3">{error}</Text> : null}
 
-        <View className="gap-3 mt-auto">
-          <GradientButton title={t('onboarding.step2Pick')} onPress={pick} variant="secondary" />
+        <View
+          style={{
+            marginTop: 'auto',
+            paddingTop: 8,
+            gap: 20,
+            width: '100%',
+            maxWidth: 400,
+            alignSelf: 'center',
+          }}
+        >
+          <View style={{ marginBottom: 4 }}>
+            <GradientButton title={t('onboarding.step2Pick')} onPress={pick} variant="secondary" />
+          </View>
           <GradientButton
             title={localUri ? t('common.next') : t('onboarding.step2Skip')}
             onPress={onNext}

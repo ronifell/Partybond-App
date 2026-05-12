@@ -12,6 +12,7 @@ import { OnboardingHeader } from '../components/OnboardingHeader';
 import { setGameProfile } from '../api/users';
 import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
+import { colors } from '../theme/tokens';
 
 export function OnboardingGameInfoScreen({ route }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
@@ -46,9 +47,9 @@ export function OnboardingGameInfoScreen({ route }: NativeStackScreenProps<any>)
   };
 
   return (
-    <Screen scroll keyboard>
+    <Screen scroll keyboard padded={false}>
       <BackgroundGlow />
-      <View className="flex-1 py-4">
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
         <OnboardingHeader
           current={4}
           total={4}
@@ -56,25 +57,27 @@ export function OnboardingGameInfoScreen({ route }: NativeStackScreenProps<any>)
           subtitle={t('onboarding.step4Subtitle')}
         />
 
-        <View className="gap-4">
+        <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center', gap: 12, marginTop: 8 }}>
           <Input
             label={t('onboarding.nickname')}
             value={nickname}
             onChangeText={setNickname}
             placeholder={t('onboarding.nicknamePlaceholder')}
+            leftIcon={<Ionicons name="game-controller-outline" size={20} color={colors.brand.purple} />}
           />
           <Input
             label={t('onboarding.playerId')}
             value={playerId}
             onChangeText={setPlayerId}
             placeholder={t('onboarding.playerIdPlaceholder')}
+            leftIcon={<Ionicons name="id-card-outline" size={20} color={colors.brand.purple} />}
           />
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'flex-start',
               gap: 10,
-              marginTop: 8,
+              marginTop: 4,
               padding: 14,
               borderRadius: 14,
               borderWidth: 1.5,
@@ -87,10 +90,12 @@ export function OnboardingGameInfoScreen({ route }: NativeStackScreenProps<any>)
               {t('onboarding.help')}
             </Text>
           </View>
-          {error ? <Text className="text-status-error text-sm">{error}</Text> : null}
+          {error ? (
+            <Text style={{ color: colors.status.error, fontSize: 13, fontWeight: '600' }}>{error}</Text>
+          ) : null}
         </View>
 
-        <View className="mt-auto pt-8">
+        <View style={{ marginTop: 'auto', paddingTop: 24, width: '100%', maxWidth: 400, alignSelf: 'center' }}>
           <GradientButton title={t('common.continue')} onPress={onSubmit} loading={loading} />
         </View>
       </View>

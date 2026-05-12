@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '../components/ui/Screen';
 import { Input } from '../components/ui/Input';
@@ -11,6 +12,7 @@ import { OnboardingHeader } from '../components/OnboardingHeader';
 import { useAuth } from '../store/authStore';
 import { updateProfile } from '../api/users';
 import { getApiError } from '../api/client';
+import { colors } from '../theme/tokens';
 
 export function OnboardingNameScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
@@ -41,27 +43,36 @@ export function OnboardingNameScreen({ navigation }: NativeStackScreenProps<any>
   };
 
   return (
-    <Screen scroll keyboard>
+    <Screen scroll keyboard padded={false}>
       <BackgroundGlow />
-      <View className="flex-1 py-4">
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
         <OnboardingHeader
           current={1}
           total={4}
           title={t('onboarding.step1Title')}
           subtitle={t('onboarding.step1Subtitle')}
         />
-        <View className="gap-4">
-          <Input label={t('auth.name')} value={name} onChangeText={setName} placeholder={t('auth.namePlaceholder')} />
+        <View style={{ width: '100%', maxWidth: 400, alignSelf: 'center', gap: 12, marginTop: 8 }}>
+          <Input
+            label={t('auth.name')}
+            value={name}
+            onChangeText={setName}
+            placeholder={t('auth.namePlaceholder')}
+            leftIcon={<Ionicons name="person-outline" size={20} color={colors.brand.purple} />}
+          />
           <Input
             label={t('auth.age')}
             value={age}
             onChangeText={(v) => setAge(v.replace(/[^0-9]/g, ''))}
             keyboardType="number-pad"
             placeholder={t('auth.agePlaceholder')}
+            leftIcon={<Ionicons name="calendar-outline" size={20} color={colors.brand.purple} />}
           />
-          {error ? <Text className="text-status-error text-sm">{error}</Text> : null}
+          {error ? (
+            <Text style={{ color: colors.status.error, fontSize: 13, fontWeight: '600' }}>{error}</Text>
+          ) : null}
         </View>
-        <View className="mt-auto pt-8">
+        <View style={{ marginTop: 'auto', paddingTop: 24, width: '100%', maxWidth: 400, alignSelf: 'center' }}>
           <GradientButton title={t('common.next')} onPress={onNext} loading={loading} />
         </View>
       </View>
