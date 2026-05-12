@@ -65,8 +65,6 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
     }
   };
 
-  const displayUri = localPhotoUri ?? user?.photoUrl ?? null;
-
   return (
     <Screen scroll keyboard>
       <BackgroundGlow />
@@ -97,8 +95,14 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
 
       {/* Photo */}
       <View style={{ alignItems: 'center', marginBottom: 28 }}>
-        <Pressable onPress={pickPhoto} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
-          {displayUri ? (
+        <Pressable
+          onPress={pickPhoto}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.8 : 1,
+            position: 'relative',
+          })}
+        >
+          {localPhotoUri ? (
             <View
               style={{
                 shadowColor: '#7B3FF2',
@@ -108,7 +112,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
               }}
             >
               <Image
-                source={{ uri: localPhotoUri ?? displayUri }}
+                source={{ uri: localPhotoUri }}
                 style={{
                   width: 120,
                   height: 120,
@@ -119,7 +123,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
               />
             </View>
           ) : (
-            <Avatar size={110} name={user?.name} />
+            <Avatar size={110} name={user?.name} uri={user?.photoUrl} />
           )}
           <View
             style={{

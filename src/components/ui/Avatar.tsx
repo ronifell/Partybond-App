@@ -15,17 +15,35 @@ interface Props {
  * Rewrite photo URLs so they point at the API_URL the mobile app actually
  * uses (e.g. 10.0.2.2 on Android) instead of whatever host the backend
  * embedded when the photo was uploaded (usually localhost).
+ * Local schemes (file, content, …) are returned unchanged.
  */
-function resolvePhotoUri(raw: string): string {
+export function resolvePhotoUri(raw: string): string {
+  const s = raw.trim();
+  if (!s) return s;
+  if (
+    s.startsWith('file:') ||
+    s.startsWith('content:') ||
+    s.startsWith('ph://') ||
+    s.startsWith('blob:') ||
+    s.startsWith('data:')
+  ) {
+    return s;
+  }
+  if (s.startsWith('/')) {
+    const base = API_URL.replace(/\/$/, '');
+    return `${base}${s}`;
+  }
   try {
-    const parsed = new URL(raw);
+    const parsed = new URL(s);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return s;
+    }
     const base = new URL(API_URL);
     parsed.protocol = base.protocol;
     parsed.host = base.host;
     return parsed.toString();
   } catch {
-    if (raw.startsWith('/')) return `${API_URL}${raw}`;
-    return raw;
+    return s;
   }
 }
 
