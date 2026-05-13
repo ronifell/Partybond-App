@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, Pressable } from 'react-native';
+import { View, Text, Image, Pressable, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -166,7 +166,7 @@ export function GameCard({ game, playersOnline = 0, onJoin, loading }: Props) {
                 shadowOffset: { width: 0, height: 4 },
                 elevation: disabled ? 0 : 8,
               },
-              pressed && !disabled ? { transform: [{ scale: 0.98 }] } : null,
+              pressed && !disabled && !loading ? { transform: [{ scale: 0.98 }] } : null,
             ]}
           >
             <LinearGradient
@@ -198,16 +198,31 @@ export function GameCard({ game, playersOnline = 0, onJoin, loading }: Props) {
                   pointerEvents="none"
                 />
               ) : null}
-              <Text
-                style={{
-                  color: 'white',
-                  fontWeight: '800',
-                  fontSize: 13,
-                  letterSpacing: 0.3,
-                }}
-              >
-                {disabled ? t('common.comingSoon') : t('home.join')}
-              </Text>
+              {disabled ? (
+                <Text
+                  style={{
+                    color: 'white',
+                    fontWeight: '800',
+                    fontSize: 13,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {t('common.comingSoon')}
+                </Text>
+              ) : loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text
+                  style={{
+                    color: 'white',
+                    fontWeight: '800',
+                    fontSize: 13,
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {t('home.join')}
+                </Text>
+              )}
             </LinearGradient>
           </Pressable>
         </View>

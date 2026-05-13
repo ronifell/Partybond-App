@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Animated, Easing, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Text as SvgText } from 'react-native-svg';
@@ -288,6 +289,15 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
   const sessionId = (route.params as { sessionId: string }).sessionId;
   const refreshMe = useAuth((s) => s.refreshMe);
   const [waitingCount, setWaitingCount] = useState<number | null>(null);
+  const [leaving, setLeaving] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setLeaving(false);
+      };
+    }, []),
+  );
 
   const { data: session } = useQuery({
     queryKey: ['session', sessionId],
@@ -305,6 +315,7 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
   });
 
   const onLeave = async () => {
+    setLeaving(true);
     try {
       await leaveQueue(sessionId);
     } catch {
@@ -359,7 +370,12 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
       </View>
 
       <View className="pb-2">
-        <GradientButton title={t('queue.leave')} onPress={onLeave} variant="secondary" />
+        <GradientButton
+          title={t('queue.leave')}
+          onPress={onLeave}
+          variant="secondary"
+          loading={leaving}
+        />
       </View>
     </Screen>
   );

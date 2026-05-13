@@ -64,6 +64,9 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
       void refetchGames();
       void refetchSessions();
       void refreshMe();
+      return () => {
+        setJoiningGameId(null);
+      };
     }, [refetchGames, refetchSessions, refreshMe]),
   );
 
@@ -90,7 +93,6 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
       navigation.navigate('Queue', { sessionId });
     } catch (err) {
       console.warn('Quick join failed', getApiError(err));
-    } finally {
       setJoiningGameId(null);
     }
   };
