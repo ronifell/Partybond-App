@@ -121,7 +121,8 @@
     "title": "Sessão",
     "joinQueue": "Entrar na fila",
     "leaveQueue": "Sair da fila",
-    "playersInQueue": "Jogadores aguardando"
+    "playersInQueue": "Jogadores aguardando",
+    "queueEmpty": "Ninguém na fila ainda. Toque em Entrar na fila para ser pareado."
   },
   "queue": {
     "title": "Buscando jogadores...",

@@ -121,7 +121,8 @@
     "title": "Session",
     "joinQueue": "Join queue",
     "leaveQueue": "Leave queue",
-    "playersInQueue": "Players waiting"
+    "playersInQueue": "Players waiting",
+    "queueEmpty": "No one in the queue yet. Tap Join queue to get matched."
   },
   "queue": {
     "title": "Finding players...",

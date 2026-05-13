@@ -103,7 +103,7 @@ export function SessionScreen({ navigation, route }: NativeStackScreenProps<any>
           {session.waiting.length === 0 ? (
             <Card padding={20}>
               <Text style={{ color: colors.ink.secondary, textAlign: 'center' }}>
-                {t('home.empty')}
+                {t('session.queueEmpty')}
               </Text>
             </Card>
           ) : (
