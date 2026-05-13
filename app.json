@@ -23,6 +23,7 @@
     },
     "android": {
       "package": "com.partybond.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A12"
@@ -45,10 +46,21 @@
           "color": "#7B3FF2"
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
     "extra": {
-      "apiUrl": "http://18.231.112.145:4000"
+      "apiUrl": "http://18.231.112.145:4000",
+      "eas": {
+        "projectId": "a0d3c1fb-416e-4821-8a69-cd9e1a28dec2"
+      }
     }
   }
 }

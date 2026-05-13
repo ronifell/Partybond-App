@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Pressable, Image, Text } from 'react-native';
+import { View, Pressable, Image, Text, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,7 +10,7 @@ import { OnboardingHeader } from '../components/OnboardingHeader';
 import { OnboardingBackBar } from '../components/OnboardingBackBar';
 import { Avatar } from '../components/ui/Avatar';
 import { useAuth } from '../store/authStore';
-import { uploadProfilePhoto } from '../api/users';
+import { uploadProfilePhoto, type ProfilePhotoUploadMeta } from '../api/users';
 import { getApiError } from '../api/client';
 
 export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any>) {
@@ -18,6 +18,7 @@ export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any
   const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
   const [localUri, setLocalUri] = useState<string | null>(user?.photoUrl ?? null);
+  const [pickedMeta, setPickedMeta] = useState<ProfilePhotoUploadMeta | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +32,12 @@ export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any
       quality: 0.85,
     });
     if (!result.canceled && result.assets[0]) {
-      setLocalUri(result.assets[0].uri);
+      const a = result.assets[0];
+      setLocalUri(a.uri);
+      setPickedMeta({
+        mimeType: a.mimeType ?? null,
+        fileName: a.fileName ?? null,
+      });
     }
   };
 
@@ -47,7 +53,7 @@ export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any
     }
     setLoading(true);
     try {
-      const updated = await uploadProfilePhoto(localUri);
+      const updated = await uploadProfilePhoto(localUri, pickedMeta ?? undefined);
       setUser(updated);
       navigation.navigate('OnboardingGame');
     } catch (err) {
@@ -69,23 +75,52 @@ export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any
         />
 
         <View className="items-center justify-center my-8">
-          <Pressable onPress={pick} className="active:opacity-80">
+          <Pressable
+            onPress={pick}
+            className="active:opacity-80"
+            style={{
+              width: 196,
+              height: 196,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {localUri ? (
               <View
                 style={{
+                  width: 188,
+                  height: 188,
+                  borderRadius: 94,
+                  padding: 4,
+                  backgroundColor: 'rgba(26, 18, 48, 0.95)',
                   shadowColor: '#7B3FF2',
-                  shadowOpacity: 0.5,
-                  shadowRadius: 18,
-                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.55,
+                  shadowRadius: 20,
+                  shadowOffset: { width: 0, height: 4 },
+                  elevation: Platform.OS === 'android' ? 12 : 0,
                 }}
               >
                 <Image
                   source={{ uri: localUri }}
-                  style={{ width: 180, height: 180, borderRadius: 90, borderWidth: 3, borderColor: '#7B3FF2' }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: 90,
+                    backgroundColor: '#1A1230',
+                  }}
+                  resizeMode="cover"
                 />
               </View>
             ) : (
-              <Avatar size={160} name={user?.name} />
+              <View
+                style={{
+                  backgroundColor: 'rgba(10, 8, 20, 0.55)',
+                  borderRadius: 100,
+                  padding: 6,
+                }}
+              >
+                <Avatar size={160} name={user?.name} />
+              </View>
             )}
           </Pressable>
         </View>

@@ -10,7 +10,7 @@ import { BackgroundGlow } from '../components/ui/BackgroundGlow';
 import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
 import { Avatar } from '../components/ui/Avatar';
-import { updateProfile, uploadProfilePhoto } from '../api/users';
+import { updateProfile, uploadProfilePhoto, type ProfilePhotoUploadMeta } from '../api/users';
 import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
@@ -24,6 +24,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
   const [email] = useState(user?.email ?? '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
   const [localPhotoUri, setLocalPhotoUri] = useState<string | null>(null);
+  const [photoMeta, setPhotoMeta] = useState<ProfilePhotoUploadMeta | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +38,12 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
       quality: 0.85,
     });
     if (!result.canceled && result.assets[0]) {
-      setLocalPhotoUri(result.assets[0].uri);
+      const a = result.assets[0];
+      setLocalPhotoUri(a.uri);
+      setPhotoMeta({
+        mimeType: a.mimeType ?? null,
+        fileName: a.fileName ?? null,
+      });
     }
   };
 
@@ -51,7 +57,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
     setLoading(true);
     try {
       if (localPhotoUri) {
-        const photoUpdated = await uploadProfilePhoto(localPhotoUri);
+        const photoUpdated = await uploadProfilePhoto(localPhotoUri, photoMeta ?? undefined);
         setUser(photoUpdated);
       }
 

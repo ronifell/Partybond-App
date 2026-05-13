@@ -147,43 +147,76 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
           ) : null}
         </View>
 
-        <Card variant="tinted" padding={20} radius={20} glow style={{ marginBottom: 16 }}>
-          <Text
+        <Pressable onPress={onCopy} style={{ marginBottom: 14 }}>
+          <View
             style={{
-              color: colors.ink.secondary,
-              fontSize: 11,
-              fontWeight: '700',
-              letterSpacing: 0.8,
-              textTransform: 'uppercase',
-              marginBottom: 8,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.14)',
+              backgroundColor: 'rgba(18, 18, 32, 0.88)',
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+              overflow: 'hidden',
             }}
           >
-            {t('match.playerIdLabel')}
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <LinearGradient
+              colors={['rgba(123,63,242,0.12)', 'rgba(0,209,255,0.06)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+              }}
+              pointerEvents="none"
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.ink.secondary,
+                  fontSize: 10,
+                  fontWeight: '800',
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {t('match.playerIdLabel')}
+              </Text>
+              {copied ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <Ionicons name="checkmark-circle" size={14} color="#00C853" />
+                  <Text style={{ color: colors.status.success, fontWeight: '700', fontSize: 11 }}>
+                    {t('match.copied')}
+                  </Text>
+                </View>
+              ) : (
+                <Ionicons name="copy-outline" size={16} color={colors.brand.purple} />
+              )}
+            </View>
             <Text
               style={{
-                color: 'white',
-                fontSize: 26,
+                color: colors.ink.primary,
+                fontSize: 19,
                 fontWeight: '800',
-                letterSpacing: -0.3,
-                flex: 1,
+                letterSpacing: 0.5,
+                fontVariant: ['tabular-nums'],
               }}
               numberOfLines={1}
               selectable
             >
               {match.opponent.playerId ?? '—'}
             </Text>
-            {copied ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Ionicons name="checkmark-circle" size={18} color="#00C853" />
-                <Text style={{ color: colors.status.success, fontWeight: '700' }}>
-                  {t('match.copied')}
-                </Text>
-              </View>
-            ) : null}
           </View>
-        </Card>
+        </Pressable>
 
         <Pressable onPress={onCopy} className="active:opacity-90">
           <LinearGradient
