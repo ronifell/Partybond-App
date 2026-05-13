@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { gradient } from '../../theme/tokens';
-import { API_URL } from '../../config/env';
+import { getApiOrigin } from '../../config/env';
 
 interface Props {
   uri?: string | null;
@@ -12,8 +12,8 @@ interface Props {
 }
 
 /**
- * Rewrite photo URLs so they point at the API_URL the mobile app actually
- * uses (e.g. 10.0.2.2 on Android) instead of whatever host the backend
+ * Rewrite photo URLs so they point at the same host/port as `getApiOrigin()` (from
+ * `EXPO_PUBLIC_API_URL` / `extra.apiUrl`) instead of whatever host the backend
  * embedded when the photo was uploaded (usually localhost).
  * Local schemes (file, content, …) are returned unchanged.
  */
@@ -29,16 +29,17 @@ export function resolvePhotoUri(raw: string): string {
   ) {
     return s;
   }
-  if (s.startsWith('/')) {
-    const base = API_URL.replace(/\/$/, '');
-    return `${base}${s}`;
+  const origin = getApiOrigin().replace(/\/$/, '');
+  const toParse = s.startsWith('//') ? `http:${s}` : s;
+  if (toParse.startsWith('/')) {
+    return `${origin}${toParse}`;
   }
   try {
-    const parsed = new URL(s);
+    const parsed = new URL(toParse);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       return s;
     }
-    const base = new URL(API_URL);
+    const base = new URL(origin.includes('://') ? origin : `http://${origin}`);
     parsed.protocol = base.protocol;
     parsed.host = base.host;
     return parsed.toString();
@@ -96,7 +97,12 @@ export function Avatar({ uri, name, size = 64, glow = true }: Props) {
           }}
         >
           {resolvedUri ? (
-            <Image source={{ uri: resolvedUri }} style={{ width: size, height: size }} resizeMode="cover" />
+            <Image
+              key={resolvedUri}
+              source={{ uri: resolvedUri }}
+              style={{ width: size, height: size }}
+              resizeMode="cover"
+            />
           ) : (
             <Text
               style={{

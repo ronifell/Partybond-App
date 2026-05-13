@@ -1,5 +1,5 @@
 import { api, getToken } from './client';
-import { API_URL } from '../config/env';
+import { getApiOrigin } from '../config/env';
 import type { User } from './types';
 
 export async function updateProfile(input: Partial<Pick<User, 'name' | 'age' | 'locale' | 'selectedGame'>>): Promise<User> {
@@ -31,8 +31,8 @@ export async function uploadProfilePhoto(uri: string, meta?: ProfilePhotoUploadM
     type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
   const name = meta?.fileName?.trim() || `photo-${Date.now()}.${ext}`;
 
-  const base = API_URL.replace(/\/$/, '');
-  const url = `${base}/api/v1/users/me/photo`;
+  const origin = getApiOrigin().replace(/\/$/, '');
+  const url = `${origin}/api/v1/users/me/photo`;
 
   const buildForm = () => {
     const form = new FormData();

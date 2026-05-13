@@ -16,6 +16,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen } from '../components/ui/Screen';
 import { GradientButton } from '../components/ui/GradientButton';
 import { useOnboarding } from '../store/onboardingStore';
+import { useAuth } from '../store/authStore';
 import { colors, gradient } from '../theme/tokens';
 
 const FLOWERS = ['🌸', '🌺', '🌼', '🌷', '💐', '🪷', '🏵️', '🌹'];
@@ -103,8 +104,10 @@ function FlowerShower() {
 export function OnboardingCompleteScreen(_props: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
   const resetOnboarding = useOnboarding((s) => s.reset);
+  const refreshMe = useAuth((s) => s.refreshMe);
 
   const onLetsPlay = () => {
+    void refreshMe();
     resetOnboarding();
   };
 

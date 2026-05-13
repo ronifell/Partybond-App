@@ -12,4 +12,20 @@ const defaultUrl =
   Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000';
 
 export const API_URL = fromProcessEnv ?? fromConstants ?? defaultUrl;
-export const SOCKET_URL = API_URL;
+
+/**
+ * Scheme + host + port only. Uploads are served at `${origin}/uploads/...`, not under `/api/v1`
+ * (axios `baseURL` is `${API_URL}/api/v1`). Use this when building static asset URLs.
+ */
+export function getApiOrigin(): string {
+  const raw = API_URL.trim().replace(/\/$/, '');
+  const withoutApiSuffix = raw.replace(/\/api\/v1\/?$/i, '').replace(/\/api\/?$/i, '');
+  try {
+    const u = new URL(withoutApiSuffix.includes('://') ? withoutApiSuffix : `http://${withoutApiSuffix}`);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return withoutApiSuffix;
+  }
+}
+
+export const SOCKET_URL = getApiOrigin();

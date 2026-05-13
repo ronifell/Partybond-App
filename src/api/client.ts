@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '../config/env';
+import { getApiOrigin } from '../config/env';
 
 export const TOKEN_KEY = '@partybond/token';
 
@@ -19,7 +19,7 @@ export async function getToken(): Promise<string | null> {
 }
 
 export const api: AxiosInstance = axios.create({
-  baseURL: `${API_URL}/api/v1`,
+  baseURL: `${getApiOrigin()}/api/v1`,
   timeout: 15000,
 });
 
