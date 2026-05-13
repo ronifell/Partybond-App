@@ -5,6 +5,7 @@ import {
   Pressable,
   Animated,
   Easing,
+  ScrollView,
   useWindowDimensions,
   type TextStyle,
 } from 'react-native';
@@ -194,6 +195,114 @@ function GradientCountdown({ value, width }: { value: string; width: number }) {
   );
 }
 
+const H_PAD = 20; // matches Screen `px-5`
+
+function MatchTopNotifications({
+  partnerType,
+  sentType,
+  displayName,
+  t,
+}: {
+  partnerType: InteractionType | null;
+  sentType: InteractionType | null;
+  displayName: string;
+  t: (key: string, opts?: Record<string, string>) => string;
+}) {
+  if (!partnerType && !sentType) return null;
+  return (
+    <View
+      pointerEvents="box-none"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: -H_PAD,
+        right: -H_PAD,
+        zIndex: 100,
+        gap: 10,
+      }}
+    >
+      {partnerType ? (
+        <View
+          style={{
+            borderRadius: 16,
+            overflow: 'hidden',
+            borderWidth: 2,
+            borderColor: 'rgba(255, 255, 255, 0.45)',
+            shadowColor: '#00D1FF',
+            shadowOpacity: 0.85,
+            shadowRadius: 20,
+            shadowOffset: { width: 0, height: 6 },
+            elevation: 18,
+          }}
+        >
+          <LinearGradient
+            colors={['#5B1FD4', '#2563EB', '#0891B2']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ paddingVertical: 12, paddingHorizontal: 14 }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.92)', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>
+                {t('match.partnerIncomingLabel').toUpperCase()}
+              </Text>
+              <View
+                style={{
+                  backgroundColor: 'rgba(255, 59, 129, 0.95)',
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 }}>
+                  {t('match.liveBadge')}
+                </Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="notifications" size={26} color="#FFFFFF" />
+              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '800', flex: 1, lineHeight: 22 }}>
+                {t('match.partnerToast', {
+                  name: displayName,
+                  action: t(labelKeys[TYPE_TO_QUICK_KEY[partnerType]]),
+                })}
+              </Text>
+            </View>
+          </LinearGradient>
+        </View>
+      ) : null}
+      {sentType ? (
+        <View
+          style={{
+            borderRadius: 16,
+            overflow: 'hidden',
+            borderWidth: 2,
+            borderColor: 'rgba(187, 247, 208, 0.55)',
+            shadowColor: '#22C55E',
+            shadowOpacity: 0.75,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 5 },
+            elevation: 16,
+          }}
+        >
+          <LinearGradient
+            colors={['#047857', '#059669', '#0D9488']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}
+          >
+            <Ionicons name="checkmark-done-circle" size={28} color="#ECFDF5" />
+            <Text style={{ color: '#ECFDF5', fontSize: 15, fontWeight: '800', flex: 1, lineHeight: 21 }}>
+              {t('match.sentSignalConfirmation', {
+                action: t(labelKeys[TYPE_TO_QUICK_KEY[sentType]]),
+              })}
+            </Text>
+          </LinearGradient>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 function MatchQuickPill({
   label,
   icon,
@@ -248,6 +357,7 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
   const [lastInteraction, setLastInteraction] = useState<InteractionType | null>(null);
   const [tick, setTick] = useState(0);
   const [partnerBannerType, setPartnerBannerType] = useState<InteractionType | null>(null);
+  const [sentBannerType, setSentBannerType] = useState<InteractionType | null>(null);
 
   const { data: match, refetch } = useQuery({
     queryKey: ['match', matchId],
@@ -264,6 +374,12 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
     const id = setTimeout(() => setPartnerBannerType(null), 4200);
     return () => clearTimeout(id);
   }, [partnerBannerType]);
+
+  useEffect(() => {
+    if (!sentBannerType) return;
+    const id = setTimeout(() => setSentBannerType(null), 4200);
+    return () => clearTimeout(id);
+  }, [sentBannerType]);
 
   useEffect(() => {
     const socket = getSocket();
@@ -312,6 +428,7 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
     try {
       await sendInteraction(matchId, type);
       await refetch();
+      setSentBannerType(type);
     } catch {
       // best-effort
     }
@@ -364,20 +481,42 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
     textTransform: 'uppercase',
   };
 
+  const bannerReserveTop =
+    (partnerBannerType ? 102 : 0) +
+    (sentBannerType ? 96 : 0) +
+    (partnerBannerType && sentBannerType ? 10 : 0);
+
   return (
-    <Screen scroll>
+    <Screen scroll={false}>
       <BackgroundGlow />
-      <Animated.View
-        style={{
-          opacity: fade,
-          transform: [
-            {
-              translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
-            },
-          ],
-        }}
-      >
-        {/* Top bar */}
+      <View style={{ flex: 1 }}>
+        <MatchTopNotifications
+          partnerType={partnerBannerType}
+          sentType={sentBannerType}
+          displayName={displayName}
+          t={t}
+        />
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            width: '100%',
+            paddingTop: bannerReserveTop,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View
+            style={{
+              opacity: fade,
+              transform: [
+                {
+                  translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }),
+                },
+              ],
+            }}
+          >
+            {/* Top bar */}
         <View
           style={{
             flexDirection: 'row',
@@ -414,33 +553,6 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
             {t('match.subtitle')}
           </Text>
         </View>
-
-        {partnerBannerType ? (
-          <View style={{ marginTop: 14, width: '100%' }}>
-            <LinearGradient
-              colors={['rgba(123,63,242,0.45)', 'rgba(0,209,255,0.28)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.22)',
-                paddingVertical: 12,
-                paddingHorizontal: 14,
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Ionicons name="flash-outline" size={22} color="#E8D8FF" />
-                <Text style={{ color: colors.ink.primary, fontSize: 14, fontWeight: '700', flex: 1 }}>
-                  {t('match.partnerToast', {
-                    name: displayName,
-                    action: t(labelKeys[TYPE_TO_QUICK_KEY[partnerBannerType]]),
-                  })}
-                </Text>
-              </View>
-            </LinearGradient>
-          </View>
-        ) : null}
 
         {/* Teammate card */}
         <View style={{ marginTop: 22 }}>
@@ -801,7 +913,9 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
             </Text>
           </Pressable>
         </View>
-      </Animated.View>
+          </Animated.View>
+        </ScrollView>
+      </View>
     </Screen>
   );
 }

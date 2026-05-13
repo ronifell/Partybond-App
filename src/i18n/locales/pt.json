@@ -171,7 +171,10 @@
     "activityTitle": "Atualizações ao vivo",
     "activityEmpty": "Nenhum sinal ainda. Use os botões abaixo — seu companheiro vê aqui em tempo real.",
     "activityYou": "Você",
+    "partnerIncomingLabel": "Sinal do companheiro",
+    "liveBadge": "AO VIVO",
     "partnerToast": "{{name}}: {{action}}",
+    "sentSignalConfirmation": "Enviado — seu companheiro vê: {{action}}",
     "quick": {
       "addMe": "Me adiciona",
       "alreadyAdded": "Já adicionei",

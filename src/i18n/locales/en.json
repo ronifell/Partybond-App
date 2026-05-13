@@ -171,7 +171,10 @@
     "activityTitle": "Live updates",
     "activityEmpty": "No quick signals yet. Use the buttons below — your teammate sees them here in real time.",
     "activityYou": "You",
+    "partnerIncomingLabel": "Teammate signal",
+    "liveBadge": "LIVE",
     "partnerToast": "{{name}}: {{action}}",
+    "sentSignalConfirmation": "Sent — your teammate sees: {{action}}",
     "quick": {
       "addMe": "Add me",
       "alreadyAdded": "Already added",
