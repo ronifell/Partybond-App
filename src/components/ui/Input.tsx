@@ -22,6 +22,8 @@ interface Props extends TextInputProps {
   rightSlot?: React.ReactNode;
   /** When true and `secureTextEntry` is set, show an eye toggle on the right. */
   passwordToggle?: boolean;
+  /** Tighter vertical padding and height (e.g. create session title). */
+  compact?: boolean;
 }
 
 /**
@@ -41,6 +43,7 @@ export function Input({
   rightSlot,
   passwordToggle,
   secureTextEntry,
+  compact,
   style,
   ...rest
 }: Props) {
@@ -63,6 +66,9 @@ export function Input({
   });
 
   const isSecure = !!secureTextEntry && !showPassword;
+  const minH = compact ? 44 : 58;
+  const padV = compact ? (Platform.OS === 'ios' ? 10 : 8) : Platform.OS === 'ios' ? 18 : 14;
+  const fontSize = compact ? 15 : 16;
 
   return (
     <View style={{ alignSelf: 'stretch', width: '100%' }}>
@@ -92,7 +98,6 @@ export function Input({
         }}
       >
         <View style={{ position: 'relative', borderRadius: 16 }}>
-          {/* Animated gradient ring on focus (outside the body) */}
           <Animated.View
             pointerEvents="none"
             style={{
@@ -122,15 +127,14 @@ export function Input({
               borderColor: error
                 ? colors.status.error
                 : focused
-                  ? 'transparent' // gradient ring covers it
-                  : 'rgba(123, 63, 242, 0.55)', // permanent brand purple
+                  ? 'transparent'
+                  : 'rgba(123, 63, 242, 0.55)',
               backgroundColor: '#11091F',
-              minHeight: 58,
+              minHeight: minH,
               flexDirection: 'row',
               alignItems: 'center',
             }}
           >
-            {/* Top sheen */}
             <LinearGradient
               colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0)']}
               start={{ x: 0, y: 0 }}
@@ -169,8 +173,8 @@ export function Input({
                   alignSelf: 'stretch',
                   color: colors.ink.primary,
                   paddingHorizontal: leftIcon ? 12 : 18,
-                  paddingVertical: Platform.OS === 'ios' ? 18 : 14,
-                  fontSize: 16,
+                  paddingVertical: padV,
+                  fontSize,
                   fontWeight: '500',
                   letterSpacing: 0.2,
                 },
@@ -178,7 +182,6 @@ export function Input({
               ]}
             />
 
-            {/* Right slot — password eye toggle wins, otherwise custom node */}
             {passwordToggle && secureTextEntry ? (
               <Pressable
                 onPress={() => setShowPassword((v) => !v)}
