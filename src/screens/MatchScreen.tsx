@@ -40,6 +40,14 @@ const labelKeys = {
   didntWork: 'match.quick.didntWork',
 } as const;
 
+const TYPE_TO_QUICK_KEY: Record<InteractionType, keyof typeof labelKeys> = {
+  add_me: 'addMe',
+  already_added: 'alreadyAdded',
+  enter_lobby: 'enterLobby',
+  waiting: 'waiting',
+  did_not_work: 'didntWork',
+};
+
 const ACTION_STYLE: Record<
   InteractionType,
   { icon: React.ComponentProps<typeof Ionicons>['name']; border: string; iconColor: string }
@@ -63,6 +71,32 @@ const STEP_ICONS: Array<React.ComponentProps<typeof Ionicons>['name']> = [
 ];
 
 type GuideStep = { title: string; body: string };
+
+const INTERACTION_TYPES: InteractionType[] = [
+  'add_me',
+  'already_added',
+  'enter_lobby',
+  'waiting',
+  'did_not_work',
+];
+
+type InteractionSocketPayload = {
+  matchId: string;
+  fromUserId: string;
+  type: InteractionType;
+  at?: string;
+};
+
+function isInteractionPayload(x: unknown): x is InteractionSocketPayload {
+  if (!x || typeof x !== 'object') return false;
+  const o = x as Record<string, unknown>;
+  return (
+    typeof o.matchId === 'string' &&
+    typeof o.fromUserId === 'string' &&
+    typeof o.type === 'string' &&
+    (INTERACTION_TYPES as readonly string[]).includes(o.type)
+  );
+}
 
 function useFadeIn() {
   const [v] = useState(new Animated.Value(0));
@@ -213,6 +247,7 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
   const [copied, setCopied] = useState(false);
   const [lastInteraction, setLastInteraction] = useState<InteractionType | null>(null);
   const [tick, setTick] = useState(0);
+  const [partnerBannerType, setPartnerBannerType] = useState<InteractionType | null>(null);
 
   const { data: match, refetch } = useQuery({
     queryKey: ['match', matchId],
@@ -225,14 +260,26 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
   }, []);
 
   useEffect(() => {
+    if (!partnerBannerType) return;
+    const id = setTimeout(() => setPartnerBannerType(null), 4200);
+    return () => clearTimeout(id);
+  }, [partnerBannerType]);
+
+  useEffect(() => {
     const socket = getSocket();
     if (!socket) return;
     const onEnded = () => {
       void refreshMe();
       navigation.replace('Home');
     };
-    const onInteraction = () => {
+    const onInteraction = (payload: unknown) => {
+      if (!isInteractionPayload(payload)) return;
+      if (payload.matchId !== matchId) return;
       void refetch();
+      const uid = useAuth.getState().user?.id;
+      if (uid && payload.fromUserId !== uid) {
+        setPartnerBannerType(payload.type);
+      }
     };
     socket.on('match:ended', onEnded);
     socket.on('match:interaction', onInteraction);
@@ -240,7 +287,7 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
       socket.off('match:ended', onEnded);
       socket.off('match:interaction', onInteraction);
     };
-  }, [navigation, refreshMe, refetch]);
+  }, [navigation, refreshMe, refetch, matchId]);
 
   const remainingSec = useMemo(() => {
     if (!match) return 0;
@@ -264,6 +311,7 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
     setLastInteraction(type);
     try {
       await sendInteraction(matchId, type);
+      await refetch();
     } catch {
       // best-effort
     }
@@ -306,6 +354,7 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
   const displayName = match.opponent.nickname?.trim() || match.opponent.name;
   const nicknameValue = match.opponent.nickname?.trim() || '—';
   const playerIdValue = match.opponent.playerId ?? '—';
+  const interactions = match.interactions ?? [];
 
   const labelMuted: TextStyle = {
     color: 'rgba(180, 180, 200, 0.75)',
@@ -365,6 +414,33 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
             {t('match.subtitle')}
           </Text>
         </View>
+
+        {partnerBannerType ? (
+          <View style={{ marginTop: 14, width: '100%' }}>
+            <LinearGradient
+              colors={['rgba(123,63,242,0.45)', 'rgba(0,209,255,0.28)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.22)',
+                paddingVertical: 12,
+                paddingHorizontal: 14,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Ionicons name="flash-outline" size={22} color="#E8D8FF" />
+                <Text style={{ color: colors.ink.primary, fontSize: 14, fontWeight: '700', flex: 1 }}>
+                  {t('match.partnerToast', {
+                    name: displayName,
+                    action: t(labelKeys[TYPE_TO_QUICK_KEY[partnerBannerType]]),
+                  })}
+                </Text>
+              </View>
+            </LinearGradient>
+          </View>
+        ) : null}
 
         {/* Teammate card */}
         <View style={{ marginTop: 22 }}>
@@ -580,6 +656,72 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
               </View>
             </View>
           ))}
+        </View>
+
+        {/* Live activity from quick actions (both players) */}
+        <View
+          style={{
+            marginTop: 22,
+            borderRadius: 18,
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.1)',
+            backgroundColor: 'rgba(14, 14, 24, 0.78)',
+            padding: 16,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.ink.primary,
+              fontSize: 17,
+              fontWeight: '800',
+              letterSpacing: -0.2,
+              marginBottom: 12,
+            }}
+          >
+            {t('match.activityTitle')}
+          </Text>
+          {interactions.length === 0 ? (
+            <Text style={{ color: colors.ink.secondary, fontSize: 13, lineHeight: 19 }}>
+              {t('match.activityEmpty')}
+            </Text>
+          ) : (
+            <View style={{ gap: 10 }}>
+              {interactions.map((row) => {
+                const isMe = row.userId === match.me.id;
+                const who = isMe ? t('match.activityYou') : displayName;
+                const actionLabel = t(labelKeys[TYPE_TO_QUICK_KEY[row.type]]);
+                const time = new Date(row.createdAt).toLocaleTimeString(undefined, {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+                const meta = ACTION_STYLE[row.type];
+                return (
+                  <View
+                    key={row.id}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 10,
+                      paddingVertical: 8,
+                      paddingHorizontal: 10,
+                      borderRadius: 12,
+                      backgroundColor: 'rgba(255,255,255,0.04)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    <Ionicons name={meta.icon} size={20} color={meta.iconColor} />
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={{ color: colors.ink.primary, fontSize: 14, fontWeight: '700' }} numberOfLines={2}>
+                        <Text style={{ color: colors.ink.secondary, fontWeight: '600' }}>{time} · </Text>
+                        {who}: {actionLabel}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
         </View>
 
         {/* Quick actions */}

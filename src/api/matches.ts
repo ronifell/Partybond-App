@@ -1,12 +1,7 @@
 import { api } from './client';
-import type { Match } from './types';
+import type { Match, MatchInteractionType } from './types';
 
-export type InteractionType =
-  | 'add_me'
-  | 'already_added'
-  | 'enter_lobby'
-  | 'waiting'
-  | 'did_not_work';
+export type InteractionType = MatchInteractionType;
 
 export async function getMatch(id: string): Promise<Match> {
   const { data } = await api.get<{ match: Match }>(`/matches/${id}`);

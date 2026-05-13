@@ -168,6 +168,10 @@
       }
     ],
     "quickActionsTitle": "Ações rápidas",
+    "activityTitle": "Atualizações ao vivo",
+    "activityEmpty": "Nenhum sinal ainda. Use os botões abaixo — seu companheiro vê aqui em tempo real.",
+    "activityYou": "Você",
+    "partnerToast": "{{name}}: {{action}}",
     "quick": {
       "addMe": "Me adiciona",
       "alreadyAdded": "Já adicionei",

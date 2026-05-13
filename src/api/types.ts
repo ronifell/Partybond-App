@@ -55,6 +55,21 @@ export interface MatchParticipant {
   playerId: string | null;
 }
 
+/** Mirrors backend `InteractionType` / quick-action payloads. */
+export type MatchInteractionType =
+  | 'add_me'
+  | 'already_added'
+  | 'enter_lobby'
+  | 'waiting'
+  | 'did_not_work';
+
+export interface MatchInteraction {
+  id: string;
+  userId: string;
+  type: MatchInteractionType;
+  createdAt: string;
+}
+
 export interface Match {
   id: string;
   status: 'active' | 'finished' | 'expired';
@@ -66,4 +81,5 @@ export interface Match {
   endedAt: string | null;
   me: MatchParticipant;
   opponent: MatchParticipant;
+  interactions: MatchInteraction[];
 }

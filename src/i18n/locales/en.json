@@ -168,6 +168,10 @@
       }
     ],
     "quickActionsTitle": "Quick Actions",
+    "activityTitle": "Live updates",
+    "activityEmpty": "No quick signals yet. Use the buttons below — your teammate sees them here in real time.",
+    "activityYou": "You",
+    "partnerToast": "{{name}}: {{action}}",
     "quick": {
       "addMe": "Add me",
       "alreadyAdded": "Already added",
