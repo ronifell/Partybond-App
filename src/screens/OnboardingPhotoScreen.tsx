@@ -6,8 +6,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Screen } from '../components/ui/Screen';
 import { GradientButton } from '../components/ui/GradientButton';
-import { BackgroundGlow } from '../components/ui/BackgroundGlow';
 import { OnboardingHeader } from '../components/OnboardingHeader';
+import { OnboardingBackBar } from '../components/OnboardingBackBar';
 import { Avatar } from '../components/ui/Avatar';
 import { useAuth } from '../store/authStore';
 import { uploadProfilePhoto } from '../api/users';
@@ -58,9 +58,9 @@ export function OnboardingPhotoScreen({ navigation }: NativeStackScreenProps<any
   };
 
   return (
-    <Screen padded={false}>
-      <BackgroundGlow />
+    <Screen padded={false} onboardingArt>
       <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
+        <OnboardingBackBar navigation={navigation} />
         <OnboardingHeader
           current={2}
           total={4}

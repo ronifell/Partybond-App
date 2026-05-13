@@ -21,6 +21,9 @@ import { MatchScreen } from '../screens/MatchScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { EditGameProfileScreen } from '../screens/EditGameProfileScreen';
 import { EditProfileScreen } from '../screens/EditProfileScreen';
+import { OnboardingWelcomeScreen } from '../screens/OnboardingWelcomeScreen';
+import { OnboardingCompleteScreen } from '../screens/OnboardingCompleteScreen';
+import { useOnboarding } from '../store/onboardingStore';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +41,7 @@ const navTheme = {
 
 export function RootNavigator() {
   const { hydrated, token, user, hydrate } = useAuth();
+  const celebrationPending = useOnboarding((s) => s.celebrationPending);
 
   useEffect(() => {
     void hydrate();
@@ -55,6 +59,8 @@ export function RootNavigator() {
     return false;
   }, [user]);
 
+  const showOnboardingStack = needsOnboarding || celebrationPending;
+
   if (!hydrated) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bg.base, justifyContent: 'center' }}>
@@ -71,12 +77,14 @@ export function RootNavigator() {
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
           </>
-        ) : needsOnboarding ? (
+        ) : showOnboardingStack ? (
           <>
+            <Stack.Screen name="OnboardingWelcome" component={OnboardingWelcomeScreen} />
             <Stack.Screen name="OnboardingName" component={OnboardingNameScreen} />
             <Stack.Screen name="OnboardingPhoto" component={OnboardingPhotoScreen} />
             <Stack.Screen name="OnboardingGame" component={OnboardingGameScreen} />
             <Stack.Screen name="OnboardingGameInfo" component={OnboardingGameInfoScreen} />
+            <Stack.Screen name="OnboardingComplete" component={OnboardingCompleteScreen} />
           </>
         ) : (
           <>

@@ -7,16 +7,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../components/ui/Screen';
 import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
-import { BackgroundGlow } from '../components/ui/BackgroundGlow';
 import { OnboardingHeader } from '../components/OnboardingHeader';
+import { OnboardingBackBar } from '../components/OnboardingBackBar';
 import { setGameProfile } from '../api/users';
 import { useAuth } from '../store/authStore';
+import { useOnboarding } from '../store/onboardingStore';
 import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
 
-export function OnboardingGameInfoScreen({ route }: NativeStackScreenProps<any>) {
+export function OnboardingGameInfoScreen({ route, navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
   const setUser = useAuth((s) => s.setUser);
+  const setCelebrationPending = useOnboarding((s) => s.setCelebrationPending);
   const gameId = (route.params as { gameId: string }).gameId;
 
   const [nickname, setNickname] = useState('');
@@ -37,8 +39,9 @@ export function OnboardingGameInfoScreen({ route }: NativeStackScreenProps<any>)
         nickname: nickname.trim(),
         playerId: playerId.trim(),
       });
+      setCelebrationPending(true);
       setUser(updated);
-      // RootNavigator will switch stacks automatically
+      navigation.reset({ index: 0, routes: [{ name: 'OnboardingComplete' }] });
     } catch (err) {
       setError(getApiError(err).message);
     } finally {
@@ -47,9 +50,9 @@ export function OnboardingGameInfoScreen({ route }: NativeStackScreenProps<any>)
   };
 
   return (
-    <Screen scroll keyboard padded={false}>
-      <BackgroundGlow />
+    <Screen scroll keyboard padded={false} onboardingArt>
       <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
+        <OnboardingBackBar navigation={navigation} />
         <OnboardingHeader
           current={4}
           total={4}

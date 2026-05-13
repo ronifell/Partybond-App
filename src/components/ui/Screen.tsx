@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AppBackground } from './AppBackground';
 import { ArenaBackground } from './ArenaBackground';
 import { LoginBackground } from './LoginBackground';
+import { OnboardingBackground } from './OnboardingBackground';
 import { APP_BACKGROUND_IMAGE } from '../../theme/appBackground';
 
 interface Props {
@@ -19,6 +20,10 @@ interface Props {
    * post-login app background from `appBackground.ts`.
    */
   authBackground?: boolean;
+  /**
+   * When true, show full-bleed `onboarding.png` and skip default app/auth backgrounds.
+   */
+  onboardingArt?: boolean;
 }
 
 export function Screen({
@@ -28,6 +33,7 @@ export function Screen({
   keyboard = false,
   background = true,
   authBackground = false,
+  onboardingArt = false,
 }: Props) {
   const inner = padded ? <View className="px-5 pt-2 pb-8 flex-1">{children}</View> : children;
 
@@ -46,7 +52,9 @@ export function Screen({
   return (
     <View className="flex-1 bg-bg">
       <StatusBar style="light" translucent backgroundColor="transparent" />
-      {background ? (
+      {onboardingArt ? (
+        <OnboardingBackground />
+      ) : background ? (
         authBackground ? (
           <LoginBackground />
         ) : APP_BACKGROUND_IMAGE ? (

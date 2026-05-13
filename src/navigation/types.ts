@@ -4,10 +4,12 @@ export type AuthStackParamList = {
 };
 
 export type OnboardingStackParamList = {
+  OnboardingWelcome: undefined;
   OnboardingName: undefined;
   OnboardingPhoto: undefined;
   OnboardingGame: undefined;
   OnboardingGameInfo: { gameId: string };
+  OnboardingComplete: undefined;
 };
 
 export type AppStackParamList = {

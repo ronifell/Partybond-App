@@ -7,8 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../components/ui/Screen';
 import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
-import { BackgroundGlow } from '../components/ui/BackgroundGlow';
 import { OnboardingHeader } from '../components/OnboardingHeader';
+import { OnboardingBackBar } from '../components/OnboardingBackBar';
 import { useAuth } from '../store/authStore';
 import { updateProfile } from '../api/users';
 import { getApiError } from '../api/client';
@@ -43,9 +43,9 @@ export function OnboardingNameScreen({ navigation }: NativeStackScreenProps<any>
   };
 
   return (
-    <Screen scroll keyboard padded={false}>
-      <BackgroundGlow />
+    <Screen scroll keyboard padded={false} onboardingArt>
       <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
+        <OnboardingBackBar navigation={navigation} />
         <OnboardingHeader
           current={1}
           total={4}

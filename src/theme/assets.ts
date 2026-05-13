@@ -35,6 +35,15 @@ export const LOGIN_BACKGROUND: ImageSourcePropType | null = null;
 export const LOGIN_BACKGROUND_OVERLAY = 0.35;
 
 // ──────────────────────────────────────────────────────────────────────
+// 2b) ONBOARDING — full-bleed behind every onboarding screen (welcome → complete)
+//     Path:  Frontend/assets/onboarding.png
+// ──────────────────────────────────────────────────────────────────────
+export const ONBOARDING_WELCOME_BACKGROUND: ImageSourcePropType = require('../../assets/onboarding.png');
+
+/** Dark overlay on top of onboarding art (readability on all onboarding steps). */
+export const ONBOARDING_WELCOME_OVERLAY = 0.28;
+
+// ──────────────────────────────────────────────────────────────────────
 // 3) GAME IMAGES — thumbnails shown on Session cards & game tiles.
 //    The key is the `Game.id` (must match what the backend seeds).
 //    Recommended: square 512×512 PNG/JPG per game.

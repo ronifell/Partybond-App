@@ -77,7 +77,12 @@
     "nicknamePlaceholder": "ProSniper",
     "playerId": "ID do jogador",
     "playerIdPlaceholder": "1234567890",
-    "help": "Abra o Free Fire → Perfil → copie o ID"
+    "help": "Abra o Free Fire → Perfil → copie o ID",
+    "welcomeCta": "Começar",
+    "completeTitle": "Tudo pronto!",
+    "completeSubtitle": "Você está pronto para encontrar jogadores e jogar junto.",
+    "completeCta": "Bora jogar!",
+    "completeHint": "Você pode editar isso depois nas configurações."
   },
   "games": {
     "title": "Escolha um jogo",
