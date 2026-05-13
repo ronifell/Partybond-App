@@ -21,6 +21,8 @@ import { colors } from '../theme/tokens';
 
 const QUICK_ACTIONS_HEIGHT = 96;
 const TAB_BAR_HEIGHT = 90;
+/** Extra scroll space so the last cards clear the four quick-action tiles (does not shrink the list viewport). */
+const GAME_LIST_SCROLL_BOTTOM_PADDING = 132;
 
 export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
@@ -114,9 +116,9 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   return (
     <Screen padded={false}>
       {/* Top fixed area — header + profile pill */}
-      <View style={{ paddingHorizontal: 12, paddingTop: 4 }}>
+      <View style={{ paddingHorizontal: 12, paddingTop: 0 }}>
         <HeaderBar notifications={3} />
-        <View style={{ marginTop: 14, marginBottom: 6 }}>
+        <View style={{ marginTop: 6, marginBottom: 0 }}>
           <ProfilePill
             user={user}
             selectedGame={selectedGame}
@@ -136,8 +138,8 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
           alignItems: 'center',
           justifyContent: 'space-between',
           paddingHorizontal: 12,
-          paddingTop: 14,
-          paddingBottom: 8,
+          paddingTop: 6,
+          paddingBottom: 2,
         }}
       >
         <Text style={{ color: 'white', fontSize: 18, fontWeight: '800', letterSpacing: -0.2 }}>
@@ -160,7 +162,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
           keyExtractor={(g) => g.id}
           contentContainerStyle={{
             paddingHorizontal: 12,
-            paddingBottom: 8,
+            paddingBottom: GAME_LIST_SCROLL_BOTTOM_PADDING,
             gap: 12,
           }}
           renderItem={({ item }) => (

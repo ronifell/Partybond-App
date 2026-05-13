@@ -28,15 +28,15 @@ interface StatProps {
 function StatRowItem({ icon, iconColor, value, label }: StatProps) {
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      <Ionicons name={icon} size={18} color={iconColor} />
-      <Text style={{ color: 'white', fontSize: 18, fontWeight: '800', marginTop: 4 }}>{value}</Text>
+      <Ionicons name={icon} size={16} color={iconColor} />
+      <Text style={{ color: 'white', fontSize: 15, fontWeight: '800', marginTop: 2 }}>{value}</Text>
       <Text
         style={{
           color: colors.ink.secondary,
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
-          marginTop: 2,
-          letterSpacing: 0.3,
+          marginTop: 1,
+          letterSpacing: 0.2,
         }}
       >
         {label}
@@ -59,19 +59,19 @@ function OverviewTile({ icon, color, value, label }: OverviewProps) {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 16,
-        gap: 6,
-        borderRadius: 16,
+        paddingVertical: 8,
+        gap: 3,
+        borderRadius: 12,
         borderWidth: 1.5,
         borderColor: 'rgba(255,255,255,0.10)',
         backgroundColor: 'rgba(10, 10, 18, 0.75)',
       }}
     >
-      <Ionicons name={icon} size={22} color={color} />
-      <Text style={{ color: colors.ink.secondary, fontSize: 11, fontWeight: '600' }}>
+      <Ionicons name={icon} size={18} color={color} />
+      <Text style={{ color: colors.ink.secondary, fontSize: 10, fontWeight: '600' }} numberOfLines={1}>
         {label}
       </Text>
-      <Text style={{ color: 'white', fontSize: 18, fontWeight: '800' }}>{value}</Text>
+      <Text style={{ color: 'white', fontSize: 14, fontWeight: '800' }}>{value}</Text>
     </View>
   );
 }
@@ -92,8 +92,8 @@ function MenuRow({ icon, iconColor, label, badge, onPress, isLast }: MenuProps) 
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
-        paddingHorizontal: 16,
+        paddingVertical: 11,
+        paddingHorizontal: 14,
         borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: 'rgba(255,255,255,0.08)',
         backgroundColor: pressed ? 'rgba(255,255,255,0.05)' : 'transparent',
@@ -101,18 +101,18 @@ function MenuRow({ icon, iconColor, label, badge, onPress, isLast }: MenuProps) 
     >
       <View
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 10,
+          width: 28,
+          height: 28,
+          borderRadius: 9,
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: `${iconColor}22`,
-          marginRight: 14,
+          marginRight: 10,
         }}
       >
-        <Ionicons name={icon} size={18} color={iconColor} />
+        <Ionicons name={icon} size={16} color={iconColor} />
       </View>
-      <Text style={{ color: 'white', fontSize: 15, fontWeight: '600', flex: 1 }}>{label}</Text>
+      <Text style={{ color: 'white', fontSize: 14, fontWeight: '600', flex: 1 }}>{label}</Text>
       {badge !== undefined ? (
         <View
           style={{
@@ -171,16 +171,16 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
   return (
     <Screen padded={false}>
       {/* Top header */}
-      <View
+        <View
         style={{
           paddingHorizontal: 12,
-          paddingTop: 4,
+          paddingTop: 2,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
       >
-        <Logo size={30} showText />
+        <Logo size={26} showText />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Pressable
             onPress={() => void logout()}
@@ -238,9 +238,9 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 12,
-          paddingTop: 20,
-          paddingBottom: TAB_BAR_HEIGHT + 32,
-          gap: 16,
+          paddingTop: 10,
+          paddingBottom: TAB_BAR_HEIGHT + 16,
+          gap: 10,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -251,12 +251,12 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
             style={({ pressed }) => ({
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 16,
+              gap: 12,
               opacity: pressed ? 0.85 : 1,
             })}
           >
             <View>
-              <Avatar uri={user?.photoUrl} name={user?.name} size={88} />
+              <Avatar uri={user?.photoUrl} name={user?.name} size={72} />
               <View
                 style={{
                   position: 'absolute',
@@ -279,7 +279,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                 <Text
                   style={{
                     color: 'white',
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: '800',
                     letterSpacing: -0.4,
                   }}
@@ -290,7 +290,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                 <Ionicons name="create-outline" size={16} color={colors.brand.purple} />
               </View>
               {/* Level + XP bar */}
-              <View style={{ marginTop: 8 }}>
+              <View style={{ marginTop: 5 }}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -334,8 +334,8 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                 </View>
                 <View
                   style={{
-                    marginTop: 6,
-                    height: 6,
+                    marginTop: 4,
+                    height: 5,
                     borderRadius: 999,
                     backgroundColor: 'rgba(255,255,255,0.10)',
                     overflow: 'hidden',
@@ -360,8 +360,8 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
           <View
             style={{
               flexDirection: 'row',
-              marginTop: 18,
-              paddingVertical: 8,
+              marginTop: 10,
+              paddingVertical: 4,
             }}
           >
             <StatRowItem icon="star" iconColor="#FFD23F" value="0" label={t('profile.statRating')} />
@@ -374,8 +374,8 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
         {/* Active Game card */}
         <Card
           variant="dark"
-          padding={16}
-          radius={20}
+          padding={12}
+          radius={18}
           onPress={
             activeGame
               ? () => navigation.navigate('EditGameProfile', { gameId: activeGame.id })
@@ -385,21 +385,21 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
           <Text
             style={{
               color: colors.brand.pink,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: '800',
-              letterSpacing: 0.6,
+              letterSpacing: 0.5,
               textTransform: 'uppercase',
-              marginBottom: 12,
+              marginBottom: 8,
             }}
           >
             {t('profile.activeGameSection')}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <View
               style={{
-                width: 64,
-                height: 64,
-                borderRadius: 14,
+                width: 52,
+                height: 52,
+                borderRadius: 12,
                 overflow: 'hidden',
                 backgroundColor: '#1A1230',
                 borderWidth: 1,
@@ -425,7 +425,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
             </View>
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Text style={{ color: 'white', fontSize: 17, fontWeight: '800' }}>
+                <Text style={{ color: 'white', fontSize: 15, fontWeight: '800' }}>
                   {activeGame?.name ?? t('profile.noGameSelected')}
                 </Text>
                 {activeGameProfile ? (
@@ -445,34 +445,34 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                   </View>
                 ) : null}
               </View>
-              <View style={{ marginTop: 6 }}>
+              <View style={{ marginTop: 4 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Text
                     style={{
                       color: colors.ink.secondary,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: '600',
-                      width: 70,
+                      width: 64,
                     }}
                   >
                     {t('profile.fieldNickname')}
                   </Text>
-                  <Text style={{ color: 'white', fontSize: 13, fontWeight: '600' }}>
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
                     {activeGameProfile?.nickname ?? '—'}
                   </Text>
                 </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
                   <Text
                     style={{
                       color: colors.ink.secondary,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: '600',
-                      width: 70,
+                      width: 64,
                     }}
                   >
                     {t('profile.fieldPlayerId')}
                   </Text>
-                  <Text style={{ color: 'white', fontSize: 13, fontWeight: '600' }}>
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
                     {activeGameProfile?.playerId ?? '—'}
                   </Text>
                 </View>
@@ -483,15 +483,15 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
         </Card>
 
         {/* Current Status */}
-        <Card variant="dark" padding={16} radius={20}>
+        <Card variant="dark" padding={12} radius={18}>
           <Text
             style={{
               color: colors.brand.pink,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: '800',
-              letterSpacing: 0.6,
+              letterSpacing: 0.5,
               textTransform: 'uppercase',
-              marginBottom: 12,
+              marginBottom: 8,
             }}
           >
             {t('profile.currentStatusSection')}
@@ -510,10 +510,10 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                     shadowRadius: 6,
                   }}
                 />
-                <Text style={{ color: 'white', fontSize: 15, fontWeight: '700' }}>{t('profile.statusOnline')}</Text>
+                <Text style={{ color: 'white', fontSize: 14, fontWeight: '700' }}>{t('profile.statusOnline')}</Text>
               </View>
               <Text
-                style={{ color: colors.ink.secondary, fontSize: 12, marginTop: 4, fontWeight: '500' }}
+                style={{ color: colors.ink.secondary, fontSize: 11, marginTop: 2, fontWeight: '500' }}
               >
                 {t('profile.statusReady')}
               </Text>
@@ -523,36 +523,36 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 6,
-                paddingHorizontal: 14,
-                paddingVertical: 10,
-                borderRadius: 12,
+                paddingHorizontal: 11,
+                paddingVertical: 7,
+                borderRadius: 10,
                 borderWidth: 1.5,
                 borderColor: 'rgba(123,63,242,0.55)',
                 backgroundColor: pressed ? 'rgba(123,63,242,0.18)' : 'rgba(123,63,242,0.10)',
               })}
             >
-              <Text style={{ color: 'white', fontSize: 13, fontWeight: '700' }}>{t('profile.setStatus')}</Text>
+              <Text style={{ color: 'white', fontSize: 12, fontWeight: '700' }}>{t('profile.setStatus')}</Text>
               <Ionicons name="create-outline" size={14} color={colors.brand.purple} />
             </Pressable>
           </View>
         </Card>
 
         {/* Stats Overview */}
-        <Card variant="dark" padding={16} radius={20}>
+        <Card variant="dark" padding={12} radius={18}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: 14,
+              marginBottom: 8,
             }}
           >
             <Text
               style={{
                 color: colors.brand.pink,
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: '800',
-                letterSpacing: 0.6,
+                letterSpacing: 0.5,
                 textTransform: 'uppercase',
               }}
             >
@@ -560,14 +560,14 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
             </Text>
             <Pressable hitSlop={6}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Text style={{ color: colors.brand.purple, fontSize: 12, fontWeight: '700' }}>
+                <Text style={{ color: colors.brand.purple, fontSize: 11, fontWeight: '700' }}>
                   {t('profile.viewAll')}
                 </Text>
                 <Ionicons name="chevron-forward" size={14} color={colors.brand.purple} />
               </View>
             </Pressable>
           </View>
-          <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
             <OverviewTile icon="game-controller" color="#FF4DA6" value="0" label={t('profile.statMatches')} />
             <OverviewTile icon="trophy" color="#00D1FF" value="0" label={t('profile.statWins')} />
             <OverviewTile icon="locate" color="#FF4DA6" value="0%" label={t('profile.statWinRate')} />
@@ -576,7 +576,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
         </Card>
 
         {/* Menu list */}
-        <Card variant="dark" padding={0} radius={20}>
+        <Card variant="dark" padding={0} radius={18}>
           <View>
             <MenuRow
               icon="people-outline"
