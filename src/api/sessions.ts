@@ -44,18 +44,23 @@ export async function leaveQueue(sessionId: string): Promise<{ waitingCount: num
  *   2. If none, create a fresh "Quick Match" session.
  *   3. Join that session's queue.
  *
+ * Prefers sessions that **already have people in the queue** so we pair with
+ * an existing waiter instead of the first empty session (API order is
+ * `scheduledAt` asc, which often leaves stale "Quick Match" rows ahead of
+ * real lobbies).
+ *
  * Returns the session id the user was placed in (so callers can navigate to
  * the Queue screen).
  */
 export async function quickJoinGame(gameId: string): Promise<{ sessionId: string }> {
   const sessions = await listSessions(gameId);
 
-  // Pick the first existing session that still has room (not finished).
-  const existing = sessions.find(
-    (s) =>
-      (s.status === 'open' || s.status === 'active') &&
-      s.waitingCount < s.playersNeeded,
-  );
+  const eligible = sessions.filter((s) => s.status === 'open' || s.status === 'active');
+  const byScheduledAt = (a: SessionSummary, b: SessionSummary) =>
+    new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+
+  const withWaiters = eligible.filter((s) => s.waitingCount > 0).sort(byScheduledAt);
+  const existing = withWaiters[0] ?? [...eligible].sort(byScheduledAt)[0];
 
   let sessionId = existing?.id;
   if (!sessionId) {
