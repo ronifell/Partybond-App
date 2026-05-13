@@ -131,25 +131,53 @@
   },
   "match": {
     "title": "Match found!",
+    "heroTitle": "MATCH FOUND!",
+    "subtitle": "You have been matched successfully",
     "playerIdLabel": "Player ID",
     "copyId": "Copy ID",
+    "copyPlayerId": "COPY PLAYER ID",
     "copied": "ID copied",
-    "guideTitle": "How to play",
+    "copiedToast": "ID copied to clipboard!",
+    "teammateBadge": "Your Teammate",
+    "nicknameFieldLabel": "Nickname",
+    "online": "online",
+    "teammateReady": "Ready to squad up",
+    "guideTitle": "What to do next",
     "guide": [
       "Copy the player ID",
       "Open Free Fire",
       "Add the player",
       "Enter the lobby"
     ],
+    "guideSteps": [
+      {
+        "title": "Copy Player ID",
+        "body": "Tap the button above to copy your teammate's ID to the clipboard."
+      },
+      {
+        "title": "Open Free Fire",
+        "body": "Launch the game on your device so you can add them as a friend."
+      },
+      {
+        "title": "Add the Player",
+        "body": "Use the copied ID in-game to send a friend request."
+      },
+      {
+        "title": "Enter the Lobby",
+        "body": "Once accepted, invite them and jump into a match together."
+      }
+    ],
+    "quickActionsTitle": "Quick Actions",
     "quick": {
       "addMe": "Add me",
-      "alreadyAdded": "Already added you",
+      "alreadyAdded": "Already added",
       "enterLobby": "Enter lobby",
       "waiting": "Waiting",
-      "didntWork": "It didn't work"
+      "didntWork": "Didn't work"
     },
-    "endMatch": "End match",
-    "expiresIn": "Expires in {{minutes}} min"
+    "endMatch": "Leave Match",
+    "expiresIn": "Expires in {{minutes}} min",
+    "expiresPrefix": "This match will expire in"
   },
   "profile": {
     "level": "Lv. {{level}}",

@@ -131,25 +131,53 @@
   },
   "match": {
     "title": "Partida encontrada!",
+    "heroTitle": "PARTIDA ENCONTRADA!",
+    "subtitle": "Você foi pareado com sucesso",
     "playerIdLabel": "ID do Jogador",
     "copyId": "Copiar ID",
+    "copyPlayerId": "COPIAR ID DO JOGADOR",
     "copied": "ID copiado",
-    "guideTitle": "Como jogar",
+    "copiedToast": "ID copiado para a área de transferência!",
+    "teammateBadge": "Seu companheiro",
+    "nicknameFieldLabel": "Apelido",
+    "online": "online",
+    "teammateReady": "Pronto para jogar em equipe",
+    "guideTitle": "Próximos passos",
     "guide": [
       "Copie o ID do jogador",
       "Abra o Free Fire",
       "Adicione o jogador",
       "Entre no lobby"
     ],
+    "guideSteps": [
+      {
+        "title": "Copiar ID do jogador",
+        "body": "Toque no botão acima para copiar o ID do seu companheiro."
+      },
+      {
+        "title": "Abrir o Free Fire",
+        "body": "Abra o jogo no seu aparelho para adicioná-lo como amigo."
+      },
+      {
+        "title": "Adicionar o jogador",
+        "body": "Use o ID copiado no jogo para enviar um pedido de amizade."
+      },
+      {
+        "title": "Entrar no lobby",
+        "body": "Depois que aceitar, convide-o e entre na partida juntos."
+      }
+    ],
+    "quickActionsTitle": "Ações rápidas",
     "quick": {
       "addMe": "Me adiciona",
-      "alreadyAdded": "Já te adicionei",
+      "alreadyAdded": "Já adicionei",
       "enterLobby": "Entrar no lobby",
       "waiting": "Aguardando",
       "didntWork": "Não funcionou"
     },
-    "endMatch": "Encerrar partida",
-    "expiresIn": "Expira em {{minutes}} min"
+    "endMatch": "Sair da partida",
+    "expiresIn": "Expira em {{minutes}} min",
+    "expiresPrefix": "Esta partida expira em"
   },
   "profile": {
     "level": "Nv. {{level}}",
