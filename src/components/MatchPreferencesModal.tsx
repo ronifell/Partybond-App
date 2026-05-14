@@ -7,6 +7,7 @@ import {
   ScrollView,
   useWindowDimensions,
   Image,
+  StyleSheet,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,9 @@ const MODES: SessionMode[] = ['casual', 'competitive'];
 
 const MODAL_RADIUS_OUTER = 24;
 const MODAL_RADIUS_INNER = 22;
+
+/** Explicit array avoids Android native gradient issues with some readonly tuples. */
+const PLAY_STYLE_GRADIENT_COLORS = ['#FF4DA6', '#7B3FF2', '#00D1FF'] as const;
 
 function tierIcon(tier: SessionSkillTier): keyof typeof Ionicons.glyphMap {
   switch (tier) {
@@ -269,38 +273,51 @@ export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onCo
                         <Pressable
                           key={m}
                           onPress={() => setMode(m)}
-                          style={({ pressed }) => ({
-                            flex: 1,
-                            borderRadius: 14,
-                            overflow: 'hidden',
-                            opacity: pressed ? 0.92 : 1,
-                            transform: pressed ? [{ scale: 0.99 }] : undefined,
-                          })}
+                          style={({ pressed }) => [
+                            {
+                              flex: 1,
+                              borderRadius: 14,
+                              overflow: 'hidden',
+                              opacity: pressed ? 0.92 : 1,
+                            },
+                            pressed ? { transform: [{ scale: 0.99 }] } : null,
+                          ]}
                         >
                           {selected ? (
-                            <LinearGradient
-                              colors={gradient.primary}
-                              start={{ x: 0, y: 0 }}
-                              end={{ x: 1, y: 1 }}
-                              style={{
-                                paddingVertical: 9,
-                                paddingHorizontal: 8,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 6,
-                                minHeight: 44,
-                              }}
-                            >
-                              <Ionicons
-                                name={isCasual ? 'game-controller' : 'trophy'}
-                                size={18}
-                                color="white"
+                            <View style={{ minHeight: 44, justifyContent: 'center' }}>
+                              <LinearGradient
+                                colors={[...PLAY_STYLE_GRADIENT_COLORS]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={StyleSheet.absoluteFill}
                               />
-                              <Text style={{ color: 'white', fontSize: 14, fontWeight: '800' }}>
-                                {t(`createSession.${m}`)}
-                              </Text>
-                            </LinearGradient>
+                              <View
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  paddingVertical: 9,
+                                  paddingHorizontal: 8,
+                                  minHeight: 44,
+                                }}
+                              >
+                                <Ionicons
+                                  name={isCasual ? 'game-controller' : 'trophy'}
+                                  size={18}
+                                  color="white"
+                                />
+                                <Text
+                                  style={{
+                                    color: 'white',
+                                    fontSize: 14,
+                                    fontWeight: '800',
+                                    marginLeft: 6,
+                                  }}
+                                >
+                                  {t(`createSession.${m}`)}
+                                </Text>
+                              </View>
+                            </View>
                           ) : (
                             <View
                               style={{
@@ -309,7 +326,6 @@ export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onCo
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: 6,
                                 minHeight: 44,
                                 borderRadius: 14,
                                 borderWidth: 1.5,
@@ -322,7 +338,14 @@ export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onCo
                                 size={18}
                                 color={colors.ink.secondary}
                               />
-                              <Text style={{ color: colors.ink.primary, fontSize: 14, fontWeight: '700' }}>
+                              <Text
+                                style={{
+                                  color: colors.ink.primary,
+                                  fontSize: 14,
+                                  fontWeight: '700',
+                                  marginLeft: 6,
+                                }}
+                              >
                                 {t(`createSession.${m}`)}
                               </Text>
                             </View>
