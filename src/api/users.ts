@@ -1,10 +1,13 @@
 import { api, getToken } from './client';
 import { getApiOrigin } from '../config/env';
 import type { User } from './types';
+import { normalizeUser, type ApiUserPayload } from './normalizeUser';
 
-export async function updateProfile(input: Partial<Pick<User, 'name' | 'age' | 'locale' | 'selectedGame'>>): Promise<User> {
+export async function updateProfile(
+  input: Partial<Pick<User, 'name' | 'age' | 'locale' | 'selectedGame' | 'lookingFor'>>,
+): Promise<User> {
   const { data } = await api.patch<{ user: User }>('/users/me', input);
-  return data.user;
+  return normalizeUser(data.user as ApiUserPayload);
 }
 
 /** Multer only accepts these; RN often sends octet-stream or omits type. */
@@ -66,7 +69,7 @@ export async function uploadProfilePhoto(uri: string, meta?: ProfilePhotoUploadM
       throw new Error(msg);
     }
     if (!body.user) throw new Error('Invalid response from server');
-    return body.user;
+    return normalizeUser(body.user as ApiUserPayload);
   };
 
   return doFetch();
@@ -78,7 +81,7 @@ export async function setGameProfile(input: {
   playerId: string;
 }): Promise<User> {
   const { data } = await api.put<{ user: User }>('/users/me/game-profile', input);
-  return data.user;
+  return normalizeUser(data.user as ApiUserPayload);
 }
 
 export async function setFcmToken(token: string | null): Promise<void> {

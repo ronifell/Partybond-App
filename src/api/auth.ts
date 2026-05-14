@@ -1,5 +1,6 @@
 import { api } from './client';
 import type { User } from './types';
+import { normalizeUser, type ApiUserPayload } from './normalizeUser';
 
 export interface AuthResponse {
   token: string;
@@ -8,7 +9,7 @@ export interface AuthResponse {
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
-  return data;
+  return { ...data, user: normalizeUser(data.user as ApiUserPayload) };
 }
 
 export async function register(input: {
@@ -19,10 +20,10 @@ export async function register(input: {
   locale?: string;
 }): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>('/auth/register', input);
-  return data;
+  return { ...data, user: normalizeUser(data.user as ApiUserPayload) };
 }
 
 export async function fetchMe(): Promise<User> {
   const { data } = await api.get<{ user: User }>('/auth/me');
-  return data.user;
+  return normalizeUser(data.user as ApiUserPayload);
 }

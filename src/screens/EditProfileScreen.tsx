@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, Pressable, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -11,6 +12,7 @@ import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
 import { Avatar } from '../components/ui/Avatar';
 import { updateProfile, uploadProfilePhoto, type ProfilePhotoUploadMeta } from '../api/users';
+import { LOOKING_FOR_MAX_LENGTH } from '../api/types';
 import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
@@ -19,14 +21,35 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
   const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
+  const refreshMe = useAuth((s) => s.refreshMe);
 
   const [name, setName] = useState(user?.name ?? '');
   const [email] = useState(user?.email ?? '');
   const [age, setAge] = useState(user?.age ? String(user.age) : '');
+  const [lookingFor, setLookingFor] = useState(user?.lookingFor ?? '');
   const [localPhotoUri, setLocalPhotoUri] = useState<string | null>(null);
   const [photoMeta, setPhotoMeta] = useState<ProfilePhotoUploadMeta | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Stack keeps this screen mounted; reload `/auth/me` then sync fields so `lookingFor` matches the server.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      void (async () => {
+        await refreshMe();
+        if (cancelled) return;
+        const u = useAuth.getState().user;
+        if (!u) return;
+        setName(u.name ?? '');
+        setAge(u.age != null ? String(u.age) : '');
+        setLookingFor(u.lookingFor ?? '');
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [refreshMe]),
+  );
 
   const pickPhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -61,8 +84,11 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
         setUser(photoUpdated);
       }
 
-      const updated = await updateProfile({ name: name.trim(), age: ageNum });
+      const updated = await updateProfile({ name: name.trim(), age: ageNum, lookingFor: lookingFor.trim() || null });
       setUser(updated);
+      setName(updated.name ?? '');
+      setAge(updated.age != null ? String(updated.age) : '');
+      setLookingFor(updated.lookingFor ?? '');
       navigation.goBack();
     } catch (err) {
       setError(getApiError(err).message);
@@ -179,6 +205,21 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
           keyboardType="number-pad"
           placeholder={t('auth.agePlaceholder')}
           leftIcon={<Ionicons name="calendar-outline" size={20} color={colors.brand.purple} />}
+        />
+        <Input
+          label={t('profile.lookingForLabel')}
+          value={lookingFor}
+          onChangeText={(v) =>
+            setLookingFor(v.length > LOOKING_FOR_MAX_LENGTH ? v.slice(0, LOOKING_FOR_MAX_LENGTH) : v)
+          }
+          placeholder={t('profile.lookingForPlaceholder')}
+          hint={t('profile.lookingForHint', {
+            remaining: Math.max(0, LOOKING_FOR_MAX_LENGTH - lookingFor.length),
+          })}
+          maxLength={LOOKING_FOR_MAX_LENGTH}
+          multiline
+          textAlignVertical="top"
+          leftIcon={<Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.brand.purple} />}
         />
         {error ? (
           <Text style={{ color: colors.status.error, fontSize: 13, fontWeight: '600' }}>

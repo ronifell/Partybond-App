@@ -49,11 +49,12 @@ export const ONBOARDING_WELCOME_OVERLAY = 0.28;
 //    Recommended: square 512×512 PNG/JPG per game.
 //    Path:  Frontend/assets/games/<gameId>.png
 //
-//    Currently seeded game ids:
-//      free_fire | valorant | pubg_mobile | mobile_legends | cod_mobile
+//    Seeded game ids (backend): free_fire | elden_ring_nightreign | valorant |
+//    pubg_mobile | mobile_legends | cod_mobile — each needs a matching key below.
 // ──────────────────────────────────────────────────────────────────────
 export const GAME_IMAGES: Record<string, ImageSourcePropType> = {
   free_fire:      require('../../assets/games/free_fire.png'),
+  elden_ring_nightreign: require('../../assets/games/elden_ring_nightreign.png'),
   valorant:       require('../../assets/games/valorant.png'),
   pubg_mobile:    require('../../assets/games/pubg_mobile.png'),
   mobile_legends: require('../../assets/games/mobile_legends.png'),

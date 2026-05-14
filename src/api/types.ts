@@ -6,12 +6,17 @@ export interface GameProfile {
 
 export type UserState = 'idle' | 'in_queue' | 'in_match';
 
+/** Max length for `User.lookingFor` (must match backend Zod + DB). */
+export const LOOKING_FOR_MAX_LENGTH = 200;
+
 export interface User {
   id: string;
   email: string;
   name: string;
   age: number;
   photoUrl: string | null;
+  /** What the player is looking for in the app (max {@link LOOKING_FOR_MAX_LENGTH} characters). */
+  lookingFor: string | null;
   selectedGame: string | null;
   state: UserState;
   currentSessionId: string | null;

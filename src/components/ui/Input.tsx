@@ -50,6 +50,7 @@ export function Input({
   const [focused, setFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const focusAnim = useRef(new Animated.Value(0)).current;
+  const multiline = !!rest.multiline;
 
   useEffect(() => {
     Animated.timing(focusAnim, {
@@ -66,8 +67,8 @@ export function Input({
   });
 
   const isSecure = !!secureTextEntry && !showPassword;
-  const minH = compact ? 44 : 58;
-  const padV = compact ? (Platform.OS === 'ios' ? 10 : 8) : Platform.OS === 'ios' ? 18 : 14;
+  const minH = multiline ? 100 : compact ? 44 : 58;
+  const padV = multiline ? (Platform.OS === 'ios' ? 12 : 10) : compact ? (Platform.OS === 'ios' ? 10 : 8) : Platform.OS === 'ios' ? 18 : 14;
   const fontSize = compact ? 15 : 16;
 
   return (
@@ -132,7 +133,7 @@ export function Input({
               backgroundColor: '#11091F',
               minHeight: minH,
               flexDirection: 'row',
-              alignItems: 'center',
+              alignItems: multiline ? 'flex-start' : 'center',
             }}
           >
             <LinearGradient
@@ -150,7 +151,9 @@ export function Input({
             />
 
             {leftIcon ? (
-              <View style={{ paddingLeft: 16, paddingRight: 4 }}>{leftIcon}</View>
+              <View style={{ paddingLeft: 16, paddingRight: 4, paddingTop: multiline ? (Platform.OS === 'ios' ? 14 : 12) : 0 }}>
+                {leftIcon}
+              </View>
             ) : null}
 
             <TextInput

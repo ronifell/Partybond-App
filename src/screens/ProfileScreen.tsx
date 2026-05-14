@@ -274,7 +274,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                 }}
               />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Text
                   style={{
@@ -355,6 +355,36 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
               </View>
             </View>
           </Pressable>
+
+          {user?.lookingFor ? (
+            <View
+              style={{
+                marginTop: 12,
+                marginLeft: 2,
+                maxWidth: '100%',
+                alignSelf: 'flex-start',
+              }}
+            >
+              <View
+                style={{
+                  transform: [{ rotateZ: '-6deg' }],
+                }}
+              >
+                <Text
+                  style={{
+                    color: 'rgba(232, 220, 255, 0.95)',
+                    fontSize: 13,
+                    fontWeight: '700',
+                    fontStyle: 'italic',
+                    lineHeight: 19,
+                    letterSpacing: 0.25,
+                  }}
+                >
+                  {user.lookingFor}
+                </Text>
+              </View>
+            </View>
+          ) : null}
 
           {/* 4-up stats row (Rating, Matches, Wins, Win Rate) */}
           <View
