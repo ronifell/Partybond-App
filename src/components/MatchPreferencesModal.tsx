@@ -1,52 +1,72 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  Image,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { SegmentToggle } from './ui/SegmentToggle';
 import { GradientButton } from './ui/GradientButton';
 import type { MatchLobbyPreferences, SessionMode, SessionSkillTier } from '../api/types';
 import { SESSION_SKILL_TIERS } from '../api/types';
-import { colors } from '../theme/tokens';
+import { colors, gradient } from '../theme/tokens';
+import { getGameImage } from '../theme/assets';
 
 const MODES: SessionMode[] = ['casual', 'competitive'];
 
-const LABEL_STYLE = {
-  color: colors.ink.secondary,
-  marginBottom: 10,
-  fontSize: 12,
-  fontWeight: '700' as const,
-  letterSpacing: 0.6,
-  textTransform: 'uppercase' as const,
-};
+const MODAL_RADIUS_OUTER = 24;
+const MODAL_RADIUS_INNER = 22;
 
-function tierLabelKey(tier: SessionSkillTier): string {
+function tierIcon(tier: SessionSkillTier): keyof typeof Ionicons.glyphMap {
   switch (tier) {
     case 'beginner':
-      return 'matchPrefs.tierBeginner';
+      return 'trending-up';
     case 'intermediate':
-      return 'matchPrefs.tierIntermediate';
+      return 'shield-checkmark-outline';
     case 'advanced':
-      return 'matchPrefs.tierAdvanced';
+      return 'star';
     case 'veteran':
-      return 'matchPrefs.tierVeteran';
+      return 'ribbon';
     default:
-      return 'matchPrefs.tierBeginner';
+      return 'ellipse-outline';
   }
+}
+
+function tierTitleKey(tier: SessionSkillTier): string {
+  const cap = tier.charAt(0).toUpperCase() + tier.slice(1);
+  return `matchPrefs.tierShort${cap}`;
 }
 
 interface Props {
   visible: boolean;
+  /** Current game (from home card). */
+  gameId?: string;
   gameName?: string;
   onClose: () => void;
   onConfirm: (prefs: MatchLobbyPreferences) => void;
 }
 
-export function MatchPreferencesModal({ visible, gameName, onClose, onConfirm }: Props) {
+export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onConfirm }: Props) {
   const { t } = useTranslation();
   const { height: winH } = useWindowDimensions();
   const [mode, setMode] = useState<SessionMode>('casual');
   const [skillTier, setSkillTier] = useState<SessionSkillTier>('beginner');
+
+  const genreLabel = useMemo(
+    () =>
+      gameId
+        ? t(`gameProfile.genres.${gameId}`, { defaultValue: t('gameProfile.genreDefault') })
+        : '',
+    [gameId, t],
+  );
+
+  const heroImage = gameId ? getGameImage(gameId) : null;
 
   useEffect(() => {
     if (visible) {
@@ -61,115 +81,390 @@ export function MatchPreferencesModal({ visible, gameName, onClose, onConfirm }:
         onPress={onClose}
         style={{
           flex: 1,
-          backgroundColor: 'rgba(5,5,12,0.82)',
+          backgroundColor: 'rgba(4, 4, 10, 0.88)',
           justifyContent: 'center',
-          paddingHorizontal: 20,
+          paddingHorizontal: 16,
         }}
       >
-        <Pressable
-          onPress={(e) => e.stopPropagation()}
-          style={{
-            maxHeight: winH * 0.88,
-            borderRadius: 20,
-            borderWidth: 1.5,
-            borderColor: 'rgba(255,255,255,0.12)',
-            backgroundColor: 'rgba(16,14,28,0.97)',
-            overflow: 'hidden',
-          }}
-        >
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ padding: 20, paddingBottom: 24 }}
+        <Pressable onPress={(e) => e.stopPropagation()} style={{ maxHeight: winH * 0.9 }}>
+          <LinearGradient
+            colors={gradient.primary}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: MODAL_RADIUS_OUTER,
+              padding: 2,
+            }}
           >
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <View style={{ flex: 1, paddingRight: 8 }}>
-                <Text style={{ color: 'white', fontSize: 20, fontWeight: '800', letterSpacing: -0.3 }}>
-                  {t('matchPrefs.title')}
-                </Text>
-                {gameName ? (
-                  <Text style={{ color: colors.brand.purple, fontSize: 13, fontWeight: '700', marginTop: 4 }}>
-                    {gameName}
-                  </Text>
-                ) : null}
-                <Text style={{ color: colors.ink.secondary, fontSize: 13, lineHeight: 19, marginTop: 10 }}>
-                  {t('matchPrefs.subtitle')}
-                </Text>
-              </View>
-              <Pressable onPress={onClose} hitSlop={12} style={{ padding: 4 }}>
-                <Ionicons name="close" size={26} color={colors.ink.secondary} />
-              </Pressable>
-            </View>
+            <View
+              style={{
+                borderRadius: MODAL_RADIUS_INNER,
+                backgroundColor: '#070710',
+                maxHeight: winH * 0.9 - 4,
+                overflow: 'hidden',
+              }}
+            >
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                bounces={false}
+                contentContainerStyle={{ paddingBottom: 12 }}
+              >
+                {/* Drag handle */}
+                <View style={{ alignItems: 'center', paddingTop: 6, paddingBottom: 4 }}>
+                  <View
+                    style={{
+                      width: 40,
+                      height: 4,
+                      borderRadius: 2,
+                      backgroundColor: 'rgba(255,255,255,0.22)',
+                    }}
+                  />
+                </View>
 
-            <View style={{ marginTop: 22 }}>
-              <Text style={LABEL_STYLE}>{t('matchPrefs.modeLabel')}</Text>
-              <SegmentToggle
-                value={mode}
-                onChange={setMode}
-                options={MODES.map((m) => ({ value: m, label: t(`createSession.${m}`) }))}
-              />
-            </View>
+                {/* Header row */}
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    paddingHorizontal: 16,
+                    gap: 10,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      backgroundColor: 'rgba(123,63,242,0.22)',
+                      borderWidth: 1.5,
+                      borderColor: 'rgba(123,63,242,0.5)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="locate" size={18} color={colors.brand.purple} />
+                  </View>
+                  <View style={{ flex: 1, minWidth: 0, paddingTop: 1 }}>
+                    <Text
+                      style={{
+                        color: colors.ink.primary,
+                        fontSize: 18,
+                        fontWeight: '800',
+                        letterSpacing: -0.3,
+                      }}
+                    >
+                      {t('matchPrefs.title')}
+                    </Text>
+                    <Text
+                      style={{
+                        color: colors.ink.secondary,
+                        fontSize: 12,
+                        lineHeight: 16,
+                        marginTop: 2,
+                        fontWeight: '500',
+                      }}
+                    >
+                      {t('matchPrefs.modalSubtitle')}
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={onClose}
+                    hitSlop={10}
+                    style={({ pressed }) => ({
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      backgroundColor: 'rgba(255,255,255,0.08)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      opacity: pressed ? 0.8 : 1,
+                    })}
+                  >
+                    <Ionicons name="close" size={18} color={colors.ink.secondary} />
+                  </Pressable>
+                </View>
 
-            <View style={{ marginTop: 22 }}>
-              <Text style={LABEL_STYLE}>{t('matchPrefs.skillLabel')}</Text>
-              <Text style={{ color: colors.ink.secondary, fontSize: 12, marginBottom: 12, lineHeight: 17 }}>
-                {t('matchPrefs.skillHint')}
-              </Text>
-              <View style={{ gap: 8 }}>
-                {SESSION_SKILL_TIERS.map((tier) => {
-                  const selected = skillTier === tier;
-                  return (
-                    <Pressable
-                      key={tier}
-                      onPress={() => setSkillTier(tier)}
-                      style={({ pressed }) => ({
+                {/* Game row */}
+                {(gameName || gameId) && (
+                  <View style={{ paddingHorizontal: 16, marginTop: 12 }}>
+                    <View
+                      style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        paddingVertical: 12,
-                        paddingHorizontal: 14,
-                        borderRadius: 12,
+                        paddingVertical: 8,
+                        paddingHorizontal: 10,
+                        borderRadius: 14,
                         borderWidth: 1.5,
-                        borderColor: selected ? colors.brand.purple : 'rgba(255,255,255,0.12)',
-                        backgroundColor: selected ? 'rgba(123,63,242,0.18)' : 'rgba(10,10,18,0.75)',
-                        opacity: pressed ? 0.9 : 1,
-                      })}
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        backgroundColor: 'rgba(255,255,255,0.04)',
+                      }}
                     >
-                      <Text
-                        style={{ color: colors.ink.primary, fontWeight: '700', fontSize: 15, flex: 1 }}
-                        numberOfLines={2}
+                      <View
+                        style={{
+                          width: 42,
+                          height: 42,
+                          borderRadius: 10,
+                          overflow: 'hidden',
+                          backgroundColor: '#1A1230',
+                          borderWidth: 1,
+                          borderColor: 'rgba(255,255,255,0.1)',
+                        }}
                       >
-                        {t(tierLabelKey(tier))}
-                      </Text>
-                      {selected ? (
-                        <Ionicons name="checkmark-circle" size={22} color={colors.brand.purple} />
-                      ) : (
-                        <Ionicons name="ellipse-outline" size={22} color={colors.ink.secondary} />
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
+                        {heroImage ? (
+                          <Image source={heroImage} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+                        ) : (
+                          <LinearGradient
+                            colors={gradient.primary}
+                            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            <Ionicons name="game-controller" size={22} color="white" />
+                          </LinearGradient>
+                        )}
+                      </View>
+                      <View style={{ flex: 1, marginLeft: 12, minWidth: 0 }}>
+                        <Text
+                          style={{ color: colors.ink.primary, fontSize: 15, fontWeight: '800' }}
+                          numberOfLines={1}
+                        >
+                          {gameName ?? gameId?.replace(/_/g, ' ')}
+                        </Text>
+                        {genreLabel ? (
+                          <Text
+                            style={{
+                              color: colors.ink.secondary,
+                              fontSize: 12,
+                              fontWeight: '600',
+                              marginTop: 3,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {genreLabel}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <Ionicons name="chevron-down" size={20} color={colors.ink.secondary} />
+                    </View>
+                  </View>
+                )}
 
-            <View style={{ marginTop: 26, gap: 10 }}>
-              <GradientButton
-                title={t('matchPrefs.confirm')}
-                onPress={() => onConfirm({ gameMode: mode, skillTier })}
-              />
-              <Pressable
-                onPress={onClose}
-                style={({ pressed }) => ({
-                  alignItems: 'center',
-                  paddingVertical: 12,
-                  opacity: pressed ? 0.75 : 1,
-                })}
-              >
-                <Text style={{ color: colors.ink.secondary, fontSize: 15, fontWeight: '600' }}>
-                  {t('matchPrefs.cancel')}
-                </Text>
-              </Pressable>
+                {/* Play style */}
+                <View style={{ paddingHorizontal: 16, marginTop: 14 }}>
+                  <Text
+                    style={{
+                      color: 'rgba(197, 168, 255, 0.95)',
+                      fontSize: 10,
+                      fontWeight: '800',
+                      letterSpacing: 1,
+                      marginBottom: 7,
+                    }}
+                  >
+                    {t('matchPrefs.playStyleLabel')}
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    {MODES.map((m) => {
+                      const selected = mode === m;
+                      const isCasual = m === 'casual';
+                      return (
+                        <Pressable
+                          key={m}
+                          onPress={() => setMode(m)}
+                          style={({ pressed }) => ({
+                            flex: 1,
+                            borderRadius: 14,
+                            overflow: 'hidden',
+                            opacity: pressed ? 0.92 : 1,
+                            transform: pressed ? [{ scale: 0.99 }] : undefined,
+                          })}
+                        >
+                          {selected ? (
+                            <LinearGradient
+                              colors={gradient.primary}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 1 }}
+                              style={{
+                                paddingVertical: 9,
+                                paddingHorizontal: 8,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 6,
+                                minHeight: 44,
+                              }}
+                            >
+                              <Ionicons
+                                name={isCasual ? 'game-controller' : 'trophy'}
+                                size={18}
+                                color="white"
+                              />
+                              <Text style={{ color: 'white', fontSize: 14, fontWeight: '800' }}>
+                                {t(`createSession.${m}`)}
+                              </Text>
+                            </LinearGradient>
+                          ) : (
+                            <View
+                              style={{
+                                paddingVertical: 9,
+                                paddingHorizontal: 8,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 6,
+                                minHeight: 44,
+                                borderRadius: 14,
+                                borderWidth: 1.5,
+                                borderColor: 'rgba(255,255,255,0.14)',
+                                backgroundColor: 'rgba(18,16,32,0.95)',
+                              }}
+                            >
+                              <Ionicons
+                                name={isCasual ? 'game-controller-outline' : 'trophy-outline'}
+                                size={18}
+                                color={colors.ink.secondary}
+                              />
+                              <Text style={{ color: colors.ink.primary, fontSize: 14, fontWeight: '700' }}>
+                                {t(`createSession.${m}`)}
+                              </Text>
+                            </View>
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
+                {/* Skill level */}
+                <View style={{ paddingHorizontal: 16, marginTop: 14 }}>
+                  <Text
+                    style={{
+                      color: 'rgba(197, 168, 255, 0.95)',
+                      fontSize: 10,
+                      fontWeight: '800',
+                      letterSpacing: 1,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {t('matchPrefs.skillSectionLabel')}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.ink.secondary,
+                      fontSize: 11,
+                      lineHeight: 15,
+                      marginBottom: 8,
+                      fontWeight: '500',
+                    }}
+                  >
+                    {t('matchPrefs.skillHint')}
+                  </Text>
+                  <View style={{ gap: 6 }}>
+                    {SESSION_SKILL_TIERS.map((tier) => {
+                      const selected = skillTier === tier;
+                      const icon = tierIcon(tier);
+                      return (
+                        <Pressable
+                          key={tier}
+                          onPress={() => setSkillTier(tier)}
+                          style={({ pressed }) => ({
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: 8,
+                            paddingHorizontal: 10,
+                            borderRadius: 12,
+                            borderWidth: selected ? 2 : 1.5,
+                            borderColor: selected ? colors.brand.purple : 'rgba(255,255,255,0.12)',
+                            backgroundColor: selected ? 'rgba(123,63,242,0.14)' : 'rgba(255,255,255,0.04)',
+                            shadowColor: selected ? colors.brand.purple : 'transparent',
+                            shadowOpacity: selected ? 0.35 : 0,
+                            shadowRadius: selected ? 12 : 0,
+                            shadowOffset: { width: 0, height: 0 },
+                            opacity: pressed ? 0.92 : 1,
+                          })}
+                        >
+                          <View
+                            style={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: 18,
+                              backgroundColor: selected ? 'rgba(123,63,242,0.28)' : 'rgba(255,255,255,0.06)',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <Ionicons
+                              name={icon}
+                              size={18}
+                              color={selected ? colors.brand.purple : colors.brand.blue}
+                            />
+                          </View>
+                          <Text
+                            style={{
+                              color: colors.ink.primary,
+                              fontWeight: '800',
+                              fontSize: 14,
+                              flex: 1,
+                              marginLeft: 10,
+                            }}
+                            numberOfLines={1}
+                          >
+                            {t(tierTitleKey(tier))}
+                          </Text>
+                          {selected ? (
+                            <View
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: 11,
+                                backgroundColor: colors.brand.purple,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderWidth: 1.5,
+                                borderColor: 'rgba(255,255,255,0.35)',
+                              }}
+                            >
+                              <Ionicons name="checkmark" size={14} color="white" />
+                            </View>
+                          ) : (
+                            <View
+                              style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: 11,
+                                borderWidth: 2,
+                                borderColor: 'rgba(255,255,255,0.22)',
+                                backgroundColor: 'transparent',
+                              }}
+                            />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
+                <View style={{ paddingHorizontal: 16, marginTop: 14, gap: 6 }}>
+                  <GradientButton
+                    size="md"
+                    title={t('matchPrefs.confirm')}
+                    onPress={() => onConfirm({ gameMode: mode, skillTier })}
+                    leftAdornment={<Ionicons name="locate" size={20} color="#fff" />}
+                  />
+                  <Pressable
+                    onPress={onClose}
+                    style={({ pressed }) => ({
+                      alignItems: 'center',
+                      paddingVertical: 6,
+                      opacity: pressed ? 0.75 : 1,
+                    })}
+                  >
+                    <Text style={{ color: colors.ink.primary, fontSize: 14, fontWeight: '600' }}>
+                      {t('matchPrefs.cancel')}
+                    </Text>
+                  </Pressable>
+                </View>
+              </ScrollView>
             </View>
-          </ScrollView>
+          </LinearGradient>
         </Pressable>
       </Pressable>
     </Modal>

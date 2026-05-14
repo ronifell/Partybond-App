@@ -138,17 +138,24 @@
     "joinNeedsProfileCta": "Add game profile"
   },
   "matchPrefs": {
-    "title": "Match preferences",
+    "title": "Match Preferences",
     "subtitle": "You are only matched with players who chose the same play style and skill level for this game.",
+    "modalSubtitle": "Find the perfect teammates for your game.",
+    "playStyleLabel": "PLAY STYLE",
     "modeLabel": "Play style",
+    "skillSectionLabel": "SKILL LEVEL",
     "skillLabel": "Skill level",
     "skillHint": "Pick the bracket that best describes you — it keeps matches fair.",
-    "confirm": "Find match",
+    "confirm": "Find Match",
     "cancel": "Cancel",
     "tierBeginner": "Beginner — learning or casual play",
     "tierIntermediate": "Intermediate — comfortable with the game",
     "tierAdvanced": "Advanced — strong mechanics or rank",
-    "tierVeteran": "Veteran — very experienced or high rank"
+    "tierVeteran": "Veteran — very experienced or high rank",
+    "tierShortBeginner": "Beginner",
+    "tierShortIntermediate": "Intermediate",
+    "tierShortAdvanced": "Advanced",
+    "tierShortVeteran": "Veteran"
   },
   "createSession": {
     "title": "Create session",

@@ -140,7 +140,10 @@
   "matchPrefs": {
     "title": "Preferências de partida",
     "subtitle": "Você só é pareado com quem escolheu o mesmo estilo de jogo e o mesmo nível de habilidade neste jogo.",
+    "modalSubtitle": "Encontre o time ideal para o seu jogo.",
+    "playStyleLabel": "ESTILO DE JOGO",
     "modeLabel": "Estilo de jogo",
+    "skillSectionLabel": "NÍVEL DE HABILIDADE",
     "skillLabel": "Nível de habilidade",
     "skillHint": "Escolha o grupo que melhor descreve você — deixa as partidas mais justas.",
     "confirm": "Buscar partida",
@@ -148,7 +151,11 @@
     "tierBeginner": "Iniciante — aprendendo ou jogo casual",
     "tierIntermediate": "Intermediário — à vontade com o jogo",
     "tierAdvanced": "Avançado — boa mecânica ou ranqueada",
-    "tierVeteran": "Veterano — muita experiência ou ranque alta"
+    "tierVeteran": "Veterano — muita experiência ou ranque alta",
+    "tierShortBeginner": "Iniciante",
+    "tierShortIntermediate": "Intermediário",
+    "tierShortAdvanced": "Avançado",
+    "tierShortVeteran": "Veterano"
   },
   "createSession": {
     "title": "Criar sessão",

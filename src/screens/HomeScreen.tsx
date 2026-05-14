@@ -260,6 +260,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
 
       <MatchPreferencesModal
         visible={!!prefModalGame}
+        gameId={prefModalGame?.id}
         gameName={prefModalGame?.name}
         onClose={() => setPrefModalGame(null)}
         onConfirm={(prefs) => {
