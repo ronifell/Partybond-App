@@ -89,6 +89,32 @@
     "play": "Play",
     "selected": "Selected"
   },
+  "gameProfile": {
+    "screenTitle": "Game Profile",
+    "screenSubtitle": "Update your in-game info to connect with teammates and start playing!",
+    "genreDefault": "Multiplayer",
+    "genres": {
+      "free_fire": "Battle Royale",
+      "elden_ring_nightreign": "Action RPG",
+      "valorant": "Tactical FPS",
+      "pubg_mobile": "Battle Royale",
+      "mobile_legends": "MOBA",
+      "cod_mobile": "FPS"
+    },
+    "changeGame": "Change Game",
+    "inGameSection": "Your In-Game Information",
+    "nicknameLabel": "In-game Nickname",
+    "nicknameHint": "This is your public name shown to other players.",
+    "playerIdLabel": "Player ID",
+    "playerIdHint": "Use the ID shown in your game profile so teammates can add you.",
+    "stepsHeading": "How to find your Player ID",
+    "step1": "Open {{game}}",
+    "step2": "Go to Profile",
+    "step3": "Copy your Player ID",
+    "step4": "Paste it here",
+    "saveProfile": "Save Profile",
+    "secureNote": "Your information is secure and will not be shared."
+  },
   "home": {
     "title": "Sessions",
     "activeSessionsTitle": "Active Sessions",

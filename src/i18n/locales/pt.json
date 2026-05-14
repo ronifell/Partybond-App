@@ -89,6 +89,32 @@
     "play": "Jogar",
     "selected": "Selecionado"
   },
+  "gameProfile": {
+    "screenTitle": "Perfil do jogo",
+    "screenSubtitle": "Atualize seus dados no jogo para conectar com o time e começar a jogar!",
+    "genreDefault": "Multijogador",
+    "genres": {
+      "free_fire": "Battle Royale",
+      "elden_ring_nightreign": "RPG de ação",
+      "valorant": "FPS tático",
+      "pubg_mobile": "Battle Royale",
+      "mobile_legends": "MOBA",
+      "cod_mobile": "FPS"
+    },
+    "changeGame": "Trocar jogo",
+    "inGameSection": "Suas informações no jogo",
+    "nicknameLabel": "Apelido no jogo",
+    "nicknameHint": "Nome público que outros jogadores verão.",
+    "playerIdLabel": "ID do jogador",
+    "playerIdHint": "Use o ID do seu perfil no jogo para o time adicionar você.",
+    "stepsHeading": "Como encontrar seu ID de jogador",
+    "step1": "Abra {{game}}",
+    "step2": "Vá ao perfil",
+    "step3": "Copie seu ID",
+    "step4": "Cole aqui",
+    "saveProfile": "Salvar perfil",
+    "secureNote": "Suas informações estão seguras e não serão compartilhadas."
+  },
   "home": {
     "title": "Sessões",
     "activeSessionsTitle": "Sessões Ativas",

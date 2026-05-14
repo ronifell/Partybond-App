@@ -94,7 +94,11 @@ export function RootNavigator() {
             <Stack.Screen name="Session" component={SessionScreen} />
             <Stack.Screen name="Queue" component={QueueScreen} />
             <Stack.Screen name="Match" component={MatchScreen} />
-            <Stack.Screen name="EditGameProfile" component={EditGameProfileScreen} />
+            <Stack.Screen
+              name="EditGameProfile"
+              component={EditGameProfileScreen}
+              options={{ contentStyle: { backgroundColor: '#000000' } }}
+            />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
           </>
         )}
