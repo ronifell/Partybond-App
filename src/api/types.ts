@@ -58,6 +58,8 @@ export interface MatchParticipant {
   photoUrl: string | null;
   nickname: string | null;
   playerId: string | null;
+  /** In-app goal text from that player's profile (same as `User.lookingFor`). Omitted on older API responses. */
+  lookingFor?: string | null;
 }
 
 /** Mirrors backend `InteractionType` / quick-action payloads. */

@@ -142,6 +142,7 @@
     "nicknameFieldLabel": "Apelido",
     "online": "online",
     "teammateReady": "Pronto para jogar em equipe",
+    "opponentLookingForLabel": "O que o companheiro procura",
     "guideTitle": "Próximos passos",
     "guide": [
       "Copie o ID do jogador",

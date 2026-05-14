@@ -652,6 +652,30 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
                 </View>
               </View>
 
+              {match.opponent.lookingFor?.trim() ? (
+                <View
+                  style={{
+                    marginTop: 16,
+                    paddingTop: 14,
+                    borderTopWidth: 1,
+                    borderTopColor: 'rgba(255,255,255,0.08)',
+                  }}
+                >
+                  <Text style={[labelMuted, { marginBottom: 6 }]}>{t('match.opponentLookingForLabel')}</Text>
+                  <Text
+                    style={{
+                      color: colors.ink.primary,
+                      fontSize: 14,
+                      fontWeight: '600',
+                      lineHeight: 20,
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    {match.opponent.lookingFor.trim()}
+                  </Text>
+                </View>
+              ) : null}
+
               <Pressable onPress={onCopy} style={{ marginTop: 18 }} className="active:opacity-92">
                 <LinearGradient
                   colors={[...gradient.primary]}
