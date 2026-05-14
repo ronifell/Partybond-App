@@ -109,6 +109,8 @@
   },
   "createSession": {
     "title": "Criar sessão",
+    "gameLabel": "Jogo",
+    "noActiveGames": "Nenhum jogo ativo disponível no momento.",
     "name": "Título da sessão",
     "titlePlaceholder": "Ranqueada Squad",
     "mode": "Modo",
@@ -196,6 +198,9 @@
     "statWinRate": "% Vitória",
     "statFriends": "Amigos",
     "activeGameSection": "Jogo Ativo",
+    "yourGamesSection": "Seus jogos",
+    "yourGamesHint": "Cada jogo ativo tem perfil no jogo. Toque na linha para adicionar ou editar IDs.",
+    "defaultGameBadge": "Padrão",
     "editProfile": "Editar Perfil",
     "editGameProfile": "Editar Perfil do Jogo",
     "changePhoto": "Alterar foto",

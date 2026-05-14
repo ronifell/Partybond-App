@@ -109,6 +109,8 @@
   },
   "createSession": {
     "title": "Create session",
+    "gameLabel": "Game",
+    "noActiveGames": "No active games are available right now.",
     "name": "Session title",
     "titlePlaceholder": "Ranked Squad",
     "mode": "Mode",
@@ -196,6 +198,9 @@
     "statWinRate": "Win Rate",
     "statFriends": "Friends",
     "activeGameSection": "Active Game",
+    "yourGamesSection": "Your games",
+    "yourGamesHint": "Each active game has its own in-game profile. Tap a row to add or edit IDs.",
+    "defaultGameBadge": "Default",
     "editProfile": "Edit Profile",
     "editGameProfile": "Edit Game Profile",
     "changePhoto": "Change photo",

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Pressable, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRoute } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -11,6 +12,7 @@ import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
 import { SegmentToggle } from '../components/ui/SegmentToggle';
 import { createSession } from '../api/sessions';
+import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
@@ -32,28 +34,58 @@ const SECTION_LABEL_STYLE = {
 
 export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
+  const route = useRoute();
   const { width: windowWidth } = useWindowDimensions();
   const user = useAuth((s) => s.user);
   const qc = useQueryClient();
 
+  const defaultGameId = (route.params as { defaultGameId?: string } | undefined)?.defaultGameId;
+
+  const { data: games = [] } = useQuery({ queryKey: ['games'], queryFn: fetchGames });
+  const activeGames = useMemo(() => games.filter((g) => g.status === 'active'), [games]);
+
   const columnWidth = Math.min(windowWidth - H_PADDING * 2, FORM_MAX);
 
+  const [gameId, setGameId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [mode, setMode] = useState<(typeof MODES)[number]>('casual');
   const [size, setSize] = useState<(typeof SIZES)[number]>(2);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (activeGames.length === 0) {
+      setGameId(null);
+      return;
+    }
+    setGameId((prev) => {
+      if (prev && activeGames.some((g) => g.id === prev)) return prev;
+      const fromRoute =
+        defaultGameId && activeGames.some((g) => g.id === defaultGameId) ? defaultGameId : undefined;
+      const fromProfile =
+        user?.selectedGame && activeGames.some((g) => g.id === user.selectedGame)
+          ? user.selectedGame
+          : undefined;
+      return fromRoute ?? fromProfile ?? activeGames[0]!.id;
+    });
+  }, [activeGames, defaultGameId, user?.selectedGame]);
+
   const onSubmit = async () => {
-    if (!user?.selectedGame || !title.trim()) {
+    if (!title.trim()) {
       setError(t('auth.errors.generic'));
+      return;
+    }
+    const gid =
+      gameId && activeGames.some((g) => g.id === gameId) ? gameId : activeGames[0]?.id ?? null;
+    if (!gid) {
+      setError(t('createSession.noActiveGames'));
       return;
     }
     setError(null);
     setLoading(true);
     try {
       const session = await createSession({
-        gameId: user.selectedGame,
+        gameId: gid,
         title: title.trim(),
         gameMode: mode,
         playersNeeded: size,
@@ -81,6 +113,48 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
           </View>
 
           <View className="gap-5 py-2">
+            <View>
+              <Text style={SECTION_LABEL_STYLE}>{t('createSession.gameLabel')}</Text>
+              {activeGames.length === 0 ? (
+                <Text style={{ color: colors.ink.secondary, fontSize: 14 }}>{t('createSession.noActiveGames')}</Text>
+              ) : (
+                <View style={{ gap: 8 }}>
+                  {activeGames.map((g) => {
+                    const selected = gameId === g.id;
+                    return (
+                      <Pressable
+                        key={g.id}
+                        onPress={() => setGameId(g.id)}
+                        style={({ pressed }) => ({
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          paddingVertical: 12,
+                          paddingHorizontal: 14,
+                          borderRadius: 12,
+                          borderWidth: 1.5,
+                          borderColor: selected ? colors.brand.purple : 'rgba(255,255,255,0.12)',
+                          backgroundColor: selected ? 'rgba(123,63,242,0.18)' : 'rgba(10,10,18,0.75)',
+                          opacity: pressed ? 0.9 : 1,
+                        })}
+                      >
+                        <Text
+                          style={{ color: colors.ink.primary, fontWeight: '700', fontSize: 15, flex: 1 }}
+                          numberOfLines={2}
+                        >
+                          {g.name}
+                        </Text>
+                        {selected ? (
+                          <Ionicons name="checkmark-circle" size={22} color={colors.brand.purple} />
+                        ) : (
+                          <Ionicons name="ellipse-outline" size={22} color={colors.ink.secondary} />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+
             <View>
               <Text style={SECTION_LABEL_STYLE}>{t('createSession.name')}</Text>
               <Input
