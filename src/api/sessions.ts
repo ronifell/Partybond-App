@@ -1,9 +1,15 @@
 import { api } from './client';
-import type { SessionDetail, SessionSummary } from './types';
+import type { MatchLobbyPreferences, SessionDetail, SessionSummary } from './types';
 
-export async function listSessions(gameId?: string): Promise<SessionSummary[]> {
+export type ListSessionsParams = {
+  gameId?: string;
+  gameMode?: SessionSummary['gameMode'];
+  skillTier?: SessionSummary['skillTier'];
+};
+
+export async function listSessions(params?: ListSessionsParams): Promise<SessionSummary[]> {
   const { data } = await api.get<{ sessions: SessionSummary[] }>('/sessions', {
-    params: { gameId },
+    params: params ?? {},
   });
   return data.sessions;
 }
@@ -17,6 +23,7 @@ export async function createSession(input: {
   gameId: string;
   title: string;
   gameMode: 'casual' | 'competitive';
+  skillTier?: SessionSummary['skillTier'];
   playersNeeded: 2 | 4;
   scheduledAt?: string;
 }): Promise<SessionSummary> {
@@ -39,21 +46,18 @@ export async function leaveQueue(sessionId: string): Promise<{ waitingCount: num
 }
 
 /**
- * One-tap "Quick Join" for a game:
- *   1. Find an existing open / active session for the game.
- *   2. If none, create a fresh "Quick Match" session.
- *   3. Join that session's queue.
- *
- * Prefers sessions that **already have people in the queue** so we pair with
- * an existing waiter instead of the first empty session (API order is
- * `scheduledAt` asc, which often leaves stale "Quick Match" rows ahead of
- * real lobbies).
- *
- * Returns the session id the user was placed in (so callers can navigate to
- * the Queue screen).
+ * One-tap "Quick Join" for a game, scoped by **play style** and **skill tier** so you
+ * only share a queue (and get matched) with players who picked the same lobby type.
  */
-export async function quickJoinGame(gameId: string): Promise<{ sessionId: string }> {
-  const sessions = await listSessions(gameId);
+export async function quickJoinGame(
+  gameId: string,
+  prefs: MatchLobbyPreferences,
+): Promise<{ sessionId: string }> {
+  const sessions = await listSessions({
+    gameId,
+    gameMode: prefs.gameMode,
+    skillTier: prefs.skillTier,
+  });
 
   const eligible = sessions.filter((s) => s.status === 'open' || s.status === 'active');
   const byScheduledAt = (a: SessionSummary, b: SessionSummary) =>
@@ -67,7 +71,8 @@ export async function quickJoinGame(gameId: string): Promise<{ sessionId: string
     const created = await createSession({
       gameId,
       title: 'Quick Match',
-      gameMode: 'casual',
+      gameMode: prefs.gameMode,
+      skillTier: prefs.skillTier,
       playersNeeded: 2,
     });
     sessionId = created.id;

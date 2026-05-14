@@ -105,7 +105,24 @@
     "quickCreateSession": "Criar\nSessão",
     "quickMySessions": "Minhas\nSessões",
     "quickMyProfile": "Meu\nPerfil",
-    "quickInviteFriends": "Convidar\nAmigos"
+    "quickInviteFriends": "Convidar\nAmigos",
+    "joinNeedsProfileTitle": "Perfil do jogo necessário",
+    "joinNeedsProfileBody": "Adicione seus dados no jogo para {{game}} antes de entrar na fila.",
+    "joinNeedsProfileHint": "No Perfil, abra este jogo e informe apelido e ID do jogador.",
+    "joinNeedsProfileCta": "Adicionar perfil do jogo"
+  },
+  "matchPrefs": {
+    "title": "Preferências de partida",
+    "subtitle": "Você só é pareado com quem escolheu o mesmo estilo de jogo e o mesmo nível de habilidade neste jogo.",
+    "modeLabel": "Estilo de jogo",
+    "skillLabel": "Nível de habilidade",
+    "skillHint": "Escolha o grupo que melhor descreve você — deixa as partidas mais justas.",
+    "confirm": "Buscar partida",
+    "cancel": "Cancelar",
+    "tierBeginner": "Iniciante — aprendendo ou jogo casual",
+    "tierIntermediate": "Intermediário — à vontade com o jogo",
+    "tierAdvanced": "Avançado — boa mecânica ou ranqueada",
+    "tierVeteran": "Veterano — muita experiência ou ranque alta"
   },
   "createSession": {
     "title": "Criar sessão",

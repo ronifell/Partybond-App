@@ -35,12 +35,22 @@ export interface Game {
 export type SessionStatus = 'open' | 'active' | 'finished';
 export type SessionMode = 'casual' | 'competitive';
 
+export const SESSION_SKILL_TIERS = ['beginner', 'intermediate', 'advanced', 'veteran'] as const;
+export type SessionSkillTier = (typeof SESSION_SKILL_TIERS)[number];
+
+/** Chosen before joining a matchmaking pool (quick join). */
+export interface MatchLobbyPreferences {
+  gameMode: SessionMode;
+  skillTier: SessionSkillTier;
+}
+
 export interface SessionSummary {
   id: string;
   title: string;
   gameId: string;
   gameName: string;
   gameMode: SessionMode;
+  skillTier: SessionSkillTier;
   playersNeeded: number;
   scheduledAt: string;
   status: SessionStatus;

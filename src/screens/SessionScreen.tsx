@@ -83,7 +83,9 @@ export function SessionScreen({ navigation, route }: NativeStackScreenProps<any>
               {session.title}
             </Text>
             <Text style={{ color: colors.ink.secondary, fontSize: 14, fontWeight: '500' }}>
-              {session.gameName} · {t(`createSession.${session.gameMode}`)} · {session.playersNeeded}P
+              {session.gameName} · {t(`createSession.${session.gameMode}`)} ·{' '}
+              {t(`matchPrefs.tier${session.skillTier.charAt(0).toUpperCase() + session.skillTier.slice(1)}`)} ·{' '}
+              {session.playersNeeded}P
             </Text>
           </Card>
 

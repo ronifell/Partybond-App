@@ -13,6 +13,8 @@ import { GradientButton } from '../components/ui/GradientButton';
 import { SegmentToggle } from '../components/ui/SegmentToggle';
 import { createSession } from '../api/sessions';
 import { fetchGames } from '../api/games';
+import type { SessionSkillTier } from '../api/types';
+import { SESSION_SKILL_TIERS } from '../api/types';
 import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
@@ -49,6 +51,7 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
   const [gameId, setGameId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [mode, setMode] = useState<(typeof MODES)[number]>('casual');
+  const [skillTier, setSkillTier] = useState<SessionSkillTier>('beginner');
   const [size, setSize] = useState<(typeof SIZES)[number]>(2);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +91,7 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
         gameId: gid,
         title: title.trim(),
         gameMode: mode,
+        skillTier,
         playersNeeded: size,
       });
       qc.invalidateQueries({ queryKey: ['sessions'] });
@@ -172,6 +176,47 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
                 onChange={setMode}
                 options={MODES.map((m) => ({ value: m, label: t(`createSession.${m}`) }))}
               />
+            </View>
+
+            <View>
+              <Text style={SECTION_LABEL_STYLE}>{t('matchPrefs.skillLabel')}</Text>
+              <Text style={{ color: colors.ink.secondary, fontSize: 12, marginBottom: 12, lineHeight: 17 }}>
+                {t('matchPrefs.skillHint')}
+              </Text>
+              <View style={{ gap: 8 }}>
+                {SESSION_SKILL_TIERS.map((tier) => {
+                  const selected = skillTier === tier;
+                  return (
+                    <Pressable
+                      key={tier}
+                      onPress={() => setSkillTier(tier)}
+                      style={({ pressed }) => ({
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        paddingVertical: 12,
+                        paddingHorizontal: 14,
+                        borderRadius: 12,
+                        borderWidth: 1.5,
+                        borderColor: selected ? colors.brand.purple : 'rgba(255,255,255,0.12)',
+                        backgroundColor: selected ? 'rgba(123,63,242,0.18)' : 'rgba(10,10,18,0.75)',
+                        opacity: pressed ? 0.9 : 1,
+                      })}
+                    >
+                      <Text
+                        style={{ color: colors.ink.primary, fontWeight: '700', fontSize: 15, flex: 1 }}
+                        numberOfLines={2}
+                      >
+                        {t(`matchPrefs.tier${tier.charAt(0).toUpperCase() + tier.slice(1)}`)}
+                      </Text>
+                      {selected ? (
+                        <Ionicons name="checkmark-circle" size={22} color={colors.brand.purple} />
+                      ) : (
+                        <Ionicons name="ellipse-outline" size={22} color={colors.ink.secondary} />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
 
             <View>

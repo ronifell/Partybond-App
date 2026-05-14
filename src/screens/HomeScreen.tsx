@@ -14,6 +14,9 @@ import { QuickActionsRow } from '../components/QuickActionsRow';
 import { BottomTabBar, type TabKey } from '../components/BottomTabBar';
 import { listSessions, quickJoinGame } from '../api/sessions';
 import { fetchGames } from '../api/games';
+import type { MatchLobbyPreferences } from '../api/types';
+import { MatchPreferencesModal } from '../components/MatchPreferencesModal';
+import { GameProfileRequiredNotice } from '../components/GameProfileRequiredNotice';
 import { useAuth } from '../store/authStore';
 import { useMatchEvents } from '../hooks/useMatchEvents';
 import { getApiError } from '../api/client';
@@ -31,6 +34,8 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   const qc = useQueryClient();
 
   const [joiningGameId, setJoiningGameId] = useState<string | null>(null);
+  const [prefModalGame, setPrefModalGame] = useState<{ id: string; name: string } | null>(null);
+  const [profileGateGame, setProfileGateGame] = useState<{ id: string; name: string } | null>(null);
 
   // All games (the new "Active Sessions" list).
   const {
@@ -43,7 +48,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   // Per-game queue counts: aggregate `waitingCount` from active sessions.
   const { data: allSessions = [], refetch: refetchSessions } = useQuery({
     queryKey: ['sessions', 'all'],
-    queryFn: () => listSessions(undefined),
+    queryFn: () => listSessions(),
   });
 
   const queueByGame = useMemo(() => {
@@ -53,6 +58,11 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
     }
     return map;
   }, [allSessions]);
+
+  const hasGameProfile = useCallback(
+    (gameId: string) => (user?.gameProfiles ?? []).some((p) => p.gameId === gameId),
+    [user?.gameProfiles],
+  );
 
   const selectedGame = useMemo(
     () => games.find((g) => g.id === user?.selectedGame) ?? null,
@@ -66,6 +76,8 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
       void refreshMe();
       return () => {
         setJoiningGameId(null);
+        setPrefModalGame(null);
+        setProfileGateGame(null);
       };
     }, [refetchGames, refetchSessions, refreshMe]),
   );
@@ -84,10 +96,10 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
     }
   }, [user, navigation]);
 
-  const onJoinGame = async (gameId: string) => {
+  const onJoinGame = async (gameId: string, prefs: MatchLobbyPreferences) => {
     setJoiningGameId(gameId);
     try {
-      const { sessionId } = await quickJoinGame(gameId);
+      const { sessionId } = await quickJoinGame(gameId, prefs);
       await refreshMe();
       qc.invalidateQueries({ queryKey: ['sessions'] });
       navigation.navigate('Queue', { sessionId });
@@ -172,7 +184,13 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
               game={item}
               playersOnline={queueByGame[item.id] ?? 0}
               loading={joiningGameId === item.id}
-              onJoin={() => onJoinGame(item.id)}
+              onJoin={() => {
+                if (!hasGameProfile(item.id)) {
+                  setProfileGateGame({ id: item.id, name: item.name });
+                  return;
+                }
+                setPrefModalGame({ id: item.id, name: item.name });
+              }}
             />
           )}
           ListEmptyComponent={
@@ -239,6 +257,29 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
       </View>
 
       <BottomTabBar active="home" tabs={tabs} />
+
+      <MatchPreferencesModal
+        visible={!!prefModalGame}
+        gameName={prefModalGame?.name}
+        onClose={() => setPrefModalGame(null)}
+        onConfirm={(prefs) => {
+          const g = prefModalGame;
+          setPrefModalGame(null);
+          if (g) void onJoinGame(g.id, prefs);
+        }}
+      />
+
+      {profileGateGame ? (
+        <GameProfileRequiredNotice
+          gameName={profileGateGame.name}
+          onDismiss={() => setProfileGateGame(null)}
+          onGoToProfile={() => {
+            const g = profileGateGame;
+            setProfileGateGame(null);
+            if (g) navigation.navigate('EditGameProfile', { gameId: g.id });
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }

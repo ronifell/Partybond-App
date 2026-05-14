@@ -105,7 +105,24 @@
     "quickCreateSession": "Create\nSession",
     "quickMySessions": "My\nSessions",
     "quickMyProfile": "My\nProfile",
-    "quickInviteFriends": "Invite\nFriends"
+    "quickInviteFriends": "Invite\nFriends",
+    "joinNeedsProfileTitle": "Game profile required",
+    "joinNeedsProfileBody": "Add your in-game details for {{game}} before you can join matchmaking.",
+    "joinNeedsProfileHint": "From your Profile, open this game and enter your nickname and player ID.",
+    "joinNeedsProfileCta": "Add game profile"
+  },
+  "matchPrefs": {
+    "title": "Match preferences",
+    "subtitle": "You are only matched with players who chose the same play style and skill level for this game.",
+    "modeLabel": "Play style",
+    "skillLabel": "Skill level",
+    "skillHint": "Pick the bracket that best describes you — it keeps matches fair.",
+    "confirm": "Find match",
+    "cancel": "Cancel",
+    "tierBeginner": "Beginner — learning or casual play",
+    "tierIntermediate": "Intermediate — comfortable with the game",
+    "tierAdvanced": "Advanced — strong mechanics or rank",
+    "tierVeteran": "Veteran — very experienced or high rank"
   },
   "createSession": {
     "title": "Create session",
