@@ -3,6 +3,7 @@ import type {
   ChatMessage,
   ConversationSummary,
   GroupDetail,
+  GroupInvite,
   GroupSummary,
   PublicUser,
   RecentPlayer,
@@ -43,13 +44,8 @@ export async function respondGroupInvite(inviteId: string, accept: boolean) {
   return data;
 }
 
-export async function fetchPendingGroupInvites() {
-  const { data } = await api.get<{ invites: Array<{
-    id: string;
-    group: { id: string; name: string; photoUrl: string | null };
-    inviter: { id: string; name: string; photoUrl: string | null };
-    expiresAt: string;
-  }> }>('/groups/invites/pending');
+export async function fetchPendingGroupInvites(): Promise<GroupInvite[]> {
+  const { data } = await api.get<{ invites: GroupInvite[] }>('/groups/invites/pending');
   return data.invites;
 }
 

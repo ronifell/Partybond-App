@@ -312,7 +312,12 @@
     "schedule": "Agendar sessão semanal",
     "openChat": "Abrir chat do grupo",
     "completeSquad": "Completar squad",
-    "invite": "Convidar"
+    "invite": "Convidar",
+    "pendingInvites": "CONVITES PENDENTES ({{count}})",
+    "inviteLabel": "Convite de grupo",
+    "inviteFrom": "{{name}} convidou você",
+    "inviteAccept": "Aceitar",
+    "inviteDecline": "Recusar"
   },
   "chats": {
     "title": "Mensagens",

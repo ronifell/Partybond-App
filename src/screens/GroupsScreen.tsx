@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, Pressable, TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Screen } from '../components/ui/Screen';
 import { BottomTabBar } from '../components/BottomTabBar';
 import { GradientButton } from '../components/ui/GradientButton';
+import { GroupInviteCard } from '../components/GroupInviteCard';
 import { useMainTabs } from '../hooks/useMainTabs';
-import { createGroup, fetchGroups } from '../api/social';
+import {
+  createGroup,
+  fetchGroups,
+  fetchPendingGroupInvites,
+  respondGroupInvite,
+} from '../api/social';
 import { colors } from '../theme/tokens';
 
 export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
@@ -18,10 +25,31 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
 
-  const { data: groups = [], refetch, isRefetching } = useQuery({
+  const { data: groups = [], refetch: refetchGroups, isRefetching } = useQuery({
     queryKey: ['groups'],
     queryFn: fetchGroups,
   });
+
+  const {
+    data: invites = [],
+    refetch: refetchInvites,
+    isRefetching: invitesRefetching,
+  } = useQuery({
+    queryKey: ['group-invites', 'pending'],
+    queryFn: fetchPendingGroupInvites,
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      void refetchInvites();
+      void refetchGroups();
+    }, [refetchInvites, refetchGroups]),
+  );
+
+  const onRefresh = () => {
+    void refetchGroups();
+    void refetchInvites();
+  };
 
   const onCreate = async () => {
     if (name.trim().length < 2) return;
@@ -36,9 +64,35 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
     }
   };
 
-  return (
-    <Screen padded={false}>
-      <View style={{ padding: 16, gap: 10 }}>
+  const onRespondInvite = async (inviteId: string, accept: boolean, groupId?: string) => {
+    const result = await respondGroupInvite(inviteId, accept);
+    await qc.invalidateQueries({ queryKey: ['group-invites', 'pending'] });
+    await qc.invalidateQueries({ queryKey: ['groups'] });
+    if (accept) {
+      const id = groupId ?? (result as { groupId?: string }).groupId;
+      if (id) navigation.navigate('GroupDetail', { groupId: id });
+    }
+  };
+
+  const listHeader = (
+    <View style={{ gap: 14, marginBottom: 8 }}>
+      {invites.length > 0 ? (
+        <View style={{ gap: 10 }}>
+          <Text style={{ color: colors.brand.purple, fontSize: 12, fontWeight: '800', letterSpacing: 0.5 }}>
+            {t('groups.pendingInvites', { count: invites.length })}
+          </Text>
+          {invites.map((invite) => (
+            <GroupInviteCard
+              key={invite.id}
+              invite={invite}
+              onAccept={() => onRespondInvite(invite.id, true, invite.group.id)}
+              onDecline={() => onRespondInvite(invite.id, false)}
+            />
+          ))}
+        </View>
+      ) : null}
+
+      <View style={{ gap: 10 }}>
         <Text style={{ color: 'white', fontSize: 22, fontWeight: '800' }}>{t('groups.title')}</Text>
         <TextInput
           value={name}
@@ -56,12 +110,18 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
         />
         <GradientButton title={t('groups.create')} onPress={onCreate} loading={creating} size="md" />
       </View>
+    </View>
+  );
+
+  return (
+    <Screen padded={false}>
       <FlatList
         data={groups}
         keyExtractor={(g) => g.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, gap: 10 }}
-        refreshing={isRefetching}
-        onRefresh={() => refetch()}
+        ListHeaderComponent={listHeader}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 120, gap: 10 }}
+        refreshing={isRefetching || invitesRefetching}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <Pressable
             onPress={() => navigation.navigate('GroupDetail', { groupId: item.id })}
@@ -80,9 +140,11 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
           </Pressable>
         )}
         ListEmptyComponent={
-          <Text style={{ color: colors.ink.secondary, textAlign: 'center', marginTop: 24 }}>
-            {t('groups.empty')}
-          </Text>
+          invites.length === 0 ? (
+            <Text style={{ color: colors.ink.secondary, textAlign: 'center', marginTop: 24 }}>
+              {t('groups.empty')}
+            </Text>
+          ) : null
         }
       />
       <BottomTabBar active="sessions" tabs={tabs} />

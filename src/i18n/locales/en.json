@@ -312,7 +312,12 @@
     "schedule": "Schedule weekly session",
     "openChat": "Open group chat",
     "completeSquad": "Complete squad",
-    "invite": "Invite"
+    "invite": "Invite",
+    "pendingInvites": "PENDING INVITES ({{count}})",
+    "inviteLabel": "Group invite",
+    "inviteFrom": "{{name}} invited you",
+    "inviteAccept": "Accept",
+    "inviteDecline": "Decline"
   },
   "chats": {
     "title": "Messages",

@@ -68,6 +68,13 @@ export interface RecentPlayer {
   isOnline: boolean;
 }
 
+export interface GroupInvite {
+  id: string;
+  group: { id: string; name: string; photoUrl: string | null };
+  inviter: { id: string; name: string; photoUrl: string | null };
+  expiresAt: string;
+}
+
 export interface GroupSummary {
   id: string;
   name: string;
