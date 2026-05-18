@@ -21,6 +21,13 @@ import { MatchScreen } from '../screens/MatchScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { EditGameProfileScreen } from '../screens/EditGameProfileScreen';
 import { EditProfileScreen } from '../screens/EditProfileScreen';
+import { RecentPlayersScreen } from '../screens/RecentPlayersScreen';
+import { GroupsScreen } from '../screens/GroupsScreen';
+import { GroupDetailScreen } from '../screens/GroupDetailScreen';
+import { ChatsScreen } from '../screens/ChatsScreen';
+import { ChatScreen } from '../screens/ChatScreen';
+import { UserProfileScreen } from '../screens/UserProfileScreen';
+import { AddToGroupScreen } from '../screens/AddToGroupScreen';
 import { OnboardingWelcomeScreen } from '../screens/OnboardingWelcomeScreen';
 import { OnboardingCompleteScreen } from '../screens/OnboardingCompleteScreen';
 import { useOnboarding } from '../store/onboardingStore';
@@ -100,6 +107,13 @@ export function RootNavigator() {
               options={{ contentStyle: { backgroundColor: '#000000' } }}
             />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+            <Stack.Screen name="RecentPlayers" component={RecentPlayersScreen} />
+            <Stack.Screen name="Groups" component={GroupsScreen} />
+            <Stack.Screen name="GroupDetail" component={GroupDetailScreen} />
+            <Stack.Screen name="Chats" component={ChatsScreen} />
+            <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+            <Stack.Screen name="AddToGroup" component={AddToGroupScreen} />
           </>
         )}
       </Stack.Navigator>

@@ -11,7 +11,8 @@ import { GameCard } from '../components/GameCard';
 import { HeaderBar } from '../components/HeaderBar';
 import { ProfilePill } from '../components/ProfilePill';
 import { QuickActionsRow } from '../components/QuickActionsRow';
-import { BottomTabBar, type TabKey } from '../components/BottomTabBar';
+import { BottomTabBar } from '../components/BottomTabBar';
+import { useMainTabs } from '../hooks/useMainTabs';
 import { listSessions, quickJoinGame } from '../api/sessions';
 import { fetchGames } from '../api/games';
 import type { MatchLobbyPreferences } from '../api/types';
@@ -91,41 +92,29 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
     if (!user) return;
     if (user.state === 'in_match' && user.currentMatchId) {
       navigation.navigate('Match', { matchId: user.currentMatchId });
-    } else if (user.state === 'in_queue' && user.currentSessionId) {
-      navigation.navigate('Queue', { sessionId: user.currentSessionId });
+    } else if (user.state === 'in_queue') {
+      if (user.currentSessionId) {
+        navigation.navigate('Queue', { sessionId: user.currentSessionId });
+      } else {
+        navigation.navigate('Queue', { progressive: true, gameId: user.selectedGame ?? undefined });
+      }
     }
   }, [user, navigation]);
 
   const onJoinGame = async (gameId: string, prefs: MatchLobbyPreferences) => {
     setJoiningGameId(gameId);
     try {
-      const { sessionId } = await quickJoinGame(gameId, prefs);
+      await quickJoinGame(gameId, prefs);
       await refreshMe();
       qc.invalidateQueries({ queryKey: ['sessions'] });
-      navigation.navigate('Queue', { sessionId });
+      navigation.navigate('Queue', { progressive: true, gameId });
     } catch (err) {
       console.warn('Quick join failed', getApiError(err));
       setJoiningGameId(null);
     }
   };
 
-  const tabs: Array<{
-    key: TabKey;
-    icon: 'home' | 'calendar' | 'people' | 'chatbubble' | 'person';
-    label: string;
-    onPress?: () => void;
-  }> = [
-    { key: 'home', icon: 'home', label: t('tabs.home'), onPress: () => {} },
-    { key: 'sessions', icon: 'calendar', label: t('tabs.sessions'), onPress: () => {} },
-    { key: 'matches', icon: 'people', label: t('tabs.matches') },
-    { key: 'messages', icon: 'chatbubble', label: t('tabs.messages') },
-    {
-      key: 'profile',
-      icon: 'person',
-      label: t('tabs.profile'),
-      onPress: () => navigation.navigate('Profile'),
-    },
-  ];
+  const tabs = useMainTabs(navigation, 'home');
 
   return (
     <Screen padded={false}>

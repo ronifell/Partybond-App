@@ -12,6 +12,7 @@ import { Screen } from '../components/ui/Screen';
 import { BackgroundGlow } from '../components/ui/BackgroundGlow';
 import { GradientButton } from '../components/ui/GradientButton';
 import { getSession, leaveQueue } from '../api/sessions';
+import { getMatchmakingQueueStatus, leaveMatchmakingQueue } from '../api/matchmaking';
 import { useAuth } from '../store/authStore';
 import { useSessionRoom } from '../hooks/useSessionRoom';
 import { useMatchEvents } from '../hooks/useMatchEvents';
@@ -284,11 +285,18 @@ function QueueCountNumber({ value }: { value: string }) {
   );
 }
 
+type QueueParams =
+  | { sessionId: string; progressive?: false }
+  | { progressive: true; gameId?: string; sessionId?: never };
+
 export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
-  const sessionId = (route.params as { sessionId: string }).sessionId;
+  const params = route.params as QueueParams;
+  const progressive = 'progressive' in params && params.progressive;
+  const sessionId = !progressive ? params.sessionId : undefined;
   const refreshMe = useAuth((s) => s.refreshMe);
   const [waitingCount, setWaitingCount] = useState<number | null>(null);
+  const [phase, setPhase] = useState<number | null>(null);
   const [leaving, setLeaving] = useState(false);
 
   useFocusEffect(
@@ -301,23 +309,43 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
 
   const { data: session } = useQuery({
     queryKey: ['session', sessionId],
-    queryFn: () => getSession(sessionId),
+    queryFn: () => getSession(sessionId!),
+    enabled: !!sessionId && !progressive,
   });
 
   useEffect(() => {
     if (session) setWaitingCount(session.waiting.length);
   }, [session]);
 
-  useSessionRoom(sessionId, (payload) => setWaitingCount(payload.waitingCount));
+  useSessionRoom(sessionId ?? '', (payload) => {
+    if (sessionId) setWaitingCount(payload.waitingCount);
+  });
+
+  useEffect(() => {
+    if (!progressive) return;
+    const tick = async () => {
+      const status = await getMatchmakingQueueStatus();
+      if (status) {
+        setPhase(status.phase);
+        setWaitingCount(status.waitedSeconds);
+      }
+    };
+    void tick();
+    const id = setInterval(() => void tick(), 2000);
+    return () => clearInterval(id);
+  }, [progressive]);
 
   useMatchEvents((p) => {
-    if (p.sessionId === sessionId) navigation.replace('Match', { matchId: p.matchId });
+    if (progressive || p.sessionId === sessionId) {
+      navigation.replace('Match', { matchId: p.matchId });
+    }
   });
 
   const onLeave = async () => {
     setLeaving(true);
     try {
-      await leaveQueue(sessionId);
+      if (progressive) await leaveMatchmakingQueue();
+      else if (sessionId) await leaveQueue(sessionId);
     } catch {
       // ignore
     } finally {
@@ -326,7 +354,13 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
     }
   };
 
-  const countLabel = waitingCount === null ? '—' : String(waitingCount);
+  const countLabel = progressive
+    ? phase === null
+      ? '—'
+      : `P${phase}`
+    : waitingCount === null
+      ? '—'
+      : String(waitingCount);
 
   return (
     <Screen>
@@ -362,7 +396,9 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
 
         <Text className="text-white text-2xl font-bold mt-10">{t('queue.title')}</Text>
         <Text className="text-ink-secondary mt-2 text-center px-8">{t('queue.subtitle')}</Text>
-        {session ? (
+        {progressive ? (
+          <Text className="text-ink-secondary mt-4">{t('queue.progressiveHint')}</Text>
+        ) : session ? (
           <Text className="text-ink-secondary mt-4">
             {session.title} · {session.gameName}
           </Text>

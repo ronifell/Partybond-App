@@ -22,7 +22,9 @@
     "sessions": "Sessões",
     "matches": "Partidas",
     "messages": "Mensagens",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "recent": "Recentes",
+    "groups": "Grupos"
   },
   "auth": {
     "loginTitle": "Bem-vindo de volta!",
@@ -155,7 +157,12 @@
     "tierShortBeginner": "Iniciante",
     "tierShortIntermediate": "Intermediário",
     "tierShortAdvanced": "Avançado",
-    "tierShortVeteran": "Veterano"
+    "tierShortVeteran": "Veterano",
+    "moodSectionLabel": "COMO QUER JOGAR HOJE",
+    "playStyle": {
+      "relaxed": "Relaxado",
+      "focused": "Focado"
+    }
   },
   "createSession": {
     "title": "Criar sessão",
@@ -179,6 +186,7 @@
   "queue": {
     "title": "Buscando jogadores...",
     "subtitle": "Você será conectado quando alguém entrar.",
+    "progressiveHint": "Ampliando a busca automaticamente — aguarde.",
     "leave": "Sair da fila"
   },
   "match": {
@@ -278,5 +286,47 @@
     "english": "English",
     "portuguese": "Português",
     "logout": "Sair"
+  },
+  "recent": {
+    "title": "Jogadores Recentes",
+    "subtitle": "Jogadores que você encontrou recentemente",
+    "empty": "Jogue uma partida para ver jogadores aqui.",
+    "viewProfile": "Ver perfil",
+    "addToGroup": "Adicionar ao grupo",
+    "addToGroupFor": "Convidar {{name}} para um grupo",
+    "invitePlay": "Convidar para jogar",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "groups": {
+    "title": "Grupos",
+    "empty": "Crie seu primeiro squad.",
+    "namePlaceholder": "Nome do grupo",
+    "create": "Criar grupo",
+    "createNew": "Criar novo grupo",
+    "memberCount": "{{count}} membros",
+    "members": "Membros",
+    "nextSession": "Próxima sessão",
+    "confirm": "Confirmar",
+    "decline": "Não posso",
+    "schedule": "Agendar sessão semanal",
+    "openChat": "Abrir chat do grupo",
+    "completeSquad": "Completar squad",
+    "invite": "Convidar"
+  },
+  "chats": {
+    "title": "Mensagens",
+    "empty": "Nenhuma conversa ainda.",
+    "unnamed": "Chat",
+    "placeholder": "Mensagem…",
+    "send": "Enviar"
+  },
+  "moderation": {
+    "block": "Bloquear usuário",
+    "blockTitle": "Bloquear este usuário?",
+    "blockConfirm": "Ele não poderá enviar mensagens nem aparecer no matchmaking.",
+    "report": "Denunciar usuário",
+    "reportTitle": "Denunciar este usuário?",
+    "reportConfirm": "Nossa equipe analisará a denúncia."
   }
 }

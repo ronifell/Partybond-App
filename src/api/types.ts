@@ -2,7 +2,10 @@ export interface GameProfile {
   gameId: string;
   nickname: string;
   playerId: string;
+  platform?: string | null;
 }
+
+export type PlayStyle = 'relaxed' | 'focused';
 
 export type UserState = 'idle' | 'in_queue' | 'in_match';
 
@@ -38,10 +41,87 @@ export type SessionMode = 'casual' | 'competitive';
 export const SESSION_SKILL_TIERS = ['beginner', 'intermediate', 'advanced', 'veteran'] as const;
 export type SessionSkillTier = (typeof SESSION_SKILL_TIERS)[number];
 
-/** Chosen before joining a matchmaking pool (quick join). */
+/** Chosen before joining progressive matchmaking (quick join). */
 export interface MatchLobbyPreferences {
   gameMode: SessionMode;
-  skillTier: SessionSkillTier;
+  playStyle: PlayStyle;
+}
+
+export interface QueueStatus {
+  gameId: string;
+  gameMode: SessionMode;
+  playStyle: PlayStyle;
+  phase: 1 | 2 | 3;
+  waitedSeconds: number;
+  joinedAt: string;
+}
+
+export interface RecentPlayer {
+  id: string;
+  userId: string;
+  nickname: string;
+  photoUrl: string | null;
+  gameId: string;
+  gameName: string;
+  platform: string | null;
+  lastPlayedAt: string;
+  isOnline: boolean;
+}
+
+export interface GroupSummary {
+  id: string;
+  name: string;
+  photoUrl: string | null;
+  memberCount: number;
+  members: Array<{ id: string; name: string; photoUrl: string | null; role: string }>;
+  createdAt: string;
+}
+
+export interface GroupDetail {
+  id: string;
+  name: string;
+  photoUrl: string | null;
+  createdById: string;
+  createdAt: string;
+  conversationId: string | null;
+  members: Array<{ id: string; name: string; photoUrl: string | null; role: string; isOnline: boolean }>;
+  schedules: Array<{ id: string; dayOfWeek: number; timeLocal: string; frequency: string; timezone: string }>;
+  nextSession: {
+    id: string;
+    startsAt: string;
+    rsvps: Array<{ userId: string; status: string }>;
+  } | null;
+}
+
+export interface ConversationSummary {
+  id: string;
+  type: 'direct' | 'group';
+  groupId: string | null;
+  title?: string;
+  photoUrl?: string | null;
+  peer: { id: string; name: string; photoUrl: string | null } | null;
+  participants: Array<{ id: string; name: string; photoUrl: string | null }>;
+  lastMessage: { body: string; createdAt: string; senderId: string } | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  body: string;
+  senderId: string;
+  sender: { id: string; name: string; photoUrl: string | null };
+  replyToId: string | null;
+  replyTo: { id: string; body: string; senderId: string } | null;
+  createdAt: string;
+}
+
+export interface PublicUser {
+  id: string;
+  name: string;
+  photoUrl: string | null;
+  lookingFor: string | null;
+  isOnline: boolean;
+  lastSeenAt: string | null;
+  gameProfiles: GameProfile[];
 }
 
 export interface SessionSummary {

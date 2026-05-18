@@ -22,7 +22,9 @@
     "sessions": "Sessions",
     "matches": "Matches",
     "messages": "Messages",
-    "profile": "Profile"
+    "profile": "Profile",
+    "recent": "Recent",
+    "groups": "Groups"
   },
   "auth": {
     "loginTitle": "Welcome back!",
@@ -155,7 +157,12 @@
     "tierShortBeginner": "Beginner",
     "tierShortIntermediate": "Intermediate",
     "tierShortAdvanced": "Advanced",
-    "tierShortVeteran": "Veteran"
+    "tierShortVeteran": "Veteran",
+    "moodSectionLabel": "HOW YOU WANT TO PLAY TODAY",
+    "playStyle": {
+      "relaxed": "Relaxed",
+      "focused": "Focused"
+    }
   },
   "createSession": {
     "title": "Create session",
@@ -179,6 +186,7 @@
   "queue": {
     "title": "Finding players...",
     "subtitle": "We'll connect you when someone joins.",
+    "progressiveHint": "Expanding search automatically — hang tight.",
     "leave": "Leave queue"
   },
   "match": {
@@ -278,5 +286,47 @@
     "english": "English",
     "portuguese": "Português",
     "logout": "Log out"
+  },
+  "recent": {
+    "title": "Recent Players",
+    "subtitle": "Players you matched with recently",
+    "empty": "Play a match to see players here.",
+    "viewProfile": "View profile",
+    "addToGroup": "Add to group",
+    "addToGroupFor": "Invite {{name}} to a group",
+    "invitePlay": "Invite to play",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "groups": {
+    "title": "Groups",
+    "empty": "Create your first squad.",
+    "namePlaceholder": "Squad name",
+    "create": "Create group",
+    "createNew": "Create a new group",
+    "memberCount": "{{count}} members",
+    "members": "Members",
+    "nextSession": "Next session",
+    "confirm": "Confirm",
+    "decline": "Can't make it",
+    "schedule": "Schedule weekly session",
+    "openChat": "Open group chat",
+    "completeSquad": "Complete squad",
+    "invite": "Invite"
+  },
+  "chats": {
+    "title": "Messages",
+    "empty": "No conversations yet.",
+    "unnamed": "Chat",
+    "placeholder": "Message…",
+    "send": "Send"
+  },
+  "moderation": {
+    "block": "Block user",
+    "blockTitle": "Block this user?",
+    "blockConfirm": "They won't be able to message or match with you.",
+    "report": "Report user",
+    "reportTitle": "Report this user?",
+    "reportConfirm": "Our team will review this report."
   }
 }

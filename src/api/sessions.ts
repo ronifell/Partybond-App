@@ -1,4 +1,5 @@
 import { api } from './client';
+import { joinMatchmakingQueue } from './matchmaking';
 import type { MatchLobbyPreferences, SessionDetail, SessionSummary } from './types';
 
 export type ListSessionsParams = {
@@ -45,39 +46,11 @@ export async function leaveQueue(sessionId: string): Promise<{ waitingCount: num
   return { waitingCount: data.waitingCount };
 }
 
-/**
- * One-tap "Quick Join" for a game, scoped by **play style** and **skill tier** so you
- * only share a queue (and get matched) with players who picked the same lobby type.
- */
+/** Progressive matchmaking queue (relaxes criteria after 25s / 30s). */
 export async function quickJoinGame(
   gameId: string,
   prefs: MatchLobbyPreferences,
-): Promise<{ sessionId: string }> {
-  const sessions = await listSessions({
-    gameId,
-    gameMode: prefs.gameMode,
-    skillTier: prefs.skillTier,
-  });
-
-  const eligible = sessions.filter((s) => s.status === 'open' || s.status === 'active');
-  const byScheduledAt = (a: SessionSummary, b: SessionSummary) =>
-    new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
-
-  const withWaiters = eligible.filter((s) => s.waitingCount > 0).sort(byScheduledAt);
-  const existing = withWaiters[0] ?? [...eligible].sort(byScheduledAt)[0];
-
-  let sessionId = existing?.id;
-  if (!sessionId) {
-    const created = await createSession({
-      gameId,
-      title: 'Quick Match',
-      gameMode: prefs.gameMode,
-      skillTier: prefs.skillTier,
-      playersNeeded: 2,
-    });
-    sessionId = created.id;
-  }
-
-  await joinQueue(sessionId);
-  return { sessionId };
+): Promise<{ progressive: true; gameId: string }> {
+  await joinMatchmakingQueue(gameId, prefs);
+  return { progressive: true, gameId };
 }
