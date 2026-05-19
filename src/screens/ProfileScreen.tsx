@@ -9,7 +9,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen } from '../components/ui/Screen';
 import { Card } from '../components/ui/Card';
 import { Avatar } from '../components/ui/Avatar';
-import { BottomTabBar, useBottomTabBarHeight, type TabKey } from '../components/BottomTabBar';
+import { BottomTabBar, useBottomTabBarHeight } from '../components/BottomTabBar';
+import { useMainTabs } from '../hooks/useMainTabs';
 import { Logo } from '../components/ui/Logo';
 import { useAuth } from '../store/authStore';
 import { fetchGames } from '../api/games';
@@ -133,6 +134,7 @@ function MenuRow({ icon, iconColor, label, badge, onPress, isLast }: MenuProps) 
 
 export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
+  const tabs = useMainTabs(navigation, 'profile');
   const tabBarHeight = useBottomTabBarHeight();
   const user = useAuth((s) => s.user);
   const logout = useAuth((s) => s.logout);
@@ -145,19 +147,6 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
   const xpCurrent = 0;
   const xpNext = 1000;
   const xpPercent = Math.min(100, (xpCurrent / xpNext) * 100);
-
-  const tabs: Array<{
-    key: TabKey;
-    icon: 'home' | 'calendar' | 'people' | 'chatbubble' | 'person';
-    label: string;
-    onPress?: () => void;
-  }> = [
-    { key: 'home', icon: 'home', label: t('tabs.home'), onPress: () => navigation.navigate('Home') },
-    { key: 'sessions', icon: 'calendar', label: t('tabs.sessions'), onPress: () => navigation.navigate('Home') },
-    { key: 'matches', icon: 'people', label: t('tabs.matches') },
-    { key: 'messages', icon: 'chatbubble', label: t('tabs.messages') },
-    { key: 'profile', icon: 'person', label: t('tabs.profile') },
-  ];
 
   return (
     <Screen padded={false}>

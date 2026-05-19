@@ -22,6 +22,7 @@ import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Avatar } from '../components/ui/Avatar';
+import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { GradientButton } from '../components/ui/GradientButton';
 import { createGroup, fetchRecentPlayers } from '../api/social';
 import { fetchGames } from '../api/games';
@@ -219,7 +220,7 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
   const footerBottom = Math.max(insets.bottom, 12);
 
   return (
-    <View style={styles.root}>
+    <TeamScreenBackground style={styles.root}>
       <StatusBar style="light" backgroundColor={PURE_BLACK} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.header}>
@@ -454,18 +455,16 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
           </Pressable>
         </Pressable>
       </Modal>
-    </View>
+    </TeamScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
   },
   safe: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
   },
   header: {
     flexDirection: 'row',
@@ -771,7 +770,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 16,
     paddingTop: 10,
-    backgroundColor: PURE_BLACK,
+    backgroundColor: 'rgba(0,0,0,0.32)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.06)',
   },

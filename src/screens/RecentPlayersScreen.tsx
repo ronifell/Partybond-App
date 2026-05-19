@@ -14,6 +14,7 @@ import { BottomTabBar, useBottomTabBarHeight } from '../components/BottomTabBar'
 import { GroupInviteCard } from '../components/GroupInviteCard';
 import { Logo } from '../components/ui/Logo';
 import { Avatar } from '../components/ui/Avatar';
+import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { useMainTabs } from '../hooks/useMainTabs';
 import {
   fetchPendingGroupInvites,
@@ -304,7 +305,7 @@ export function RecentPlayersScreen({ navigation }: NativeStackScreenProps<any>)
   const showCreateGroupDock = filter !== 'invitations';
 
   return (
-    <View style={styles.root}>
+    <TeamScreenBackground style={styles.root}>
       <StatusBar style="light" backgroundColor={PURE_BLACK} />
       <SafeAreaView style={styles.page} edges={['top']}>
           <View style={styles.topBar}>
@@ -420,18 +421,16 @@ export function RecentPlayersScreen({ navigation }: NativeStackScreenProps<any>)
       ) : null}
 
       <BottomTabBar active="matches" tabs={tabs} />
-    </View>
+    </TeamScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
   },
   page: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
   },
   topBar: {
     flexDirection: 'row',

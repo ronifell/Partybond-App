@@ -70,7 +70,10 @@ export function getGameImage(gameId: string): ImageSourcePropType | null {
 }
 
 // ──────────────────────────────────────────────────────────────────────
-// 4) GROUP CHAT — decorative footer mesh behind quick-action buttons
+// 4) TEAM SCREEN BACKGROUND — mesh glow used on group/social/chat screens
 //    Path:  Frontend/assets/team bg.png
 // ──────────────────────────────────────────────────────────────────────
-export const TEAM_CHAT_BACKGROUND: ImageSourcePropType = require('../../assets/team bg.png');
+export const TEAM_SCREEN_BACKGROUND: ImageSourcePropType = require('../../assets/team bg.png');
+
+/** @deprecated Use TEAM_SCREEN_BACKGROUND */
+export const TEAM_CHAT_BACKGROUND = TEAM_SCREEN_BACKGROUND;

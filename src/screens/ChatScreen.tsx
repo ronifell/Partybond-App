@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  ImageBackground,
   StyleSheet,
   Alert,
 } from 'react-native';
@@ -30,7 +29,8 @@ import {
 } from '../api/social';
 import { fetchGames } from '../api/games';
 import { getSocket } from '../socket';
-import { getGameImage, TEAM_CHAT_BACKGROUND } from '../theme/assets';
+import { getGameImage } from '../theme/assets';
+import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { colors } from '../theme/tokens';
 import { useAuth } from '../store/authStore';
 import type { ChatMessage } from '../api/types';
@@ -183,7 +183,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
 
   if (!isGroup) {
     return (
-      <View style={styles.root}>
+      <TeamScreenBackground style={styles.root}>
         <StatusBar style="light" />
         <SafeAreaView style={{ flex: 1 }} edges={['top']}>
           <View style={styles.dmHeader}>
@@ -227,9 +227,9 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
                 <Text style={styles.dmSendText}>{t('chats.send')}</Text>
               </Pressable>
             </View>
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-      </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </TeamScreenBackground>
     );
   }
 
@@ -408,12 +408,11 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
   };
 
   return (
-    <View style={styles.root}>
+    <TeamScreenBackground style={styles.root}>
       <StatusBar style="light" backgroundColor={PURE_BLACK} />
-      <ImageBackground source={TEAM_CHAT_BACKGROUND} style={styles.bgMesh} resizeMode="cover" />
 
       <LinearGradient
-        colors={['rgba(30,10,50,0.95)', 'rgba(10,5,20,0.88)', PURE_BLACK]}
+        colors={['rgba(30,10,50,0.55)', 'rgba(10,5,20,0.35)', 'transparent']}
         style={styles.headerGradient}
       >
         <SafeAreaView edges={['top']}>
@@ -515,7 +514,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
-        <View style={{ flex: 1, backgroundColor: PURE_BLACK }}>{tabContent()}</View>
+        <View style={{ flex: 1 }}>{tabContent()}</View>
 
         {activeTab === 'chat' ? (
           <>
@@ -583,22 +582,13 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
           </>
         ) : null}
       </KeyboardAvoidingView>
-    </View>
+    </TeamScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
-  },
-  bgMesh: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 220,
-    opacity: 0.85,
   },
   headerGradient: {
     paddingBottom: 0,

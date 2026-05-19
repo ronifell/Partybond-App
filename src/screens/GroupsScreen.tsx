@@ -23,6 +23,7 @@ import { BottomTabBar, useBottomTabBarHeight } from '../components/BottomTabBar'
 import { GroupInviteCard } from '../components/GroupInviteCard';
 import { Avatar } from '../components/ui/Avatar';
 import { HexagonFrame } from '../components/ui/HexagonFrame';
+import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { useMainTabs } from '../hooks/useMainTabs';
 import { useAuth } from '../store/authStore';
 import {
@@ -260,7 +261,7 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
   const listHeader = (
     <View style={styles.headerBlock}>
       <LinearGradient
-        colors={['rgba(123,63,242,0.2)', 'transparent']}
+        colors={['rgba(123,63,242,0.12)', 'transparent']}
         style={styles.headerGlow}
         pointerEvents="none"
       />
@@ -444,7 +445,7 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
   };
 
   return (
-    <View style={styles.root}>
+    <TeamScreenBackground style={styles.root}>
       <StatusBar style="light" backgroundColor={PURE_BLACK} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <FlatList
@@ -462,14 +463,13 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
         />
       </SafeAreaView>
       <BottomTabBar active="sessions" tabs={tabs} />
-    </View>
+    </TeamScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
   },
   safe: {
     flex: 1,

@@ -22,6 +22,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Avatar } from '../components/ui/Avatar';
 import { HexagonFrame, HexagonSuccessBadge } from '../components/ui/HexagonFrame';
 import { GradientButton } from '../components/ui/GradientButton';
+import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import {
   createGroupSchedule,
   fetchGroup,
@@ -150,18 +151,18 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
 
   if (!group) {
     return (
-      <View style={[styles.root, styles.centered]}>
+      <TeamScreenBackground style={[styles.root, styles.centered]}>
         <StatusBar style="light" />
         <Text style={{ color: colors.ink.secondary }}>{t('common.loading')}</Text>
-      </View>
+      </TeamScreenBackground>
     );
   }
 
   return (
-    <View style={styles.root}>
+    <TeamScreenBackground style={styles.root}>
       <StatusBar style="light" backgroundColor={PURE_BLACK} />
       <LinearGradient
-        colors={['rgba(123,63,242,0.22)', 'rgba(0,209,255,0.08)', 'transparent']}
+        colors={['rgba(123,63,242,0.14)', 'rgba(0,209,255,0.05)', 'transparent']}
         style={styles.topGlow}
         pointerEvents="none"
       />
@@ -457,14 +458,13 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
           </View>
         </Pressable>
       </Modal>
-    </View>
+    </TeamScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
   },
   centered: {
     alignItems: 'center',
@@ -799,7 +799,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 16,
     paddingTop: 10,
-    backgroundColor: PURE_BLACK,
+    backgroundColor: 'rgba(0,0,0,0.32)',
     borderTopWidth: 1,
     borderTopColor: CARD_BORDER,
   },

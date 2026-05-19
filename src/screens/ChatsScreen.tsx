@@ -21,6 +21,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BottomTabBar, useBottomTabBarHeight } from '../components/BottomTabBar';
 import { GroupInviteCard } from '../components/GroupInviteCard';
 import { Avatar } from '../components/ui/Avatar';
+import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { useMainTabs } from '../hooks/useMainTabs';
 import { useAuth } from '../store/authStore';
 import {
@@ -392,7 +393,7 @@ export function ChatsScreen({ navigation }: NativeStackScreenProps<any>) {
   };
 
   return (
-    <View style={styles.root}>
+    <TeamScreenBackground style={styles.root}>
       <StatusBar style="light" backgroundColor={PURE_BLACK} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <FlatList
@@ -410,14 +411,13 @@ export function ChatsScreen({ navigation }: NativeStackScreenProps<any>) {
         />
       </SafeAreaView>
       <BottomTabBar active="messages" tabs={tabs} />
-    </View>
+    </TeamScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: PURE_BLACK,
   },
   safe: {
     flex: 1,
