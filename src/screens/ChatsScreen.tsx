@@ -31,7 +31,14 @@ export function ChatsScreen({ navigation }: NativeStackScreenProps<any>) {
         onRefresh={() => refetch()}
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => navigation.navigate('Chat', { conversationId: item.id, title: item.title })}
+            onPress={() =>
+              navigation.navigate('Chat', {
+                conversationId: item.id,
+                title: item.title ?? item.peer?.name,
+                groupId: item.groupId ?? undefined,
+                type: item.type,
+              })
+            }
             style={{
               padding: 14,
               borderRadius: 14,

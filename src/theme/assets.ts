@@ -68,3 +68,9 @@ export const GAME_IMAGES: Record<string, ImageSourcePropType> = {
 export function getGameImage(gameId: string): ImageSourcePropType | null {
   return GAME_IMAGES[gameId] ?? null;
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// 4) GROUP CHAT — decorative footer mesh behind quick-action buttons
+//    Path:  Frontend/assets/team bg.png
+// ──────────────────────────────────────────────────────────────────────
+export const TEAM_CHAT_BACKGROUND: ImageSourcePropType = require('../../assets/team bg.png');

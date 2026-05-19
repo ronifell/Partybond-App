@@ -137,7 +137,12 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
 
   const openChat = () => {
     if (group?.conversationId) {
-      navigation.navigate('Chat', { conversationId: group.conversationId });
+      navigation.navigate('Chat', {
+        conversationId: group.conversationId,
+        groupId: group.id,
+        title: group.name,
+        type: 'group',
+      });
     }
   };
 
