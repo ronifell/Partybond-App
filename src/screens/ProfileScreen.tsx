@@ -9,14 +9,12 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen } from '../components/ui/Screen';
 import { Card } from '../components/ui/Card';
 import { Avatar } from '../components/ui/Avatar';
-import { BottomTabBar, type TabKey } from '../components/BottomTabBar';
+import { BottomTabBar, useBottomTabBarHeight, type TabKey } from '../components/BottomTabBar';
 import { Logo } from '../components/ui/Logo';
 import { useAuth } from '../store/authStore';
 import { fetchGames } from '../api/games';
 import { colors, gradient } from '../theme/tokens';
 import { getGameImage } from '../theme/assets';
-
-const TAB_BAR_HEIGHT = 90;
 
 interface StatProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -135,6 +133,7 @@ function MenuRow({ icon, iconColor, label, badge, onPress, isLast }: MenuProps) 
 
 export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
+  const tabBarHeight = useBottomTabBarHeight();
   const user = useAuth((s) => s.user);
   const logout = useAuth((s) => s.logout);
   const { data: games = [] } = useQuery({ queryKey: ['games'], queryFn: fetchGames });
@@ -231,7 +230,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
         contentContainerStyle={{
           paddingHorizontal: 12,
           paddingTop: 10,
-          paddingBottom: TAB_BAR_HEIGHT + 16,
+          paddingBottom: tabBarHeight + 16,
           gap: 10,
         }}
         showsVerticalScrollIndicator={false}

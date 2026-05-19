@@ -11,7 +11,7 @@ import { GameCard } from '../components/GameCard';
 import { HeaderBar } from '../components/HeaderBar';
 import { ProfilePill } from '../components/ProfilePill';
 import { QuickActionsRow } from '../components/QuickActionsRow';
-import { BottomTabBar } from '../components/BottomTabBar';
+import { BottomTabBar, useBottomTabBarHeight } from '../components/BottomTabBar';
 import { useMainTabs } from '../hooks/useMainTabs';
 import { listSessions, quickJoinGame } from '../api/sessions';
 import { fetchGames } from '../api/games';
@@ -24,12 +24,12 @@ import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
 
 const QUICK_ACTIONS_HEIGHT = 96;
-const TAB_BAR_HEIGHT = 90;
 /** Extra scroll space so the last cards clear the four quick-action tiles (does not shrink the list viewport). */
 const GAME_LIST_SCROLL_BOTTOM_PADDING = 132;
 
 export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
+  const tabBarHeight = useBottomTabBarHeight();
   const user = useAuth((s) => s.user);
   const refreshMe = useAuth((s) => s.refreshMe);
   const qc = useQueryClient();
@@ -159,7 +159,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
       </View>
 
       {/* Scrollable game list — constrained to the space above the quick actions + tab bar */}
-      <View style={{ flex: 1, marginBottom: QUICK_ACTIONS_HEIGHT + TAB_BAR_HEIGHT + 28 }}>
+      <View style={{ flex: 1, marginBottom: QUICK_ACTIONS_HEIGHT + tabBarHeight + 28 }}>
         <FlatList
           data={games}
           keyExtractor={(g) => g.id}
@@ -212,7 +212,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
           position: 'absolute',
           left: 10,
           right: 10,
-          bottom: TAB_BAR_HEIGHT + 24,
+          bottom: tabBarHeight + 24,
         }}
         pointerEvents="box-none"
       >
