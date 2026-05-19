@@ -79,9 +79,11 @@ export interface GroupSummary {
   id: string;
   name: string;
   photoUrl: string | null;
+  createdById: string;
   memberCount: number;
   members: Array<{ id: string; name: string; photoUrl: string | null; role: string }>;
   createdAt: string;
+  nextSession: { id: string; startsAt: string } | null;
 }
 
 export interface GroupDetail {
