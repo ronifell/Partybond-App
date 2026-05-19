@@ -127,7 +127,11 @@ export function RootNavigator() {
               options={{ contentStyle: { backgroundColor: '#000000' } }}
             />
             <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-            <Stack.Screen name="AddToGroup" component={AddToGroupScreen} />
+            <Stack.Screen
+              name="AddToGroup"
+              component={AddToGroupScreen}
+              options={{ contentStyle: { backgroundColor: '#000000' } }}
+            />
           </>
         )}
       </Stack.Navigator>

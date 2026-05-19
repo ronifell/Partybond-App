@@ -30,7 +30,6 @@ import {
 import { fetchGames } from '../api/games';
 import { getSocket } from '../socket';
 import { getGameImage } from '../theme/assets';
-import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { colors } from '../theme/tokens';
 import { useAuth } from '../store/authStore';
 import type { ChatMessage } from '../api/types';
@@ -183,8 +182,8 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
 
   if (!isGroup) {
     return (
-      <TeamScreenBackground style={styles.root}>
-        <StatusBar style="light" />
+      <View style={styles.root}>
+        <StatusBar style="light" backgroundColor={PURE_BLACK} />
         <SafeAreaView style={{ flex: 1 }} edges={['top']}>
           <View style={styles.dmHeader}>
             <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
@@ -229,7 +228,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
             </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </TeamScreenBackground>
+    </View>
     );
   }
 
@@ -408,7 +407,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
   };
 
   return (
-    <TeamScreenBackground style={styles.root}>
+    <View style={styles.root}>
       <StatusBar style="light" backgroundColor={PURE_BLACK} />
 
       <LinearGradient
@@ -582,13 +581,14 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
           </>
         ) : null}
       </KeyboardAvoidingView>
-    </TeamScreenBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    backgroundColor: PURE_BLACK,
   },
   headerGradient: {
     paddingBottom: 0,

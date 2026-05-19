@@ -315,6 +315,16 @@
     "createGroupBannerBody": "Adicione jogadores ao seu grupo e não perca bons parceiros",
     "createGroup": "Criar Grupo"
   },
+  "inviteGroup": {
+    "inviteName": "Convidar {{name}}",
+    "toAGroup": "para um grupo",
+    "chooseGroup": "Escolha um grupo para convidar",
+    "memberCount": "{{count}} membros",
+    "createTitle": "Criar novo grupo",
+    "createBody": "Crie um novo grupo e convide {{name}}.",
+    "send": "Enviar convite",
+    "secure": "Os convites são privados e seguros."
+  },
   "createGroup": {
     "title": "Criar Grupo",
     "subtitle": "Monte seu squad e joguem juntos",
