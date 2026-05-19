@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ImageBackground,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -20,6 +21,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Avatar } from '../components/ui/Avatar';
 import { HexagonFrame } from '../components/ui/HexagonFrame';
+import { Logo } from '../components/ui/Logo';
+import { getApiError } from '../api/client';
 import { fetchGroups, inviteToGroup } from '../api/social';
 import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
@@ -132,12 +135,28 @@ export function AddToGroupScreen({ navigation, route }: NativeStackScreenProps<a
     return games.find((g) => g.id === id)?.name ?? '';
   }, [games, user?.selectedGame]);
 
+  const invitableGroups = useMemo(
+    () => groups.filter((g) => !g.members.some((m) => m.id === userId)),
+    [groups, userId],
+  );
+
   const onSend = async () => {
     if (!selectedId) return;
     setSending(true);
     try {
       await inviteToGroup(selectedId, userId);
-      navigation.goBack();
+      Alert.alert(t('inviteGroup.sendSuccessTitle'), t('inviteGroup.sendSuccessBody'), [
+        { text: t('common.ok'), onPress: () => navigation.goBack() },
+      ]);
+    } catch (err) {
+      const apiErr = getApiError(err);
+      if (apiErr.code === 'already_member') {
+        Alert.alert(t('inviteGroup.alreadyMemberTitle'), t('inviteGroup.alreadyMemberBody'), [
+          { text: t('common.ok'), onPress: () => navigation.goBack() },
+        ]);
+        return;
+      }
+      Alert.alert(t('inviteGroup.sendFailedTitle'), apiErr.message || t('inviteGroup.sendFailedBody'));
     } finally {
       setSending(false);
     }
@@ -165,19 +184,26 @@ export function AddToGroupScreen({ navigation, route }: NativeStackScreenProps<a
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: footerBottom + 120 }}
       >
-        <View style={[styles.hero, { minHeight: heroMinHeight, paddingTop: insets.top + 8 }]}>
+        <View style={[styles.hero, { minHeight: heroMinHeight, paddingTop: insets.top }]}>
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.82)']}
             locations={[0, 0.55, 1]}
             style={StyleSheet.absoluteFill}
             pointerEvents="none"
           />
-          <Pressable
-            onPress={() => navigation.goBack()}
-            style={({ pressed }) => [styles.backBtn, { opacity: pressed ? 0.8 : 1 }]}
-          >
-            <Ionicons name="chevron-back" size={22} color="#fff" />
-          </Pressable>
+          <View style={styles.topBar}>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              hitSlop={12}
+              style={({ pressed }) => [styles.topBarSide, { opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Ionicons name="chevron-back" size={24} color="#fff" />
+            </Pressable>
+            <View style={styles.logoCenter}>
+              <Logo size={28} showText />
+            </View>
+            <View style={styles.topBarSide} />
+          </View>
           <View style={styles.heroTextBlock}>
             <Text style={styles.inviteLine}>{t('inviteGroup.inviteName', { name })}</Text>
             <GradientPhrase text={t('inviteGroup.toAGroup')} />
@@ -188,10 +214,10 @@ export function AddToGroupScreen({ navigation, route }: NativeStackScreenProps<a
         <View style={styles.listBlock}>
           {isLoading ? (
             <ActivityIndicator color={colors.brand.purple} style={{ marginTop: 24 }} />
-          ) : groups.length === 0 ? (
-            <Text style={styles.empty}>{t('groups.empty')}</Text>
+          ) : invitableGroups.length === 0 ? (
+            <Text style={styles.empty}>{t('inviteGroup.noInvitableGroups')}</Text>
           ) : (
-            groups.map((g) => (
+            invitableGroups.map((g) => (
               <GroupPickCard
                 key={g.id}
                 group={g}
@@ -269,17 +295,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     overflow: 'hidden',
   },
-  backBtn: {
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 4,
+    paddingBottom: 8,
+    zIndex: 2,
+  },
+  topBarSide: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'flex-start',
-    zIndex: 2,
+  },
+  logoCenter: {
+    flex: 1,
+    alignItems: 'center',
   },
   heroTextBlock: {
     paddingBottom: 20,

@@ -7,6 +7,7 @@
     "next": "Next",
     "save": "Save",
     "cancel": "Cancel",
+    "ok": "OK",
     "retry": "Retry",
     "loading": "Loading...",
     "minutes": "min",
@@ -323,7 +324,14 @@
     "createTitle": "Create a new group",
     "createBody": "Create a new group and invite {{name}} to it.",
     "send": "Send Invitation",
-    "secure": "Invitations are private and secure."
+    "secure": "Invitations are private and secure.",
+    "sendSuccessTitle": "Invitation sent",
+    "sendSuccessBody": "They will be notified to join your group.",
+    "sendFailedTitle": "Could not send invite",
+    "sendFailedBody": "Please try again in a moment.",
+    "alreadyMemberTitle": "Already in group",
+    "alreadyMemberBody": "This player is already a member of the selected group.",
+    "noInvitableGroups": "This player is already in all of your groups. Create a new group to invite them."
   },
   "createGroup": {
     "title": "Create Group",

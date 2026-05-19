@@ -7,6 +7,7 @@
     "next": "Próximo",
     "save": "Salvar",
     "cancel": "Cancelar",
+    "ok": "OK",
     "retry": "Tentar novamente",
     "loading": "Carregando...",
     "minutes": "min",
@@ -323,7 +324,14 @@
     "createTitle": "Criar novo grupo",
     "createBody": "Crie um novo grupo e convide {{name}}.",
     "send": "Enviar convite",
-    "secure": "Os convites são privados e seguros."
+    "secure": "Os convites são privados e seguros.",
+    "sendSuccessTitle": "Convite enviado",
+    "sendSuccessBody": "Eles serão notificados para entrar no seu grupo.",
+    "sendFailedTitle": "Não foi possível enviar",
+    "sendFailedBody": "Tente novamente em instantes.",
+    "alreadyMemberTitle": "Já está no grupo",
+    "alreadyMemberBody": "Este jogador já é membro do grupo selecionado.",
+    "noInvitableGroups": "Este jogador já está em todos os seus grupos. Crie um novo grupo para convidá-lo."
   },
   "createGroup": {
     "title": "Criar Grupo",
