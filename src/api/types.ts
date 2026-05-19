@@ -110,7 +110,14 @@ export interface ConversationSummary {
   photoUrl?: string | null;
   peer: { id: string; name: string; photoUrl: string | null } | null;
   participants: Array<{ id: string; name: string; photoUrl: string | null }>;
-  lastMessage: { body: string; createdAt: string; senderId: string } | null;
+  unreadCount: number;
+  isPinned: boolean;
+  lastMessage: {
+    body: string;
+    createdAt: string;
+    senderId: string;
+    senderName: string | null;
+  } | null;
 }
 
 export interface ChatMessage {

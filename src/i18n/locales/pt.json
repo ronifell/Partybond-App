@@ -417,10 +417,26 @@
   },
   "chats": {
     "title": "Mensagens",
+    "subtitle": "Fique conectado com seus squads",
     "empty": "Nenhuma conversa ainda.",
     "unnamed": "Chat",
     "placeholder": "Mensagem…",
-    "send": "Enviar"
+    "send": "Enviar",
+    "searchPlaceholder": "Buscar conversas...",
+    "filter": "Filtrar",
+    "filterSoon": "Mais filtros em breve.",
+    "storyAll": "Todos",
+    "tabAll": "Todos",
+    "tabGroups": "Grupos",
+    "tabSquads": "Squads",
+    "tabRequests": "Pedidos",
+    "requestsEmpty": "Nenhum pedido pendente.",
+    "youPrefix": "Você: ",
+    "noMessagesYet": "Nenhuma mensagem ainda",
+    "timeJustNow": "Agora",
+    "timeMinutes": "{{count}} min atrás",
+    "timeHours": "{{count}}h atrás",
+    "timeYesterday": "Ontem"
   },
   "groupChat": {
     "tabChat": "Chat",
