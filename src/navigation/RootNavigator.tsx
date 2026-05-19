@@ -115,7 +115,11 @@ export function RootNavigator() {
               options={{ contentStyle: { backgroundColor: '#000000' } }}
             />
             <Stack.Screen name="Groups" component={GroupsScreen} />
-            <Stack.Screen name="GroupDetail" component={GroupDetailScreen} />
+            <Stack.Screen
+              name="GroupDetail"
+              component={GroupDetailScreen}
+              options={{ contentStyle: { backgroundColor: '#000000' } }}
+            />
             <Stack.Screen name="Chats" component={ChatsScreen} />
             <Stack.Screen name="Chat" component={ChatScreen} />
             <Stack.Screen name="UserProfile" component={UserProfileScreen} />

@@ -208,7 +208,7 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
     try {
       const g = await createGroup(trimmed, [...selectedIds]);
       await qc.invalidateQueries({ queryKey: ['groups'] });
-      navigation.replace('GroupDetail', { groupId: g.id });
+      navigation.replace('GroupDetail', { groupId: g.id, justCreated: true });
     } catch {
       Alert.alert(t('createGroup.title'), t('createGroup.createFailed'));
     } finally {
