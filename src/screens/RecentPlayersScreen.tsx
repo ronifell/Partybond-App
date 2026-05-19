@@ -13,6 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { BottomTabBar, useBottomTabBarHeight } from '../components/BottomTabBar';
 import { GroupInviteCard } from '../components/GroupInviteCard';
 import { Logo } from '../components/ui/Logo';
+import { Avatar } from '../components/ui/Avatar';
 import { useMainTabs } from '../hooks/useMainTabs';
 import {
   fetchPendingGroupInvites,
@@ -150,13 +151,7 @@ function PlayerCard({
     <View style={styles.playerCard}>
       <View style={styles.playerMain}>
         <Pressable onPress={onProfile} style={styles.avatarWrap}>
-          {item.photoUrl ? (
-            <Image source={{ uri: item.photoUrl }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Ionicons name="person" size={26} color={colors.ink.secondary} />
-            </View>
-          )}
+          <Avatar uri={item.photoUrl} name={item.nickname} size={52} />
           <View
             style={[
               styles.statusDot,
@@ -397,11 +392,11 @@ export function RecentPlayersScreen({ navigation }: NativeStackScreenProps<any>)
 
       {showCreateGroupDock ? (
         <View
-          style={[styles.createGroupDock, { bottom: tabBarHeight + 8 }]}
+          style={[styles.createGroupDock, { bottom: tabBarHeight + 22 }]}
           pointerEvents="box-none"
         >
           <Pressable
-            onPress={() => navigation.navigate('Groups')}
+            onPress={() => navigation.navigate('CreateGroup')}
             style={({ pressed }) => [styles.createGroupCard, { opacity: pressed ? 0.92 : 1 }]}
           >
             <View style={styles.createGroupIconBox}>
@@ -566,20 +561,10 @@ const styles = StyleSheet.create({
   avatarWrap: {
     position: 'relative',
   },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-  },
-  avatarPlaceholder: {
-    backgroundColor: '#1A1A24',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   statusDot: {
     position: 'absolute',
-    right: 0,
-    bottom: 0,
+    right: 2,
+    bottom: 2,
     width: 14,
     height: 14,
     borderRadius: 7,

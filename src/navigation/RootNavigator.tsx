@@ -28,6 +28,7 @@ import { ChatsScreen } from '../screens/ChatsScreen';
 import { ChatScreen } from '../screens/ChatScreen';
 import { UserProfileScreen } from '../screens/UserProfileScreen';
 import { AddToGroupScreen } from '../screens/AddToGroupScreen';
+import { CreateGroupScreen } from '../screens/CreateGroupScreen';
 import { OnboardingWelcomeScreen } from '../screens/OnboardingWelcomeScreen';
 import { OnboardingCompleteScreen } from '../screens/OnboardingCompleteScreen';
 import { useOnboarding } from '../store/onboardingStore';
@@ -108,6 +109,11 @@ export function RootNavigator() {
             />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} />
             <Stack.Screen name="RecentPlayers" component={RecentPlayersScreen} />
+            <Stack.Screen
+              name="CreateGroup"
+              component={CreateGroupScreen}
+              options={{ contentStyle: { backgroundColor: '#000000' } }}
+            />
             <Stack.Screen name="Groups" component={GroupsScreen} />
             <Stack.Screen name="GroupDetail" component={GroupDetailScreen} />
             <Stack.Screen name="Chats" component={ChatsScreen} />

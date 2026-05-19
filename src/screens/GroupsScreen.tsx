@@ -1,29 +1,27 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, Pressable, TextInput } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, FlatList, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Screen } from '../components/ui/Screen';
 import { BottomTabBar } from '../components/BottomTabBar';
-import { GradientButton } from '../components/ui/GradientButton';
 import { GroupInviteCard } from '../components/GroupInviteCard';
 import { useMainTabs } from '../hooks/useMainTabs';
 import {
-  createGroup,
   fetchGroups,
   fetchPendingGroupInvites,
   respondGroupInvite,
 } from '../api/social';
-import { colors } from '../theme/tokens';
+import { colors, gradient } from '../theme/tokens';
 
 export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
   const tabs = useMainTabs(navigation, 'sessions');
   const qc = useQueryClient();
-  const [name, setName] = useState('');
-  const [creating, setCreating] = useState(false);
 
   const { data: groups = [], refetch: refetchGroups, isRefetching } = useQuery({
     queryKey: ['groups'],
@@ -49,19 +47,6 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
   const onRefresh = () => {
     void refetchGroups();
     void refetchInvites();
-  };
-
-  const onCreate = async () => {
-    if (name.trim().length < 2) return;
-    setCreating(true);
-    try {
-      const g = await createGroup(name.trim());
-      setName('');
-      await qc.invalidateQueries({ queryKey: ['groups'] });
-      navigation.navigate('GroupDetail', { groupId: g.id });
-    } finally {
-      setCreating(false);
-    }
   };
 
   const onRespondInvite = async (inviteId: string, accept: boolean, groupId?: string) => {
@@ -92,23 +77,31 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
         </View>
       ) : null}
 
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 12 }}>
         <Text style={{ color: 'white', fontSize: 22, fontWeight: '800' }}>{t('groups.title')}</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder={t('groups.namePlaceholder')}
-          placeholderTextColor={colors.ink.disabled}
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            borderRadius: 12,
-            padding: 12,
-            color: 'white',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.1)',
-          }}
-        />
-        <GradientButton title={t('groups.create')} onPress={onCreate} loading={creating} size="md" />
+        <Pressable
+          onPress={() => navigation.navigate('CreateGroup')}
+          style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+        >
+          <LinearGradient
+            colors={[...gradient.primary]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              paddingVertical: 14,
+              borderRadius: 14,
+            }}
+          >
+            <Ionicons name="add-circle-outline" size={20} color="#fff" />
+            <Text style={{ color: '#fff', fontWeight: '800', fontSize: 15 }}>
+              {t('groups.create')}
+            </Text>
+          </LinearGradient>
+        </Pressable>
       </View>
     </View>
   );
