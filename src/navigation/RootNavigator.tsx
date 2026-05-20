@@ -9,6 +9,8 @@ import { colors } from '../theme/tokens';
 
 import { LoginScreen } from '../screens/LoginScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
+import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
+import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
 import { OnboardingNameScreen } from '../screens/OnboardingNameScreen';
 import { OnboardingPhotoScreen } from '../screens/OnboardingPhotoScreen';
 import { OnboardingGameScreen } from '../screens/OnboardingGameScreen';
@@ -84,6 +86,8 @@ export function RootNavigator() {
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
           </>
         ) : showOnboardingStack ? (
           <>

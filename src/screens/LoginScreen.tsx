@@ -175,7 +175,7 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<any>) {
                 }
               />
               <Pressable
-                onPress={() => showSoon(t('auth.forgotPassword'))}
+                onPress={() => navigation.navigate('ForgotPassword')}
                 style={({ pressed }) => ({
                   alignSelf: 'flex-end',
                   opacity: pressed ? 0.6 : 1,

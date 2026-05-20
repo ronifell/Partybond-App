@@ -27,3 +27,21 @@ export async function fetchMe(): Promise<User> {
   const { data } = await api.get<{ user: User }>('/auth/me');
   return normalizeUser(data.user as ApiUserPayload);
 }
+
+export async function requestPasswordReset(identifier: string): Promise<{ ok: boolean }> {
+  const { data } = await api.post<{ ok: boolean }>('/auth/forgot-password', { identifier });
+  return data;
+}
+
+export async function resetPassword(
+  identifier: string,
+  code: string,
+  password: string,
+): Promise<{ ok: boolean }> {
+  const { data } = await api.post<{ ok: boolean }>('/auth/reset-password', {
+    identifier,
+    code,
+    password,
+  });
+  return data;
+}
