@@ -32,6 +32,7 @@ import {
 } from '../api/social';
 import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
+import { useNotificationStore } from '../store/notificationStore';
 import { getGameImage } from '../theme/assets';
 import { colors, gradient } from '../theme/tokens';
 
@@ -62,6 +63,7 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const user = useAuth((s) => s.user);
+  const showTopToast = useNotificationStore((s) => s.showTopToast);
   const qc = useQueryClient();
   const { groupId, justCreated } = route.params as { groupId: string; justCreated?: boolean };
   const [suggestions, setSuggestions] = useState<
@@ -118,7 +120,7 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
     await inviteSquadFill(groupId, userId, group?.nextSession?.id);
     await qc.invalidateQueries({ queryKey: ['group', groupId] });
     setSquadModalOpen(false);
-    Alert.alert(t('groupDetail.inviteSentTitle'), t('groupDetail.inviteSentBody'));
+    showTopToast(t('groupDetail.inviteSentBody'));
   };
 
   const onRsvp = async (status: 'confirmed' | 'declined') => {

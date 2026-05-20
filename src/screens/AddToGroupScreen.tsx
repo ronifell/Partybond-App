@@ -26,6 +26,7 @@ import { getApiError } from '../api/client';
 import { fetchGroups, inviteToGroup } from '../api/social';
 import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
+import { useNotificationStore } from '../store/notificationStore';
 import { getGameImage, TEAM_SCREEN_BACKGROUND } from '../theme/assets';
 import type { GroupSummary } from '../api/types';
 import { colors, gradient } from '../theme/tokens';
@@ -119,6 +120,7 @@ function GroupPickCard({
 export function AddToGroupScreen({ navigation, route }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const showTopToast = useNotificationStore((s) => s.showTopToast);
   const user = useAuth((s) => s.user);
   const { userId, name } = route.params as { userId: string; name: string };
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -145,9 +147,8 @@ export function AddToGroupScreen({ navigation, route }: NativeStackScreenProps<a
     setSending(true);
     try {
       await inviteToGroup(selectedId, userId);
-      Alert.alert(t('inviteGroup.sendSuccessTitle'), t('inviteGroup.sendSuccessBody'), [
-        { text: t('common.ok'), onPress: () => navigation.goBack() },
-      ]);
+      showTopToast(t('inviteGroup.sendSuccessBody'));
+      navigation.goBack();
     } catch (err) {
       const apiErr = getApiError(err);
       if (apiErr.code === 'already_member') {

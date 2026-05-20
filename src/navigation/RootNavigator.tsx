@@ -6,6 +6,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { useAuth } from '../store/authStore';
 import { connectSocket, disconnectSocket } from '../socket';
 import { colors } from '../theme/tokens';
+import { GlobalInviteOverlay } from '../components/GlobalInviteOverlay';
 
 import { LoginScreen } from '../screens/LoginScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
@@ -81,64 +82,68 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer theme={navTheme}>
-      <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.base } }}>
-        {!token ? (
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-            <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-          </>
-        ) : showOnboardingStack ? (
-          <>
-            <Stack.Screen name="OnboardingWelcome" component={OnboardingWelcomeScreen} />
-            <Stack.Screen name="OnboardingName" component={OnboardingNameScreen} />
-            <Stack.Screen name="OnboardingPhoto" component={OnboardingPhotoScreen} />
-            <Stack.Screen name="OnboardingGame" component={OnboardingGameScreen} />
-            <Stack.Screen name="OnboardingGameInfo" component={OnboardingGameInfoScreen} />
-            <Stack.Screen name="OnboardingComplete" component={OnboardingCompleteScreen} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Profile" component={ProfileScreen} />
-            <Stack.Screen name="CreateSession" component={CreateSessionScreen} />
-            <Stack.Screen name="Session" component={SessionScreen} />
-            <Stack.Screen name="Queue" component={QueueScreen} />
-            <Stack.Screen name="Match" component={MatchScreen} />
-            <Stack.Screen
-              name="EditGameProfile"
-              component={EditGameProfileScreen}
-              options={{ contentStyle: { backgroundColor: '#000000' } }}
-            />
-            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-            <Stack.Screen name="RecentPlayers" component={RecentPlayersScreen} />
-            <Stack.Screen
-              name="CreateGroup"
-              component={CreateGroupScreen}
-              options={{ contentStyle: { backgroundColor: '#000000' } }}
-            />
-            <Stack.Screen name="Groups" component={GroupsScreen} />
-            <Stack.Screen
-              name="GroupDetail"
-              component={GroupDetailScreen}
-              options={{ contentStyle: { backgroundColor: '#000000' } }}
-            />
-            <Stack.Screen name="Chats" component={ChatsScreen} />
-            <Stack.Screen
-              name="Chat"
-              component={ChatScreen}
-              options={{ contentStyle: { backgroundColor: '#000000' } }}
-            />
-            <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-            <Stack.Screen
-              name="AddToGroup"
-              component={AddToGroupScreen}
-              options={{ contentStyle: { backgroundColor: '#000000' } }}
-            />
-          </>
-        )}
-      </Stack.Navigator>
+      <View style={{ flex: 1 }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.base } }}>
+          {!token ? (
+            <>
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Register" component={RegisterScreen} />
+              <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+              <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+            </>
+          ) : showOnboardingStack ? (
+            <>
+              <Stack.Screen name="OnboardingWelcome" component={OnboardingWelcomeScreen} />
+              <Stack.Screen name="OnboardingName" component={OnboardingNameScreen} />
+              <Stack.Screen name="OnboardingPhoto" component={OnboardingPhotoScreen} />
+              <Stack.Screen name="OnboardingGame" component={OnboardingGameScreen} />
+              <Stack.Screen name="OnboardingGameInfo" component={OnboardingGameInfoScreen} />
+              <Stack.Screen name="OnboardingComplete" component={OnboardingCompleteScreen} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="Profile" component={ProfileScreen} />
+              <Stack.Screen name="CreateSession" component={CreateSessionScreen} />
+              <Stack.Screen name="Session" component={SessionScreen} />
+              <Stack.Screen name="Queue" component={QueueScreen} />
+              <Stack.Screen name="Match" component={MatchScreen} />
+              <Stack.Screen
+                name="EditGameProfile"
+                component={EditGameProfileScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+              <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+              <Stack.Screen name="RecentPlayers" component={RecentPlayersScreen} />
+              <Stack.Screen
+                name="CreateGroup"
+                component={CreateGroupScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+              <Stack.Screen name="Groups" component={GroupsScreen} />
+              <Stack.Screen
+                name="GroupDetail"
+                component={GroupDetailScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+              <Stack.Screen name="Chats" component={ChatsScreen} />
+              <Stack.Screen
+                name="Chat"
+                component={ChatScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+              <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+              <Stack.Screen
+                name="AddToGroup"
+                component={AddToGroupScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+            </>
+          )}
+        </Stack.Navigator>
+
+        {token && !showOnboardingStack ? <GlobalInviteOverlay /> : null}
+      </View>
     </NavigationContainer>
   );
 }
