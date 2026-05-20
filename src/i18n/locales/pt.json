@@ -448,7 +448,30 @@
     "inviteLabel": "Convite de grupo",
     "inviteFrom": "{{name}} convidou você",
     "inviteAccept": "Aceitar",
-    "inviteDecline": "Recusar"
+    "inviteDecline": "Recusar",
+    "scheduleLeaderOnlyTitle": "Somente o líder",
+    "scheduleLeaderOnlyBody": "Apenas quem criou o grupo pode agendar sessões semanais.",
+    "scheduleFailedTitle": "Não foi possível agendar",
+    "scheduleFailedBody": "Tente novamente em instantes.",
+    "rsvpFailedTitle": "Não foi possível atualizar",
+    "rsvpFailedBody": "Tente novamente em instantes.",
+    "rsvpConfirmedSelf": "Você confirmou a sessão semanal.",
+    "rsvpDeclinedSelf": "Você marcou que não poderá participar.",
+    "rsvpConfirmedBroadcast": "{{name}} confirmou presença em {{group}}",
+    "rsvpDeclinedBroadcast": "{{name}} não poderá ir em {{group}}"
+  },
+  "playerProfile": {
+    "addFriend": "Adicionar amigo",
+    "message": "Mensagem",
+    "inviteGroup": "Convidar para grupo",
+    "detailsTitle": "Dados do jogador",
+    "username": "Nome de usuário",
+    "email": "E-mail",
+    "age": "Idade",
+    "gameInfoTitle": "Perfil no jogo",
+    "inGameNickname": "Nickname no jogo",
+    "inGameId": "ID do jogador",
+    "gameInfoEmpty": "Este jogador ainda não configurou um perfil de jogo."
   },
   "groupDetail": {
     "createdSuccess": "Grupo criado com sucesso!",

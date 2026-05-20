@@ -151,7 +151,7 @@ function PlayerCard({
   return (
     <View style={styles.playerCard}>
       <View style={styles.playerMain}>
-        <Pressable onPress={onProfile} style={styles.avatarWrap}>
+        <View style={styles.avatarWrap}>
           <Avatar uri={item.photoUrl} name={item.nickname} size={52} />
           <View
             style={[
@@ -159,9 +159,9 @@ function PlayerCard({
               { backgroundColor: online ? '#00E676' : '#5C5C6A' },
             ]}
           />
-        </Pressable>
+        </View>
 
-        <Pressable onPress={onProfile} style={styles.playerInfo}>
+        <View style={styles.playerInfo}>
           <View style={styles.nameRow}>
             <Text style={styles.playerName} numberOfLines={1}>
               {item.nickname}
@@ -188,7 +188,7 @@ function PlayerCard({
             <Ionicons name="time-outline" size={13} color={colors.ink.disabled} />
             <Text style={styles.timeText}>{formatPlayedAt(item.lastPlayedAt)}</Text>
           </View>
-        </Pressable>
+        </View>
       </View>
 
       <View style={styles.actionsRow}>
@@ -372,8 +372,13 @@ export function RecentPlayersScreen({ navigation }: NativeStackScreenProps<any>)
                 <PlayerCard
                   item={item}
                   t={t}
-                  onProfile={() => navigation.navigate('UserProfile', { userId: item.userId })}
-                  onPlay={() => navigation.navigate('Home')}
+                  onProfile={() =>
+                    navigation.navigate('UserProfile', {
+                      userId: item.userId,
+                      gameId: item.gameId,
+                    })
+                  }
+                  onPlay={() => {}}
                   onAdd={() =>
                     navigation.navigate('AddToGroup', {
                       userId: item.userId,

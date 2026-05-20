@@ -448,7 +448,30 @@
     "inviteLabel": "Group invite",
     "inviteFrom": "{{name}} invited you",
     "inviteAccept": "Accept",
-    "inviteDecline": "Decline"
+    "inviteDecline": "Decline",
+    "scheduleLeaderOnlyTitle": "Leader only",
+    "scheduleLeaderOnlyBody": "Only the group creator can schedule weekly sessions.",
+    "scheduleFailedTitle": "Could not schedule",
+    "scheduleFailedBody": "Please try again in a moment.",
+    "rsvpFailedTitle": "Could not update RSVP",
+    "rsvpFailedBody": "Please try again in a moment.",
+    "rsvpConfirmedSelf": "You confirmed the weekly session.",
+    "rsvpDeclinedSelf": "You marked that you can't make it.",
+    "rsvpConfirmedBroadcast": "{{name}} confirmed for {{group}}",
+    "rsvpDeclinedBroadcast": "{{name}} can't make it for {{group}}"
+  },
+  "playerProfile": {
+    "addFriend": "Add Friend",
+    "message": "Message",
+    "inviteGroup": "Invite to Group",
+    "detailsTitle": "Player details",
+    "username": "Username",
+    "email": "Email",
+    "age": "Age",
+    "gameInfoTitle": "Game profile",
+    "inGameNickname": "In-game nickname",
+    "inGameId": "Player ID",
+    "gameInfoEmpty": "No game profile set for this player yet."
   },
   "groupDetail": {
     "createdSuccess": "Group created successfully!",

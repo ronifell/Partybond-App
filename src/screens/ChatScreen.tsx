@@ -26,7 +26,10 @@ import {
   fetchMessages,
   markChatRead,
   sendChatMessage,
+  setSessionRsvp,
 } from '../api/social';
+import { getApiError } from '../api/client';
+import { useNotificationStore } from '../store/notificationStore';
 import { fetchGames } from '../api/games';
 import { getSocket } from '../socket';
 import { getGameImage } from '../theme/assets';
@@ -95,6 +98,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const user = useAuth((s) => s.user);
+  const showTopToast = useNotificationStore((s) => s.showTopToast);
   const qc = useQueryClient();
   const {
     conversationId,
@@ -138,6 +142,12 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
   }, [group?.members]);
 
   const onlineCount = group?.members.filter((m) => m.isOnline).length ?? 0;
+  const isGroupCreator = !!user && !!group && group.createdById === user.id;
+
+  const myRsvpStatus = useMemo(() => {
+    if (!group?.nextSession || !user) return null;
+    return group.nextSession.rsvps.find((r) => r.userId === user.id)?.status ?? null;
+  }, [group?.nextSession, user]);
 
   const messages = data?.messages ?? [];
   const rows = useMemo(() => buildMessageRows(messages, t), [messages, t]);
@@ -169,11 +179,34 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
 
   const onSchedule = async () => {
     if (!groupId) return;
-    const d = new Date();
-    const day = d.getDay();
-    await createGroupSchedule(groupId, { dayOfWeek: day === 0 ? 2 : day, timeLocal: '21:00' });
-    await refetchGroup();
-    Alert.alert(t('groupChat.scheduleMatch'), t('groupDetail.scheduleDone'));
+    if (!isGroupCreator) {
+      Alert.alert(t('groups.scheduleLeaderOnlyTitle'), t('groups.scheduleLeaderOnlyBody'));
+      return;
+    }
+    try {
+      const d = new Date();
+      const day = d.getDay();
+      await createGroupSchedule(groupId, { dayOfWeek: day === 0 ? 2 : day, timeLocal: '21:00' });
+      await refetchGroup();
+      showTopToast(t('groupDetail.scheduleDone'));
+    } catch (err) {
+      const apiErr = getApiError(err);
+      Alert.alert(t('groups.scheduleFailedTitle'), apiErr.message || t('groups.scheduleFailedBody'));
+    }
+  };
+
+  const onRsvp = async (status: 'confirmed' | 'declined') => {
+    if (!group?.nextSession) return;
+    try {
+      await setSessionRsvp(group.nextSession.id, status);
+      await refetchGroup();
+      showTopToast(
+        status === 'confirmed' ? t('groups.rsvpConfirmedSelf') : t('groups.rsvpDeclinedSelf'),
+      );
+    } catch (err) {
+      const apiErr = getApiError(err);
+      Alert.alert(t('groups.rsvpFailedTitle'), apiErr.message || t('groups.rsvpFailedBody'));
+    }
   };
 
   const displayTitle = title ?? group?.name ?? t('chats.unnamed');
@@ -309,6 +342,35 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
     if (activeTab === 'schedule' && group) {
       return (
         <View style={styles.tabPanel}>
+          {group.nextSession ? (
+            <View style={styles.sessionCard}>
+              <Text style={styles.sessionTitle}>{t('groups.nextSession')}</Text>
+              <Text style={styles.sessionTime}>
+                {new Date(group.nextSession.startsAt).toLocaleString()}
+              </Text>
+              <View style={styles.sessionActions}>
+                <Pressable
+                  onPress={() => void onRsvp('confirmed')}
+                  style={[
+                    styles.sessionRsvpBtn,
+                    myRsvpStatus === 'confirmed' && styles.sessionRsvpBtnActive,
+                  ]}
+                >
+                  <Text style={styles.sessionRsvpText}>{t('groups.confirm')}</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => void onRsvp('declined')}
+                  style={[
+                    styles.sessionRsvpBtnOutline,
+                    myRsvpStatus === 'declined' && styles.sessionRsvpBtnDeclinedActive,
+                  ]}
+                >
+                  <Text style={styles.sessionRsvpTextOutline}>{t('groups.decline')}</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : null}
+
           {group.schedules.length === 0 ? (
             <Text style={styles.tabEmpty}>{t('groupChat.noSchedule')}</Text>
           ) : (
@@ -325,9 +387,11 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
               </View>
             ))
           )}
-          <Pressable onPress={onSchedule} style={styles.scheduleAddBtn}>
-            <Text style={styles.scheduleAddText}>{t('groups.schedule')}</Text>
-          </Pressable>
+          {isGroupCreator ? (
+            <Pressable onPress={() => void onSchedule()} style={styles.scheduleAddBtn}>
+              <Text style={styles.scheduleAddText}>{t('groups.schedule')}</Text>
+            </Pressable>
+          ) : null}
         </View>
       );
     }
@@ -558,13 +622,15 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
                 <Ionicons name="person-add-outline" size={20} color={colors.brand.blue} />
                 <Text style={styles.quickBtnText}>{t('groupChat.inviteGroup')}</Text>
               </Pressable>
-              <Pressable
-                onPress={onSchedule}
-                style={({ pressed }) => [styles.quickBtn, styles.quickPink, { opacity: pressed ? 0.88 : 1 }]}
-              >
-                <Ionicons name="calendar-outline" size={20} color={colors.brand.pink} />
-                <Text style={styles.quickBtnText}>{t('groupChat.scheduleMatch')}</Text>
-              </Pressable>
+              {isGroupCreator ? (
+                <Pressable
+                  onPress={() => void onSchedule()}
+                  style={({ pressed }) => [styles.quickBtn, styles.quickPink, { opacity: pressed ? 0.88 : 1 }]}
+                >
+                  <Ionicons name="calendar-outline" size={20} color={colors.brand.pink} />
+                  <Text style={styles.quickBtnText}>{t('groupChat.scheduleMatch')}</Text>
+                </Pressable>
+              ) : null}
               <Pressable
                 onPress={() =>
                   Alert.alert(t('groupChat.more'), undefined, [
@@ -996,6 +1062,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scheduleAddText: { color: colors.brand.purple, fontWeight: '800' },
+  sessionCard: {
+    backgroundColor: 'rgba(123,63,242,0.12)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(123,63,242,0.35)',
+    padding: 14,
+    marginBottom: 8,
+  },
+  sessionTitle: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  sessionTime: { color: colors.ink.secondary, marginTop: 4, fontSize: 13 },
+  sessionActions: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  sessionRsvpBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: colors.brand.purple,
+    alignItems: 'center',
+  },
+  sessionRsvpBtnActive: { borderWidth: 2, borderColor: '#fff' },
+  sessionRsvpBtnOutline: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    alignItems: 'center',
+  },
+  sessionRsvpBtnDeclinedActive: {
+    borderColor: colors.brand.pink,
+    backgroundColor: 'rgba(255,77,166,0.15)',
+  },
+  sessionRsvpText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  sessionRsvpTextOutline: { color: colors.ink.secondary, fontWeight: '700', fontSize: 13 },
   infoTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
   infoMeta: { color: colors.ink.secondary, fontSize: 13, marginTop: 6 },
   infoGame: { color: colors.brand.blue, fontSize: 14, fontWeight: '700', marginTop: 8 },

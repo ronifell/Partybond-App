@@ -132,7 +132,9 @@ export interface ChatMessage {
 
 export interface PublicUser {
   id: string;
+  email: string;
   name: string;
+  age: number;
   photoUrl: string | null;
   lookingFor: string | null;
   isOnline: boolean;

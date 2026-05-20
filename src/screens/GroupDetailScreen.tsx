@@ -31,6 +31,7 @@ import {
   setSessionRsvp,
 } from '../api/social';
 import { fetchGames } from '../api/games';
+import { getApiError } from '../api/client';
 import { useAuth } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 import { getGameImage } from '../theme/assets';
@@ -101,13 +102,28 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
   }, [group]);
 
   const groupPhotoUri = group?.photoUrl ?? group?.members.find((m) => m.role === 'admin')?.photoUrl;
+  const isGroupCreator = !!user && !!group && group.createdById === user.id;
+
+  const myRsvpStatus = useMemo(() => {
+    if (!group?.nextSession || !user) return null;
+    return group.nextSession.rsvps.find((r) => r.userId === user.id)?.status ?? null;
+  }, [group?.nextSession, user]);
 
   const onSchedule = async () => {
-    const d = new Date();
-    const day = d.getDay();
-    await createGroupSchedule(groupId, { dayOfWeek: day === 0 ? 2 : day, timeLocal: '21:00' });
-    await refetch();
-    Alert.alert(t('groupDetail.quickSchedule'), t('groupDetail.scheduleDone'));
+    if (!isGroupCreator) {
+      Alert.alert(t('groups.scheduleLeaderOnlyTitle'), t('groups.scheduleLeaderOnlyBody'));
+      return;
+    }
+    try {
+      const d = new Date();
+      const day = d.getDay();
+      await createGroupSchedule(groupId, { dayOfWeek: day === 0 ? 2 : day, timeLocal: '21:00' });
+      await refetch();
+      showTopToast(t('groupDetail.scheduleDone'));
+    } catch (err) {
+      const apiErr = getApiError(err);
+      Alert.alert(t('groups.scheduleFailedTitle'), apiErr.message || t('groups.scheduleFailedBody'));
+    }
   };
 
   const onSquadFill = async () => {
@@ -125,8 +141,18 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
 
   const onRsvp = async (status: 'confirmed' | 'declined') => {
     if (!group?.nextSession) return;
-    await setSessionRsvp(group.nextSession.id, status);
-    await refetch();
+    try {
+      await setSessionRsvp(group.nextSession.id, status);
+      await refetch();
+      showTopToast(
+        status === 'confirmed'
+          ? t('groups.rsvpConfirmedSelf')
+          : t('groups.rsvpDeclinedSelf'),
+      );
+    } catch (err) {
+      const apiErr = getApiError(err);
+      Alert.alert(t('groups.rsvpFailedTitle'), apiErr.message || t('groups.rsvpFailedBody'));
+    }
   };
 
   const onShare = async () => {
@@ -258,10 +284,22 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
                 {new Date(group.nextSession.startsAt).toLocaleString()}
               </Text>
               <View style={styles.sessionActions}>
-                <Pressable onPress={() => onRsvp('confirmed')} style={styles.sessionRsvpBtn}>
+                <Pressable
+                  onPress={() => void onRsvp('confirmed')}
+                  style={[
+                    styles.sessionRsvpBtn,
+                    myRsvpStatus === 'confirmed' && styles.sessionRsvpBtnActive,
+                  ]}
+                >
                   <Text style={styles.sessionRsvpText}>{t('groups.confirm')}</Text>
                 </Pressable>
-                <Pressable onPress={() => onRsvp('declined')} style={styles.sessionRsvpBtnOutline}>
+                <Pressable
+                  onPress={() => void onRsvp('declined')}
+                  style={[
+                    styles.sessionRsvpBtnOutline,
+                    myRsvpStatus === 'declined' && styles.sessionRsvpBtnDeclinedActive,
+                  ]}
+                >
                   <Text style={styles.sessionRsvpTextOutline}>{t('groups.decline')}</Text>
                 </Pressable>
               </View>
@@ -270,13 +308,15 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
 
           <Text style={styles.sectionTitle}>{t('groupDetail.quickActions')}</Text>
           <View style={styles.quickRow}>
-            <Pressable
-              onPress={onSchedule}
-              style={({ pressed }) => [styles.quickBtn, { opacity: pressed ? 0.88 : 1 }]}
-            >
-              <Ionicons name="calendar-outline" size={22} color="#fff" />
-              <Text style={styles.quickBtnText}>{t('groups.schedule')}</Text>
-            </Pressable>
+            {isGroupCreator ? (
+              <Pressable
+                onPress={() => void onSchedule()}
+                style={({ pressed }) => [styles.quickBtn, { opacity: pressed ? 0.88 : 1 }]}
+              >
+                <Ionicons name="calendar-outline" size={22} color="#fff" />
+                <Text style={styles.quickBtnText}>{t('groups.schedule')}</Text>
+              </Pressable>
+            ) : null}
             <Pressable
               onPress={openChat}
               style={({ pressed }) => [styles.quickBtn, { opacity: pressed ? 0.88 : 1 }]}
@@ -608,6 +648,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: colors.brand.purple,
     alignItems: 'center',
+  },
+  sessionRsvpBtnActive: {
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  sessionRsvpBtnDeclinedActive: {
+    borderColor: colors.brand.pink,
+    backgroundColor: 'rgba(255,77,166,0.15)',
   },
   sessionRsvpText: {
     color: '#fff',

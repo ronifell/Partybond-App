@@ -7,6 +7,7 @@ import { useAuth } from '../store/authStore';
 import { connectSocket, disconnectSocket } from '../socket';
 import { colors } from '../theme/tokens';
 import { GlobalInviteOverlay } from '../components/GlobalInviteOverlay';
+import { useGroupSocketEvents } from '../hooks/useGroupSocketEvents';
 
 import { LoginScreen } from '../screens/LoginScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
@@ -49,6 +50,11 @@ const navTheme = {
     primary: colors.brand.purple,
   },
 };
+
+function AuthenticatedRealtimeLayer() {
+  useGroupSocketEvents();
+  return <GlobalInviteOverlay />;
+}
 
 export function RootNavigator() {
   const { hydrated, token, user, hydrate } = useAuth();
@@ -142,7 +148,7 @@ export function RootNavigator() {
           )}
         </Stack.Navigator>
 
-        {token && !showOnboardingStack ? <GlobalInviteOverlay /> : null}
+        {token && !showOnboardingStack ? <AuthenticatedRealtimeLayer /> : null}
       </View>
     </NavigationContainer>
   );

@@ -28,7 +28,7 @@ export function GlobalInviteOverlay() {
 
   const topInvite = invites[0];
   const showInviteCard = !!topInvite;
-  const showToast = !!toastMessage && !showInviteCard;
+  const showToast = !!toastMessage;
 
   const onRespond = async (accept: boolean) => {
     if (!topInvite || busyAction) return;
