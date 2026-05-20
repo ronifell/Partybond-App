@@ -99,6 +99,7 @@
       "invalidCredentials": "E-mail ou senha inválidos.",
       "emailInUse": "Este e-mail já está em uso.",
       "googleNotConfigured": "Login com Google não configurado. Adicione EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.",
+      "googleExpoProxyRedirect": "No Expo Go, o Google precisa da URL de proxy da Expo: defina EXPO_PUBLIC_EXPO_AUTH_PROXY_REDIRECT_URI (https://auth.expo.io/@sua-conta/slug) igual ao Google Cloud, ou faça login na CLI da Expo para o app resolver o nome do projeto.",
       "googleNotReady": "Login com Google ainda está carregando. Tente novamente.",
       "googleNoToken": "O Google não retornou um token. Tente novamente.",
       "googleCancelled": "Login com Google cancelado."

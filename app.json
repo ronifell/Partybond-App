@@ -58,6 +58,7 @@
     ],
     "extra": {
       "apiUrl": "http://18.231.112.145:4000",
+      "expoAuthProxyRedirectUri": "https://auth.expo.io/@hayatokato/partybond",
       "eas": {
         "projectId": "a0d3c1fb-416e-4821-8a69-cd9e1a28dec2"
       }
