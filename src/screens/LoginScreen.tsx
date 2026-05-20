@@ -14,6 +14,7 @@ import { LanguagePill } from '../components/ui/LanguagePill';
 import { OAuthButton } from '../components/ui/OAuthButton';
 import { WordmarkPartybond } from '../components/ui/WordmarkPartybond';
 import { login } from '../api/auth';
+import { useGoogleSignIn } from '../hooks/useGoogleSignIn';
 import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
 import { colors, gradient } from '../theme/tokens';
@@ -26,6 +27,7 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<any>) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const google = useGoogleSignIn();
 
   const onSubmit = async () => {
     setError(null);
@@ -186,9 +188,9 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<any>) {
                   {t('auth.forgotPassword')}
                 </Text>
               </Pressable>
-              {error ? (
+              {error || google.error ? (
                 <Text style={{ color: colors.status.error, fontSize: 13, fontWeight: '600' }}>
-                  {error}
+                  {error ?? google.error}
                 </Text>
               ) : null}
             </View>
@@ -225,7 +227,13 @@ export function LoginScreen({ navigation }: NativeStackScreenProps<any>) {
               <OAuthButton
                 provider="google"
                 half
-                onPress={() => showSoon(t('auth.oauthGoogle'))}
+                loading={google.loading}
+                disabled={google.loading}
+                onPress={() => {
+                  setError(null);
+                  google.clearError();
+                  void google.signIn();
+                }}
               />
               <OAuthButton
                 provider="apple"

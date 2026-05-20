@@ -97,7 +97,11 @@
     "errors": {
       "generic": "Algo deu errado. Tente novamente.",
       "invalidCredentials": "E-mail ou senha inválidos.",
-      "emailInUse": "Este e-mail já está em uso."
+      "emailInUse": "Este e-mail já está em uso.",
+      "googleNotConfigured": "Login com Google não configurado. Adicione EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.",
+      "googleNotReady": "Login com Google ainda está carregando. Tente novamente.",
+      "googleNoToken": "O Google não retornou um token. Tente novamente.",
+      "googleCancelled": "Login com Google cancelado."
     }
   },
   "onboarding": {

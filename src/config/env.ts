@@ -29,3 +29,20 @@ export function getApiOrigin(): string {
 }
 
 export const SOCKET_URL = getApiOrigin();
+
+const googleExtra = Constants.expoConfig?.extra as
+  | {
+      googleWebClientId?: string;
+      googleAndroidClientId?: string;
+      googleIosClientId?: string;
+    }
+  | undefined;
+
+export const GOOGLE_WEB_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? googleExtra?.googleWebClientId ?? '';
+
+export const GOOGLE_ANDROID_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? googleExtra?.googleAndroidClientId ?? '';
+
+export const GOOGLE_IOS_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? googleExtra?.googleIosClientId ?? '';

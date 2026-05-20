@@ -45,3 +45,8 @@ export async function resetPassword(
   });
   return data;
 }
+
+export async function loginWithGoogle(idToken: string, locale?: string): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>('/auth/google', { idToken, locale });
+  return { ...data, user: normalizeUser(data.user as ApiUserPayload) };
+}

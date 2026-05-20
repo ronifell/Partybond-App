@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, Text, View, Platform } from 'react-native';
+import { Pressable, Text, View, Platform, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useTranslation } from 'react-i18next';
@@ -9,13 +9,15 @@ interface Props {
   onPress?: () => void;
   /** Half-width when sitting next to another OAuth button. */
   half?: boolean;
+  loading?: boolean;
+  disabled?: boolean;
 }
 
 /**
  * Outlined social-login button matching the design reference.
  * (Currently visual-only — wire onPress to your OAuth flow when ready.)
  */
-export function OAuthButton({ provider, onPress, half }: Props) {
+export function OAuthButton({ provider, onPress, half, loading, disabled }: Props) {
   const { t } = useTranslation();
 
   const config = {
@@ -36,12 +38,14 @@ export function OAuthButton({ provider, onPress, half }: Props) {
   return (
     <Pressable
       onPress={onPress}
+      disabled={disabled || loading}
       style={({ pressed }) => ({
         flex: half ? 1 : undefined,
         borderRadius: 14,
         overflow: 'hidden',
         borderWidth: 1.5,
         borderColor: pressed ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,255,0.18)',
+        opacity: disabled || loading ? 0.55 : 1,
       })}
     >
       <BlurView
@@ -60,7 +64,11 @@ export function OAuthButton({ provider, onPress, half }: Props) {
             gap: 10,
           }}
         >
-          <Ionicons name={config.icon} size={18} color={config.iconColor} />
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Ionicons name={config.icon} size={18} color={config.iconColor} />
+          )}
           <Text
             style={{
               color: 'white',

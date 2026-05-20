@@ -97,7 +97,11 @@
     "errors": {
       "generic": "Something went wrong. Please try again.",
       "invalidCredentials": "Invalid email or password.",
-      "emailInUse": "This email is already in use."
+      "emailInUse": "This email is already in use.",
+      "googleNotConfigured": "Google Sign-In is not configured. Add EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.",
+      "googleNotReady": "Google Sign-In is still loading. Try again.",
+      "googleNoToken": "Google did not return a sign-in token. Try again.",
+      "googleCancelled": "Google sign-in was cancelled."
     }
   },
   "onboarding": {
