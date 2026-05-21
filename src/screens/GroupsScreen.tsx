@@ -291,36 +291,46 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
       <View style={styles.actionRow}>
         <Pressable
           onPress={() => navigation.navigate('CreateGroup')}
-          style={({ pressed }) => [styles.createCard, { opacity: pressed ? 0.92 : 1, flex: 1.4 }]}
+          style={({ pressed }) => [styles.actionCard, { opacity: pressed ? 0.92 : 1 }]}
         >
-          <HexagonFrame size={48} accent="purple">
-            <View style={styles.hexIconInner}>
-              <Ionicons name="people" size={22} color={colors.brand.purple} />
-            </View>
-          </HexagonFrame>
-          <View style={styles.actionCardText}>
-            <Text style={styles.actionCardTitle}>{t('groups.createCardTitle')}</Text>
-            <Text style={styles.actionCardBody}>{t('groups.createCardBody')}</Text>
+          <View style={styles.actionCardIcon}>
+            <HexagonFrame size={44} accent="purple">
+              <View style={styles.hexIconInner}>
+                <Ionicons name="people" size={20} color={colors.brand.purple} />
+              </View>
+            </HexagonFrame>
           </View>
-          <View style={styles.chevronBtn}>
+          <View style={styles.actionCardText}>
+            <Text style={styles.actionCardTitle} numberOfLines={1}>
+              {t('groups.createCardTitle')}
+            </Text>
+            <Text style={styles.actionCardBody} numberOfLines={2}>
+              {t('groups.createCardBody')}
+            </Text>
+          </View>
+          <View style={styles.chevronBtn} pointerEvents="none">
             <Ionicons name="chevron-forward" size={16} color="#fff" />
           </View>
         </Pressable>
 
         <Pressable
           onPress={() => setActiveTab('invites')}
-          style={({ pressed }) => [styles.createCard, { opacity: pressed ? 0.92 : 1, flex: 1 }]}
+          style={({ pressed }) => [styles.actionCard, { opacity: pressed ? 0.92 : 1 }]}
         >
-          <View style={styles.inviteIconBox}>
-            <Ionicons name="person-add" size={22} color={colors.brand.purple} />
+          <View style={styles.actionCardIcon}>
+            <View style={styles.inviteIconBox}>
+              <Ionicons name="person-add" size={20} color={colors.brand.purple} />
+            </View>
           </View>
           <View style={styles.actionCardText}>
-            <Text style={styles.actionCardTitle}>{t('groups.invitesCardTitle')}</Text>
-            <Text style={styles.invitesPending}>
+            <Text style={styles.actionCardTitle} numberOfLines={1}>
+              {t('groups.invitesCardTitle')}
+            </Text>
+            <Text style={styles.invitesPending} numberOfLines={1}>
               {t('groups.invitesPending', { count: invites.length })}
             </Text>
           </View>
-          <View style={styles.chevronBtn}>
+          <View style={styles.chevronBtn} pointerEvents="none">
             <Ionicons name="chevron-forward" size={16} color="#fff" />
           </View>
         </Pressable>
@@ -522,15 +532,22 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
-  createCard: {
+  actionCard: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: CARD_BG,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: CARD_BORDER,
-    padding: 12,
-    gap: 10,
+    paddingVertical: 12,
+    paddingLeft: 10,
+    paddingRight: 36,
+    minHeight: 72,
+  },
+  actionCardIcon: {
+    flexShrink: 0,
+    marginRight: 8,
   },
   hexIconInner: {
     ...StyleSheet.absoluteFillObject,
@@ -538,9 +555,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   inviteIconBox: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: 'rgba(123,63,242,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -550,6 +567,7 @@ const styles = StyleSheet.create({
   actionCardText: {
     flex: 1,
     minWidth: 0,
+    justifyContent: 'center',
   },
   actionCardTitle: {
     color: '#fff',
@@ -560,7 +578,7 @@ const styles = StyleSheet.create({
     color: colors.ink.disabled,
     fontSize: 10,
     marginTop: 3,
-    lineHeight: 13,
+    lineHeight: 14,
   },
   invitesPending: {
     color: colors.brand.purple,
@@ -569,12 +587,15 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   chevronBtn: {
+    position: 'absolute',
+    right: 8,
+    top: 0,
+    bottom: 0,
     width: 28,
-    height: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 14,
     backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   tabsScroll: {
     gap: 20,
