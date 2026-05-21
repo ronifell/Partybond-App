@@ -23,6 +23,7 @@ import { Avatar } from '../components/ui/Avatar';
 import { HexagonFrame, HexagonSuccessBadge } from '../components/ui/HexagonFrame';
 import { GradientButton } from '../components/ui/GradientButton';
 import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
+import { GroupNextSessionCard } from '../components/GroupNextSessionCard';
 import {
   createGroupSchedule,
   fetchGroup,
@@ -104,14 +105,13 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
   const groupPhotoUri = group?.photoUrl ?? group?.members.find((m) => m.role === 'admin')?.photoUrl;
   const isGroupCreator = !!user && !!group && group.createdById === user.id;
 
-  const myRsvpStatus = useMemo(() => {
-    if (!group?.nextSession || !user) return null;
-    return group.nextSession.rsvps.find((r) => r.userId === user.id)?.status ?? null;
-  }, [group?.nextSession, user]);
-
   const onSchedule = async () => {
     if (!isGroupCreator) {
       Alert.alert(t('groups.scheduleLeaderOnlyTitle'), t('groups.scheduleLeaderOnlyBody'));
+      return;
+    }
+    if (group?.nextSession) {
+      showTopToast(t('groups.scheduleAlreadyExists'));
       return;
     }
     try {
@@ -122,6 +122,10 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
       showTopToast(t('groupDetail.scheduleDone'));
     } catch (err) {
       const apiErr = getApiError(err);
+      if (apiErr.code === 'session_already_scheduled') {
+        showTopToast(t('groups.scheduleAlreadyExists'));
+        return;
+      }
       Alert.alert(t('groups.scheduleFailedTitle'), apiErr.message || t('groups.scheduleFailedBody'));
     }
   };
@@ -277,34 +281,11 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
             </Pressable>
           </View>
 
-          {group.nextSession ? (
-            <View style={styles.sessionCard}>
-              <Text style={styles.sessionTitle}>{t('groups.nextSession')}</Text>
-              <Text style={styles.sessionTime}>
-                {new Date(group.nextSession.startsAt).toLocaleString()}
-              </Text>
-              <View style={styles.sessionActions}>
-                <Pressable
-                  onPress={() => void onRsvp('confirmed')}
-                  style={[
-                    styles.sessionRsvpBtn,
-                    myRsvpStatus === 'confirmed' && styles.sessionRsvpBtnActive,
-                  ]}
-                >
-                  <Text style={styles.sessionRsvpText}>{t('groups.confirm')}</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => void onRsvp('declined')}
-                  style={[
-                    styles.sessionRsvpBtnOutline,
-                    myRsvpStatus === 'declined' && styles.sessionRsvpBtnDeclinedActive,
-                  ]}
-                >
-                  <Text style={styles.sessionRsvpTextOutline}>{t('groups.decline')}</Text>
-                </Pressable>
-              </View>
-            </View>
-          ) : null}
+          <GroupNextSessionCard
+            group={group}
+            userId={user?.id}
+            onRsvp={(status) => void onRsvp(status)}
+          />
 
           <Text style={styles.sectionTitle}>{t('groupDetail.quickActions')}</Text>
           <View style={styles.quickRow}>
@@ -618,62 +599,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,209,255,0.35)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  sessionCard: {
-    backgroundColor: 'rgba(123,63,242,0.12)',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(123,63,242,0.35)',
-    padding: 14,
-    marginBottom: 18,
-  },
-  sessionTitle: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 15,
-  },
-  sessionTime: {
-    color: colors.ink.secondary,
-    marginTop: 4,
-    fontSize: 13,
-  },
-  sessionActions: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-  },
-  sessionRsvpBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: colors.brand.purple,
-    alignItems: 'center',
-  },
-  sessionRsvpBtnActive: {
-    borderWidth: 2,
-    borderColor: '#fff',
-  },
-  sessionRsvpBtnDeclinedActive: {
-    borderColor: colors.brand.pink,
-    backgroundColor: 'rgba(255,77,166,0.15)',
-  },
-  sessionRsvpText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  sessionRsvpBtnOutline: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: CARD_BORDER,
-    alignItems: 'center',
-  },
-  sessionRsvpTextOutline: {
-    color: colors.ink.secondary,
-    fontWeight: '700',
-    fontSize: 13,
   },
   sectionTitle: {
     color: '#fff',
