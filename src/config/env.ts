@@ -38,11 +38,26 @@ const googleExtra = Constants.expoConfig?.extra as
     }
   | undefined;
 
-export const GOOGLE_WEB_CLIENT_ID =
-  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? googleExtra?.googleWebClientId ?? '';
+/** Prefer non-empty env, then app.config `extra` (APK/EAS builds). */
+function pickGoogleId(envValue: string | undefined, extraValue: string | undefined): string {
+  const fromEnv = envValue?.trim();
+  if (fromEnv) return fromEnv;
+  const fromExtra = extraValue?.trim();
+  if (fromExtra) return fromExtra;
+  return '';
+}
 
-export const GOOGLE_ANDROID_CLIENT_ID =
-  process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? googleExtra?.googleAndroidClientId ?? '';
+export const GOOGLE_WEB_CLIENT_ID = pickGoogleId(
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  googleExtra?.googleWebClientId,
+);
 
-export const GOOGLE_IOS_CLIENT_ID =
-  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? googleExtra?.googleIosClientId ?? '';
+export const GOOGLE_ANDROID_CLIENT_ID = pickGoogleId(
+  process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+  googleExtra?.googleAndroidClientId,
+);
+
+export const GOOGLE_IOS_CLIENT_ID = pickGoogleId(
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  googleExtra?.googleIosClientId,
+);
