@@ -508,6 +508,8 @@
     "unnamed": "Chat",
     "placeholder": "Mensagem…",
     "send": "Enviar",
+    "sendFailedTitle": "Não foi possível enviar",
+    "sendFailedBody": "Tente novamente em instantes.",
     "searchPlaceholder": "Buscar conversas...",
     "filter": "Filtrar",
     "filterSoon": "Mais filtros em breve.",

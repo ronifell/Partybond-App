@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -37,6 +37,12 @@ import { getGameImage } from '../theme/assets';
 import { colors } from '../theme/tokens';
 import { useAuth } from '../store/authStore';
 import type { ChatMessage } from '../api/types';
+import {
+  appendChatMessage,
+  buildOptimisticMessage,
+  removeChatMessage,
+  replaceOptimisticChatMessage,
+} from '../utils/chatCache';
 
 const PURE_BLACK = '#000000';
 const CARD_BG = '#0D0D12';
@@ -117,6 +123,8 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
   const [text, setText] = useState('');
   const [activeTab, setActiveTab] = useState<ChatTab>('chat');
   const [pinnedOpen, setPinnedOpen] = useState(true);
+  const [sending, setSending] = useState(false);
+  const chatListRef = useRef<FlatList>(null);
 
   const { data } = useQuery({
     queryKey: ['chat', conversationId],
@@ -164,13 +172,36 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
     };
   }, [conversationId, qc]);
 
+  const scrollChatToEnd = () => {
+    requestAnimationFrame(() => {
+      chatListRef.current?.scrollToEnd({ animated: true });
+    });
+  };
+
   const onSend = async () => {
     const body = text.trim();
-    if (!body) return;
+    if (!body || !user || sending) return;
+
+    const tempId = `optimistic-${Date.now()}`;
+    const optimistic = buildOptimisticMessage(user, body, tempId);
+
     setText('');
-    await sendChatMessage(conversationId, body);
-    await qc.invalidateQueries({ queryKey: ['chat', conversationId] });
-    await qc.invalidateQueries({ queryKey: ['chats'] });
+    setSending(true);
+    appendChatMessage(qc, conversationId, optimistic);
+    scrollChatToEnd();
+
+    try {
+      const serverMessage = await sendChatMessage(conversationId, body);
+      replaceOptimisticChatMessage(qc, conversationId, tempId, serverMessage);
+      void qc.invalidateQueries({ queryKey: ['chats'] });
+    } catch (err) {
+      removeChatMessage(qc, conversationId, tempId);
+      setText(body);
+      const apiErr = getApiError(err);
+      Alert.alert(t('chats.sendFailedTitle'), apiErr.message || t('chats.sendFailedBody'));
+    } finally {
+      setSending(false);
+    }
   };
 
   const onSchedule = async () => {
@@ -234,6 +265,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
             keyboardVerticalOffset={80}
           >
             <FlatList
+              ref={chatListRef}
               data={messages}
               keyExtractor={(m) => m.id}
               contentContainerStyle={{ padding: 16, gap: 8 }}
@@ -400,6 +432,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
 
     return (
       <FlatList
+        ref={chatListRef}
         style={{ flex: 1 }}
         data={rows}
         keyExtractor={(r) => r.id}
