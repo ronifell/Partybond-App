@@ -222,7 +222,6 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
             {
               icon: 'add-circle',
               label: t('home.quickCreateSession'),
-              primary: true,
               onPress: () =>
                 navigation.navigate('CreateSession', {
                   defaultGameId: user?.selectedGame ?? undefined,
