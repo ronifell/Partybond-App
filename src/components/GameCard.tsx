@@ -7,6 +7,7 @@ import { Card } from './ui/Card';
 import type { Game } from '../api/types';
 import { colors, gradient } from '../theme/tokens';
 import { getGameImage } from '../theme/assets';
+import { GAME_ICONS, getGameAccent } from '../theme/gameAccents';
 
 interface Props {
   game: Game;
@@ -16,21 +17,6 @@ interface Props {
   loading?: boolean;
 }
 
-const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  free_fire: 'flame',
-  elden_ring_nightreign: 'skull',
-  valorant: 'aperture',
-  cod_mobile: 'rocket',
-  league_of_legends: 'trophy',
-  fortnite: 'thunderstorm',
-  counter_strike_2: 'scan-circle',
-  ea_sports_fc_26: 'football',
-  minecraft: 'cube',
-  roblox: 'shapes',
-  pubg_mobile: 'shield',
-  mobile_legends: 'planet',
-};
-
 const CARD_HEIGHT = 96;
 const IMAGE_WIDTH = 96;
 const CARD_RADIUS = 18;
@@ -39,10 +25,26 @@ export function GameCard({ game, playersOnline = 0, onJoin, loading }: Props) {
   const { t } = useTranslation();
   const disabled = game.status === 'coming_soon';
   const image = getGameImage(game.id);
-  const fallbackIcon = ICONS[game.id] ?? 'game-controller';
+  const fallbackIcon = GAME_ICONS[game.id] ?? 'game-controller';
+  const accent = getGameAccent(game.id);
 
   return (
-    <Card padding={0} radius={CARD_RADIUS}>
+    <Card
+      padding={0}
+      radius={CARD_RADIUS}
+      variant="dark"
+      style={{
+        borderWidth: 1.5,
+        borderColor: disabled ? 'rgba(255,255,255,0.12)' : accent.border,
+        backgroundColor: disabled ? 'rgba(10,10,18,0.85)' : accent.glow,
+        overflow: 'hidden',
+        shadowColor: disabled ? 'transparent' : accent.tagText,
+        shadowOpacity: disabled ? 0 : 0.25,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: disabled ? 0 : 4,
+      }}
+    >
       <View style={{ flexDirection: 'row', height: CARD_HEIGHT }}>
         {/* Left thumbnail — full card height, flush with the card edge */}
         <View
@@ -79,11 +81,13 @@ export function GameCard({ game, playersOnline = 0, onJoin, loading }: Props) {
               borderRadius: 7,
               backgroundColor: disabled
                 ? 'rgba(107, 107, 128, 0.85)'
-                : 'rgba(123, 63, 242, 0.85)',
+                : accent.tagBg,
+              borderWidth: disabled ? 0 : 1,
+              borderColor: disabled ? 'transparent' : accent.border,
               alignItems: 'center',
               justifyContent: 'center',
-              shadowColor: '#7B3FF2',
-              shadowOpacity: disabled ? 0 : 0.6,
+              shadowColor: disabled ? 'transparent' : accent.tagText,
+              shadowOpacity: disabled ? 0 : 0.5,
               shadowRadius: 6,
             }}
           >
@@ -167,8 +171,8 @@ export function GameCard({ game, playersOnline = 0, onJoin, loading }: Props) {
                 borderRadius: 11,
                 overflow: 'hidden',
                 opacity: disabled ? 0.4 : 1,
-                shadowColor: '#7B3FF2',
-                shadowOpacity: disabled ? 0 : 0.45,
+                shadowColor: disabled ? 'transparent' : accent.tagText,
+                shadowOpacity: disabled ? 0 : 0.4,
                 shadowRadius: 10,
                 shadowOffset: { width: 0, height: 4 },
                 elevation: disabled ? 0 : 8,

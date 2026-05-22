@@ -7,103 +7,12 @@ import { useTranslation } from 'react-i18next';
 import type { Game } from '../api/types';
 import { getGameImage } from '../theme/assets';
 import { colors, gradient } from '../theme/tokens';
-
-type GameAccent = {
-  border: string;
-  glow: string;
-  tagBg: string;
-  tagText: string;
-};
-
-const DEFAULT_ACCENT: GameAccent = {
-  border: 'rgba(123, 63, 242, 0.45)',
-  glow: 'rgba(123, 63, 242, 0.14)',
-  tagBg: 'rgba(123, 63, 242, 0.22)',
-  tagText: '#D4C4FF',
-};
-
-const GAME_ACCENTS: Record<string, GameAccent> = {
-  cod_mobile: {
-    border: 'rgba(255, 193, 7, 0.5)',
-    glow: 'rgba(255, 193, 7, 0.1)',
-    tagBg: 'rgba(255, 193, 7, 0.18)',
-    tagText: '#FFD54F',
-  },
-  counter_strike_2: {
-    border: 'rgba(255, 152, 0, 0.5)',
-    glow: 'rgba(255, 152, 0, 0.1)',
-    tagBg: 'rgba(255, 152, 0, 0.18)',
-    tagText: '#FFB74D',
-  },
-  ea_sports_fc_26: {
-    border: 'rgba(0, 180, 255, 0.5)',
-    glow: 'rgba(0, 180, 255, 0.1)',
-    tagBg: 'rgba(0, 180, 255, 0.18)',
-    tagText: '#81D4FA',
-  },
-  elden_ring_nightreign: {
-    border: 'rgba(180, 140, 255, 0.55)',
-    glow: 'rgba(180, 140, 255, 0.12)',
-    tagBg: 'rgba(180, 140, 255, 0.2)',
-    tagText: '#CE93D8',
-  },
-  fortnite: {
-    border: 'rgba(200, 100, 255, 0.5)',
-    glow: 'rgba(200, 100, 255, 0.1)',
-    tagBg: 'rgba(200, 100, 255, 0.18)',
-    tagText: '#E1BEE7',
-  },
-  free_fire: {
-    border: 'rgba(255, 200, 80, 0.5)',
-    glow: 'rgba(255, 200, 80, 0.1)',
-    tagBg: 'rgba(255, 200, 80, 0.18)',
-    tagText: '#FFE082',
-  },
-  league_of_legends: {
-    border: 'rgba(0, 210, 220, 0.5)',
-    glow: 'rgba(0, 210, 220, 0.1)',
-    tagBg: 'rgba(0, 210, 220, 0.18)',
-    tagText: '#80DEEA',
-  },
-  minecraft: {
-    border: 'rgba(76, 200, 120, 0.5)',
-    glow: 'rgba(76, 200, 120, 0.1)',
-    tagBg: 'rgba(76, 200, 120, 0.18)',
-    tagText: '#A5D6A7',
-  },
-  roblox: {
-    border: 'rgba(255, 100, 120, 0.5)',
-    glow: 'rgba(255, 100, 120, 0.1)',
-    tagBg: 'rgba(255, 100, 120, 0.18)',
-    tagText: '#F48FB1',
-  },
-};
-
-/** Extra genre/mode pills shown under the primary tag (screenshot-style). */
-const GAME_EXTRA_TAGS: Record<string, string[]> = {
-  cod_mobile: ['BATTLE ROYALE'],
-  free_fire: ['BATTLE ROYALE'],
-  fortnite: ['BATTLE ROYALE'],
-  pubg_mobile: ['BATTLE ROYALE'],
-};
+import { GAME_EXTRA_TAGS, GAME_ICONS, getGameAccent } from '../theme/gameAccents';
 
 /** Total row height; thumbnail is ~90% of this. */
 const ROW_HEIGHT = 64;
 const THUMB_SIZE = Math.round(ROW_HEIGHT * 0.9);
 const ROW_PADDING_V = (ROW_HEIGHT - THUMB_SIZE) / 2;
-
-const GAME_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
-  free_fire: 'flame',
-  elden_ring_nightreign: 'skull',
-  valorant: 'aperture',
-  cod_mobile: 'rocket',
-  league_of_legends: 'trophy',
-  fortnite: 'thunderstorm',
-  counter_strike_2: 'scan-circle',
-  ea_sports_fc_26: 'football',
-  minecraft: 'cube',
-  roblox: 'shapes',
-};
 
 interface Props {
   game: Game;
@@ -114,7 +23,7 @@ interface Props {
 
 export function CreateSquadGameRow({ game, selected, playersActive, onPress }: Props) {
   const { t } = useTranslation();
-  const accent = GAME_ACCENTS[game.id] ?? DEFAULT_ACCENT;
+  const accent = getGameAccent(game.id);
   const thumb = getGameImage(game.id);
   const genreKey = `gameProfile.genres.${game.id}`;
   const genreLabel = t(genreKey, { defaultValue: t('gameProfile.genreDefault') });
@@ -244,15 +153,15 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
     borderWidth: 1,
   },
   tagText: {
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '800',
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
   statusRow: {
     flexDirection: 'row',
