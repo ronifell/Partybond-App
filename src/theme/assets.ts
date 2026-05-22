@@ -50,15 +50,22 @@ export const ONBOARDING_WELCOME_OVERLAY = 0.28;
 //    Path:  Frontend/assets/games/<gameId>.png
 //
 //    Seeded game ids (backend): free_fire | elden_ring_nightreign | valorant |
-//    pubg_mobile | mobile_legends | cod_mobile — each needs a matching key below.
+//    cod_mobile | league_of_legends | fortnite | counter_strike_2 | ea_sports_fc_26 |
+//    minecraft | roblox | pubg_mobile | mobile_legends — add a key when you have art.
 // ──────────────────────────────────────────────────────────────────────
 export const GAME_IMAGES: Record<string, ImageSourcePropType> = {
-  free_fire:      require('../../assets/games/free_fire.png'),
+  free_fire: require('../../assets/games/free_fire.png'),
   elden_ring_nightreign: require('../../assets/games/elden_ring_nightreign.png'),
-  valorant:       require('../../assets/games/valorant.png'),
-  pubg_mobile:    require('../../assets/games/pubg_mobile.png'),
+  valorant: require('../../assets/games/valorant.png'),
+  cod_mobile: require('../../assets/games/cod_mobile.png'),
+  league_of_legends: require('../../assets/games/league_of_legends.png'),
+  fortnite: require('../../assets/games/fortnite.png'),
+  counter_strike_2: require('../../assets/games/counter_strike_2.png'),
+  ea_sports_fc_26: require('../../assets/games/ea_sports_fc_26.png'),
+  minecraft: require('../../assets/games/minecraft.png'),
+  roblox: require('../../assets/games/roblox.png'),
+  pubg_mobile: require('../../assets/games/pubg_mobile.png'),
   mobile_legends: require('../../assets/games/mobile_legends.png'),
-  cod_mobile:     require('../../assets/games/cod_mobile.png'),
 };
 
 /**

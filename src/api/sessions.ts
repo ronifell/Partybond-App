@@ -25,11 +25,58 @@ export async function createSession(input: {
   title: string;
   gameMode: 'casual' | 'competitive';
   skillTier?: SessionSummary['skillTier'];
-  playersNeeded: 2 | 4;
+  playersNeeded?: number;
   scheduledAt?: string;
 }): Promise<SessionSummary> {
   const { data } = await api.post<{ session: SessionSummary }>('/sessions', input);
   return data.session;
+}
+
+export type SquadCandidate = {
+  userId: string;
+  name: string;
+  photoUrl: string | null;
+  nickname: string | null;
+  isOnline: boolean;
+  source: 'recent' | 'suggestion';
+};
+
+export async function fetchSquadCandidates(gameId: string): Promise<SquadCandidate[]> {
+  const { data } = await api.get<{ candidates: SquadCandidate[] }>('/users/me/squad-candidates', {
+    params: { gameId },
+  });
+  return data.candidates;
+}
+
+export type SessionSquadInvite = {
+  id: string;
+  sessionId: string;
+  expiresAt: string;
+  inviter: { id: string; name: string; photoUrl: string | null };
+  session: { id: string; title: string; gameId: string; gameName: string };
+};
+
+export async function fetchPendingSessionSquadInvites(): Promise<SessionSquadInvite[]> {
+  const { data } = await api.get<{ invites: SessionSquadInvite[] }>(
+    '/sessions/squad-invites/pending',
+  );
+  return data.invites;
+}
+
+export async function sendSessionSquadInvites(sessionId: string, inviteeIds: string[]) {
+  const { data } = await api.post<{ inviteIds: string[]; count: number }>(
+    `/sessions/${sessionId}/squad-invites`,
+    { inviteeIds },
+  );
+  return data;
+}
+
+export async function respondSessionSquadInvite(inviteId: string, accept: boolean) {
+  const { data } = await api.post<{ ok: boolean; sessionId: string }>(
+    `/sessions/squad-invites/${inviteId}/respond`,
+    { accept },
+  );
+  return data;
 }
 
 export async function joinQueue(sessionId: string): Promise<{ waitingCount: number }> {

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, Image, useWindowDimensions, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRoute } from '@react-navigation/native';
@@ -11,16 +12,23 @@ import { BackgroundGlow } from '../components/ui/BackgroundGlow';
 import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
 import { SegmentToggle } from '../components/ui/SegmentToggle';
-import { createSession } from '../api/sessions';
+import { Avatar } from '../components/ui/Avatar';
+import { getGameImage } from '../theme/assets';
+import {
+  createSession,
+  fetchSquadCandidates,
+  joinQueue,
+  sendSessionSquadInvites,
+} from '../api/sessions';
 import { fetchGames } from '../api/games';
 import type { SessionSkillTier } from '../api/types';
 import { SESSION_SKILL_TIERS } from '../api/types';
 import { useAuth } from '../store/authStore';
+import { useNotificationStore } from '../store/notificationStore';
 import { getApiError } from '../api/client';
-import { colors } from '../theme/tokens';
+import { colors, gradient } from '../theme/tokens';
 
 const MODES = ['casual', 'competitive'] as const;
-const SIZES: Array<2 | 4> = [2, 4];
 
 const FORM_MAX = 400;
 const H_PADDING = 24;
@@ -40,6 +48,7 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
   const { width: windowWidth } = useWindowDimensions();
   const user = useAuth((s) => s.user);
   const qc = useQueryClient();
+  const showTopToast = useNotificationStore((s) => s.showTopToast);
 
   const defaultGameId = (route.params as { defaultGameId?: string } | undefined)?.defaultGameId;
 
@@ -52,9 +61,29 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
   const [title, setTitle] = useState('');
   const [mode, setMode] = useState<(typeof MODES)[number]>('casual');
   const [skillTier, setSkillTier] = useState<SessionSkillTier>('beginner');
-  const [size, setSize] = useState<(typeof SIZES)[number]>(2);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedGame = useMemo(
+    () => activeGames.find((g) => g.id === gameId) ?? null,
+    [activeGames, gameId],
+  );
+
+  const { data: candidates = [], isLoading: candidatesLoading } = useQuery({
+    queryKey: ['squad-candidates', gameId],
+    queryFn: () => fetchSquadCandidates(gameId!),
+    enabled: !!gameId,
+  });
+
+  const onlineCandidates = useMemo(
+    () => candidates.filter((c) => c.isOnline),
+    [candidates],
+  );
+  const otherCandidates = useMemo(
+    () => candidates.filter((c) => !c.isOnline),
+    [candidates],
+  );
 
   useEffect(() => {
     if (activeGames.length === 0) {
@@ -73,6 +102,50 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
     });
   }, [activeGames, defaultGameId, user?.selectedGame]);
 
+  useEffect(() => {
+    setInvitedIds(new Set());
+  }, [gameId]);
+
+  const toggleInvite = (userId: string) => {
+    setInvitedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const renderCandidate = (c: (typeof candidates)[0]) => {
+    const invited = invitedIds.has(c.userId);
+    return (
+      <View key={c.userId} style={styles.candidateRow}>
+        <Avatar uri={c.photoUrl} name={c.name} size={44} glow={false} />
+        <View style={styles.candidateInfo}>
+          <Text style={styles.candidateName} numberOfLines={1}>
+            {c.name}
+          </Text>
+          <Text style={styles.candidateMeta} numberOfLines={2}>
+            {c.nickname ? `${c.nickname} · ` : ''}
+            {c.isOnline ? t('recent.online') : t('createSquad.offline')}
+            {c.source === 'suggestion' ? ` · ${t('createSquad.suggestion')}` : ''}
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => toggleInvite(c.userId)}
+          style={({ pressed }) => [
+            styles.inviteBtn,
+            invited && styles.inviteBtnActive,
+            { opacity: pressed ? 0.88 : 1 },
+          ]}
+        >
+          <Text style={[styles.inviteBtnText, invited && styles.inviteBtnTextActive]}>
+            {invited ? t('createSquad.invited') : t('createSquad.invite')}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
+
   const onSubmit = async () => {
     if (!title.trim()) {
       setError(t('auth.errors.generic'));
@@ -80,20 +153,38 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
     }
     const gid =
       gameId && activeGames.some((g) => g.id === gameId) ? gameId : activeGames[0]?.id ?? null;
-    if (!gid) {
-      setError(t('createSession.noActiveGames'));
+    if (!gid || !selectedGame) {
+      setError(t('createSquad.noActiveGames'));
       return;
     }
     setError(null);
     setLoading(true);
     try {
+      const inviteList = [...invitedIds];
+      const playersNeeded = Math.min(
+        selectedGame.maxPlayers,
+        Math.max(2, 1 + inviteList.length),
+      );
+
       const session = await createSession({
         gameId: gid,
         title: title.trim(),
         gameMode: mode,
         skillTier,
-        playersNeeded: size,
+        playersNeeded,
       });
+
+      try {
+        await joinQueue(session.id);
+      } catch {
+        /* leader may already be in queue from a prior session */
+      }
+
+      if (inviteList.length > 0) {
+        await sendSessionSquadInvites(session.id, inviteList);
+        showTopToast(t('createSquad.invitesSent', { count: inviteList.length }));
+      }
+
       qc.invalidateQueries({ queryKey: ['sessions'] });
       navigation.replace('Session', { sessionId: session.id });
     } catch (err) {
@@ -109,42 +200,55 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
 
       <View style={{ flex: 1, width: '100%', alignItems: 'center', paddingTop: 8, paddingBottom: 24 }}>
         <View style={{ width: columnWidth, flex: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
             <Pressable onPress={() => navigation.goBack()} className="p-2 -ml-2 active:opacity-70">
               <Ionicons name="chevron-back" size={26} color="white" />
             </Pressable>
-            <Text className="text-white text-xl font-bold ml-2">{t('createSession.title')}</Text>
+            <Text className="text-white text-xl font-bold ml-2">{t('createSquad.title')}</Text>
           </View>
+          <Text style={styles.subtitle}>{t('createSquad.subtitle')}</Text>
 
           <View className="gap-5 py-2">
             <View>
-              <Text style={SECTION_LABEL_STYLE}>{t('createSession.gameLabel')}</Text>
+              <Text style={SECTION_LABEL_STYLE}>{t('createSquad.gameLabel')}</Text>
               {activeGames.length === 0 ? (
-                <Text style={{ color: colors.ink.secondary, fontSize: 14 }}>{t('createSession.noActiveGames')}</Text>
+                <Text style={{ color: colors.ink.secondary, fontSize: 14 }}>
+                  {t('createSquad.noActiveGames')}
+                </Text>
               ) : (
-                <View style={{ gap: 8 }}>
+                <View style={styles.gameList}>
                   {activeGames.map((g) => {
                     const selected = gameId === g.id;
+                    const thumb = getGameImage(g.id);
                     return (
                       <Pressable
                         key={g.id}
                         onPress={() => setGameId(g.id)}
-                        style={({ pressed }) => ({
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          paddingVertical: 12,
-                          paddingHorizontal: 14,
-                          borderRadius: 12,
-                          borderWidth: 1.5,
-                          borderColor: selected ? colors.brand.purple : 'rgba(255,255,255,0.12)',
-                          backgroundColor: selected ? 'rgba(123,63,242,0.18)' : 'rgba(10,10,18,0.75)',
-                          opacity: pressed ? 0.9 : 1,
-                        })}
+                        style={({ pressed }) => [
+                          styles.gameRow,
+                          selected && styles.gameRowSelected,
+                          { opacity: pressed ? 0.9 : 1 },
+                        ]}
                       >
-                        <Text
-                          style={{ color: colors.ink.primary, fontWeight: '700', fontSize: 15, flex: 1 }}
-                          numberOfLines={2}
-                        >
+                        <View style={styles.gameThumb}>
+                          {thumb ? (
+                            <Image
+                              source={thumb}
+                              style={styles.gameThumbImage}
+                              resizeMode="cover"
+                            />
+                          ) : (
+                            <LinearGradient
+                              colors={gradient.primary}
+                              start={{ x: 0, y: 0 }}
+                              end={{ x: 1, y: 1 }}
+                              style={styles.gameThumbFallback}
+                            >
+                              <Ionicons name="game-controller" size={26} color="white" />
+                            </LinearGradient>
+                          )}
+                        </View>
+                        <Text style={styles.gameRowName} numberOfLines={2}>
                           {g.name}
                         </Text>
                         {selected ? (
@@ -160,21 +264,21 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
             </View>
 
             <View>
-              <Text style={SECTION_LABEL_STYLE}>{t('createSession.name')}</Text>
+              <Text style={SECTION_LABEL_STYLE}>{t('createSquad.name')}</Text>
               <Input
                 value={title}
                 onChangeText={setTitle}
-                placeholder={t('createSession.titlePlaceholder')}
+                placeholder={t('createSquad.titlePlaceholder')}
                 compact
               />
             </View>
 
             <View>
-              <Text style={SECTION_LABEL_STYLE}>{t('createSession.mode')}</Text>
+              <Text style={SECTION_LABEL_STYLE}>{t('createSquad.mode')}</Text>
               <SegmentToggle
                 value={mode}
                 onChange={setMode}
-                options={MODES.map((m) => ({ value: m, label: t(`createSession.${m}`) }))}
+                options={MODES.map((m) => ({ value: m, label: t(`createSquad.${m}`) }))}
               />
             </View>
 
@@ -220,22 +324,175 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
             </View>
 
             <View>
-              <Text style={SECTION_LABEL_STYLE}>{t('createSession.playersNeeded')}</Text>
-              <SegmentToggle
-                value={size}
-                onChange={setSize}
-                options={SIZES.map((s) => ({ value: s, label: String(s) }))}
-              />
+              <Text style={SECTION_LABEL_STYLE}>{t('createSquad.invitePlayers')}</Text>
+              <Text style={styles.sectionHint}>{t('createSquad.invitePlayersHint')}</Text>
+
+              {candidatesLoading ? (
+                <Text style={styles.emptyCandidates}>{t('common.loading')}</Text>
+              ) : candidates.length === 0 ? (
+                <Text style={styles.emptyCandidates}>{t('createSquad.noCandidates')}</Text>
+              ) : (
+                <View style={styles.candidateList}>
+                  {onlineCandidates.length > 0 ? (
+                    <>
+                      <Text style={styles.candidateGroupLabel}>{t('createSquad.onlineNow')}</Text>
+                      {onlineCandidates.map(renderCandidate)}
+                    </>
+                  ) : null}
+                  {otherCandidates.length > 0 ? (
+                    <>
+                      <Text style={[styles.candidateGroupLabel, { marginTop: 8 }]}>
+                        {t('createSquad.recentAndSuggestions')}
+                      </Text>
+                      {otherCandidates.map(renderCandidate)}
+                    </>
+                  ) : null}
+                </View>
+              )}
+
+              {invitedIds.size > 0 ? (
+                <Text style={styles.invitedCount}>
+                  {t('createSquad.selectedCount', { count: invitedIds.size })}
+                </Text>
+              ) : null}
             </View>
 
             {error ? <Text style={{ color: colors.status.error, fontSize: 13 }}>{error}</Text> : null}
           </View>
 
           <View style={{ marginTop: 'auto', paddingTop: 24 }}>
-            <GradientButton title={t('createSession.schedule')} onPress={onSubmit} loading={loading} />
+            <GradientButton
+              title={t('createSquad.submit')}
+              onPress={onSubmit}
+              loading={loading}
+            />
           </View>
         </View>
       </View>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  gameList: {
+    gap: 8,
+  },
+  gameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(10,10,18,0.75)',
+  },
+  gameRowSelected: {
+    borderColor: colors.brand.purple,
+    backgroundColor: 'rgba(123,63,242,0.18)',
+  },
+  gameThumb: {
+    width: 52,
+    height: 52,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#1A1230',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  gameThumbImage: {
+    width: '100%',
+    height: '100%',
+  },
+  gameThumbFallback: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gameRowName: {
+    color: colors.ink.primary,
+    fontWeight: '700',
+    fontSize: 15,
+    flex: 1,
+  },
+  subtitle: {
+    color: colors.ink.secondary,
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  sectionHint: {
+    color: colors.ink.disabled,
+    fontSize: 12,
+    lineHeight: 17,
+    marginBottom: 12,
+  },
+  candidateList: {
+    gap: 8,
+  },
+  candidateGroupLabel: {
+    color: colors.brand.pink,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  candidateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(10,10,18,0.75)',
+  },
+  candidateInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  candidateName: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  candidateMeta: {
+    color: colors.ink.secondary,
+    fontSize: 11,
+    marginTop: 2,
+  },
+  inviteBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.brand.purple,
+    backgroundColor: 'rgba(123,63,242,0.12)',
+  },
+  inviteBtnActive: {
+    backgroundColor: colors.brand.purple,
+    borderColor: colors.brand.purple,
+  },
+  inviteBtnText: {
+    color: colors.brand.purple,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  inviteBtnTextActive: {
+    color: '#fff',
+  },
+  emptyCandidates: {
+    color: colors.ink.secondary,
+    fontSize: 13,
+    fontStyle: 'italic',
+  },
+  invitedCount: {
+    color: colors.brand.blue,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 10,
+  },
+});

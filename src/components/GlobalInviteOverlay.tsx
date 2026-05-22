@@ -5,11 +5,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { fetchPendingGroupInvites, respondGroupInvite } from '../api/social';
+import {
+  fetchPendingSessionSquadInvites,
+  respondSessionSquadInvite,
+} from '../api/sessions';
 import { useNotificationStore } from '../store/notificationStore';
 import { colors } from '../theme/tokens';
 
 const CARD_BG = 'rgba(18,18,26,0.97)';
 const CARD_BORDER = 'rgba(123,63,242,0.45)';
+const SQUAD_BORDER = 'rgba(0,209,255,0.45)';
 
 export function GlobalInviteOverlay() {
   const insets = useSafeAreaInsets();
@@ -19,25 +24,47 @@ export function GlobalInviteOverlay() {
   const hideToast = useNotificationStore((s) => s.hideTopToast);
   const [busyAction, setBusyAction] = React.useState<'accept' | 'decline' | null>(null);
 
-  const { data: invites = [] } = useQuery({
+  const { data: groupInvites = [] } = useQuery({
     queryKey: ['group-invites', 'pending'],
     queryFn: fetchPendingGroupInvites,
     refetchInterval: 8000,
     refetchOnReconnect: true,
   });
 
-  const topInvite = invites[0];
-  const showInviteCard = !!topInvite;
+  const { data: squadInvites = [] } = useQuery({
+    queryKey: ['session-squad-invites', 'pending'],
+    queryFn: fetchPendingSessionSquadInvites,
+    refetchInterval: 8000,
+    refetchOnReconnect: true,
+  });
+
+  const squadInvite = squadInvites[0];
+  const groupInvite = groupInvites[0];
+  const showSquadCard = !!squadInvite;
+  const showGroupCard = !showSquadCard && !!groupInvite;
+  const showInviteCard = showSquadCard || showGroupCard;
   const showToast = !!toastMessage;
 
-  const onRespond = async (accept: boolean) => {
-    if (!topInvite || busyAction) return;
+  const onRespondGroup = async (accept: boolean) => {
+    if (!groupInvite || busyAction) return;
     setBusyAction(accept ? 'accept' : 'decline');
     try {
-      await respondGroupInvite(topInvite.id, accept);
+      await respondGroupInvite(groupInvite.id, accept);
       await qc.invalidateQueries({ queryKey: ['group-invites', 'pending'] });
       await qc.invalidateQueries({ queryKey: ['groups'] });
       await qc.invalidateQueries({ queryKey: ['chats'] });
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const onRespondSquad = async (accept: boolean) => {
+    if (!squadInvite || busyAction) return;
+    setBusyAction(accept ? 'accept' : 'decline');
+    try {
+      await respondSessionSquadInvite(squadInvite.id, accept);
+      await qc.invalidateQueries({ queryKey: ['session-squad-invites', 'pending'] });
+      await qc.invalidateQueries({ queryKey: ['sessions'] });
     } finally {
       setBusyAction(null);
     }
@@ -54,20 +81,23 @@ export function GlobalInviteOverlay() {
           </Pressable>
         ) : null}
 
-        {showInviteCard && topInvite ? (
-          <View style={styles.card}>
-            <Text style={styles.label}>{t('groups.inviteLabel')}</Text>
+        {showSquadCard && squadInvite ? (
+          <View style={[styles.card, styles.squadCard]}>
+            <Text style={[styles.label, styles.squadLabel]}>{t('createSquad.inviteLabel')}</Text>
             <Text style={styles.title} numberOfLines={1}>
-              {topInvite.group.name}
+              {squadInvite.session.gameName}
             </Text>
-            <Text style={styles.subtitle} numberOfLines={2}>
-              {t('groups.inviteFrom', { name: topInvite.inviter.name })}
+            <Text style={styles.subtitle} numberOfLines={3}>
+              {t('createSquad.inviteBody', {
+                name: squadInvite.inviter.name,
+                game: squadInvite.session.gameName,
+              })}
             </Text>
 
             <View style={styles.actions}>
               <Pressable
                 disabled={!!busyAction}
-                onPress={() => void onRespond(false)}
+                onPress={() => void onRespondSquad(false)}
                 style={({ pressed }) => [
                   styles.declineBtn,
                   (pressed || !!busyAction) && styles.btnDim,
@@ -82,7 +112,52 @@ export function GlobalInviteOverlay() {
 
               <Pressable
                 disabled={!!busyAction}
-                onPress={() => void onRespond(true)}
+                onPress={() => void onRespondSquad(true)}
+                style={({ pressed }) => [
+                  styles.acceptBtn,
+                  styles.squadAcceptBtn,
+                  (pressed || !!busyAction) && styles.btnDim,
+                ]}
+              >
+                {busyAction === 'accept' ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.acceptText}>{t('groups.inviteAccept')}</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
+        {showGroupCard && groupInvite ? (
+          <View style={styles.card}>
+            <Text style={styles.label}>{t('groups.inviteLabel')}</Text>
+            <Text style={styles.title} numberOfLines={1}>
+              {groupInvite.group.name}
+            </Text>
+            <Text style={styles.subtitle} numberOfLines={2}>
+              {t('groups.inviteFrom', { name: groupInvite.inviter.name })}
+            </Text>
+
+            <View style={styles.actions}>
+              <Pressable
+                disabled={!!busyAction}
+                onPress={() => void onRespondGroup(false)}
+                style={({ pressed }) => [
+                  styles.declineBtn,
+                  (pressed || !!busyAction) && styles.btnDim,
+                ]}
+              >
+                {busyAction === 'decline' ? (
+                  <ActivityIndicator color={colors.ink.secondary} size="small" />
+                ) : (
+                  <Text style={styles.declineText}>{t('groups.inviteDecline')}</Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                disabled={!!busyAction}
+                onPress={() => void onRespondGroup(true)}
                 style={({ pressed }) => [
                   styles.acceptBtn,
                   (pressed || !!busyAction) && styles.btnDim,
@@ -130,12 +205,18 @@ const styles = StyleSheet.create({
     borderColor: CARD_BORDER,
     padding: 12,
   },
+  squadCard: {
+    borderColor: SQUAD_BORDER,
+  },
   label: {
     color: colors.brand.purple,
     fontSize: 11,
     fontWeight: '800',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  squadLabel: {
+    color: colors.brand.blue,
   },
   title: {
     color: '#fff',
@@ -170,6 +251,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.brand.purple,
+  },
+  squadAcceptBtn: {
+    backgroundColor: colors.brand.blue,
   },
   declineText: {
     color: colors.ink.primary,

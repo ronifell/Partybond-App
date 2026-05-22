@@ -17,10 +17,17 @@ interface Props {
 
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   free_fire: 'flame',
+  elden_ring_nightreign: 'skull',
   valorant: 'aperture',
+  cod_mobile: 'rocket',
+  league_of_legends: 'trophy',
+  fortnite: 'thunderstorm',
+  counter_strike_2: 'scan-circle',
+  ea_sports_fc_26: 'football',
+  minecraft: 'cube',
+  roblox: 'shapes',
   pubg_mobile: 'shield',
   mobile_legends: 'planet',
-  cod_mobile: 'rocket',
 };
 
 /** Match `GameCard` so pick lists look like the home session list. */
