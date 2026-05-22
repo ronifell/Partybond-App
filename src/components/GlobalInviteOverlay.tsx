@@ -9,6 +9,13 @@ import {
   fetchPendingSessionSquadInvites,
   respondSessionSquadInvite,
 } from '../api/sessions';
+import { getApiError } from '../api/client';
+import { useAuth } from '../store/authStore';
+import {
+  navigateToEditGameProfile,
+  navigateToMatch,
+  navigateToQueue,
+} from '../navigation/navigationRef';
 import { useNotificationStore } from '../store/notificationStore';
 import { colors } from '../theme/tokens';
 
@@ -22,6 +29,8 @@ export function GlobalInviteOverlay() {
   const qc = useQueryClient();
   const toastMessage = useNotificationStore((s) => s.topToastMessage);
   const hideToast = useNotificationStore((s) => s.hideTopToast);
+  const showTopToast = useNotificationStore((s) => s.showTopToast);
+  const refreshMe = useAuth((s) => s.refreshMe);
   const [busyAction, setBusyAction] = React.useState<'accept' | 'decline' | null>(null);
 
   const { data: groupInvites = [] } = useQuery({
@@ -61,10 +70,36 @@ export function GlobalInviteOverlay() {
   const onRespondSquad = async (accept: boolean) => {
     if (!squadInvite || busyAction) return;
     setBusyAction(accept ? 'accept' : 'decline');
+    const gameId = squadInvite.session.gameId;
+    const sessionId = squadInvite.sessionId;
     try {
-      await respondSessionSquadInvite(squadInvite.id, accept);
+      if (!accept) {
+        await respondSessionSquadInvite(squadInvite.id, false);
+        await qc.invalidateQueries({ queryKey: ['session-squad-invites', 'pending'] });
+        return;
+      }
+
+      const result = await respondSessionSquadInvite(squadInvite.id, true);
       await qc.invalidateQueries({ queryKey: ['session-squad-invites', 'pending'] });
       await qc.invalidateQueries({ queryKey: ['sessions'] });
+      await qc.invalidateQueries({ queryKey: ['session', sessionId] });
+      await refreshMe();
+
+      const user = useAuth.getState().user;
+      if (user?.state === 'in_match' && user.currentMatchId) {
+        navigateToMatch(user.currentMatchId);
+      } else if (result.joinedQueue || user?.currentSessionId === result.sessionId) {
+        navigateToQueue(result.sessionId);
+      } else {
+        showTopToast(t('createSquad.inviteAcceptNoQueue'), 4000);
+      }
+    } catch (err) {
+      const apiErr = getApiError(err);
+      if (apiErr.code === 'no_game_profile' && gameId) {
+        navigateToEditGameProfile(gameId);
+      } else {
+        showTopToast(apiErr.message, 4000);
+      }
     } finally {
       setBusyAction(null);
     }

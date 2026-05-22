@@ -249,7 +249,8 @@
     "submit": "Create team & send invites",
     "invitesSent": "{{count}} squad invite(s) sent.",
     "inviteLabel": "Squad invite",
-    "inviteBody": "You received a squad invite from {{name}} for {{game}}."
+    "inviteBody": "You received a squad invite from {{name}} for {{game}}.",
+    "inviteAcceptNoQueue": "Invite accepted. Finish your current activity, then open the session from Home."
   },
   "session": {
     "title": "Session",
@@ -262,7 +263,22 @@
     "title": "Finding players...",
     "subtitle": "We'll connect you when someone joins.",
     "progressiveHint": "Expanding search automatically — hang tight.",
-    "leave": "Leave queue"
+    "leave": "Leave queue",
+    "howItWorks": "How it works",
+    "howItWorksBody": "Stay on this screen while we find teammates. When a match is ready, you will see player IDs to add in-game.",
+    "playerFound_one": "PLAYER FOUND",
+    "playerFound_other": "{{count}} PLAYERS FOUND",
+    "searchingMore": "Searching for more players...",
+    "searchingMatch": "Searching for a match...",
+    "statPlayers": "PLAYERS IN QUEUE",
+    "statEstimated": "ESTIMATED TIME",
+    "statAvgMatch": "AVG. MATCH TIME",
+    "avgMatchValue": "2m 34s",
+    "whileYouWait": "WHILE YOU WAIT",
+    "tipQueueSize": "The more players in the queue, the faster we can match you.",
+    "tipGameId": "Make sure your game ID is up to date in your profile.",
+    "tipReady": "Be ready to copy ID and invite your teammate!",
+    "leaveHint": "You will leave the queue and stop searching for a match."
   },
   "match": {
     "title": "Match found!",

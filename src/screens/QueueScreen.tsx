@@ -1,116 +1,68 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Animated, Easing, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  Pressable,
+  Animated,
+  Easing,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+  useWindowDimensions,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Text as SvgText } from 'react-native-svg';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { Screen } from '../components/ui/Screen';
-import { BackgroundGlow } from '../components/ui/BackgroundGlow';
-import { GradientButton } from '../components/ui/GradientButton';
+import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
+import { WordmarkPartybond } from '../components/ui/WordmarkPartybond';
+import { resolvePhotoUri } from '../components/ui/Avatar';
 import { getSession, leaveQueue } from '../api/sessions';
 import { getMatchmakingQueueStatus, leaveMatchmakingQueue } from '../api/matchmaking';
 import { useAuth } from '../store/authStore';
 import { useSessionRoom } from '../hooks/useSessionRoom';
 import { useMatchEvents } from '../hooks/useMatchEvents';
-import { colors, gradient } from '../theme/tokens';
+import { colors, gradient, radii } from '../theme/tokens';
 
-/** Ring border: crossfade between these gradients (animated opacity). */
+const H_PAD = 16;
+const VISUAL_SIZE = 300;
+const RING_SIZE = 208;
+const RING_BORDER = 10;
+const SLOT_SIZE = 44;
+const SLOT_CORNER = 13;
+const SLOT_BORDER = 2;
+const SLOT_COUNT = 6;
+const SLOT_RADIUS = RING_SIZE / 2 + 30;
+
+/** Per-orbit accent — each slot gets a distinct gradient ring. */
+const SLOT_ACCENTS: ReadonlyArray<{ ring: [string, string]; glow: string; icon: string }> = [
+  { ring: ['#FF4DA6', '#7B3FF2'], glow: '#FF4DA6', icon: 'rgba(255,77,166,0.9)' },
+  { ring: ['#00D1FF', '#3B82F6'], glow: '#00D1FF', icon: 'rgba(0,209,255,0.9)' },
+  { ring: ['#FF8A4D', '#FF4DA6'], glow: '#FF8A4D', icon: 'rgba(255,138,77,0.9)' },
+  { ring: ['#7CECA1', '#00C853'], glow: '#7CECA1', icon: 'rgba(124,236,161,0.9)' },
+  { ring: ['#FFD54F', '#FF8A4D'], glow: '#FFD54F', icon: 'rgba(255,213,79,0.9)' },
+  { ring: ['#C5A8FF', '#5B8DEF'], glow: '#C5A8FF', icon: 'rgba(197,168,255,0.9)' },
+];
+/** Fast phase: 1.5 turns in 4s. Slow phase: 0.5 turn in 4s. Repeats (half prior speed). */
+const ORBIT_PHASE_FAST_MS = 4000;
+const ORBIT_PHASE_SLOW_MS = 4000;
 const RING_GRADIENT_A = [...gradient.primary] as [string, string, string];
 const RING_GRADIENT_B = [...gradient.primaryReverse] as [string, string, string];
 
-const ORBIT_FAST_MS = 900;
-const ORBIT_SLOW_MS = 4800;
+type QueueSlot =
+  | { kind: 'user'; name: string; photoUrl: string | null; isYou?: boolean }
+  | { kind: 'empty' };
 
-const ORBIT_SIZE = 268;
-const RING_SIZE = 200;
-const ORBIT_CX = ORBIT_SIZE / 2;
-const ORBIT_CY = ORBIT_SIZE / 2;
-/** Distance from center to each orbiting icon (between ring edge and outer frame). */
-const ORBIT_RADIUS = RING_SIZE / 2 + 22;
-const ORBIT_ICON = 26;
-const ORBIT_ICON_HALF = ORBIT_ICON / 2;
-
-const ORBIT_USER_ICONS: ReadonlyArray<{
-  name: keyof typeof Ionicons.glyphMap;
-  color: string;
-}> = [
-  { name: 'person', color: colors.brand.pink },
-  { name: 'people', color: colors.brand.purple },
-  { name: 'person-circle', color: colors.brand.blue },
-  { name: 'person-add', color: '#C5A8FF' },
-  { name: 'people-circle', color: '#FF8A4D' },
-  { name: 'body', color: '#7CECA1' },
-];
-
-const COUNT_FONT_SIZE = 48;
-const COUNT_SVG_WIDTH = 160;
-const COUNT_SVG_HEIGHT = 72;
-const COUNT_BASELINE_Y = 54;
-
-let queueGradientIdCounter = 0;
-
-function useGradientBlinkOpacity() {
-  const opacity = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 0.35,
-          duration: 950,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 950,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [opacity]);
-  return opacity;
-}
-
-/**
- * One full turn split into three arcs: fast → slow → fast (same angle each third).
- */
-function useVariableOrbitRotation() {
-  const spin = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const oneTurn = Animated.sequence([
-      Animated.timing(spin, {
-        toValue: 1 / 3,
-        duration: ORBIT_FAST_MS,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(spin, {
-        toValue: 2 / 3,
-        duration: ORBIT_SLOW_MS,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-      Animated.timing(spin, {
-        toValue: 1,
-        duration: ORBIT_FAST_MS,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    ]);
-    const loop = Animated.loop(oneTurn, { resetBeforeIteration: true });
-    loop.start();
-    return () => loop.stop();
-  }, [spin]);
-  const orbitRotate = spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
-  const iconCounterRotate = spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-360deg'] });
-  return { orbitRotate, iconCounterRotate };
+function formatElapsed(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 function useRingBorderColorMix() {
@@ -119,13 +71,13 @@ function useRingBorderColorMix() {
     const phase = Animated.sequence([
       Animated.timing(mix, {
         toValue: 1,
-        duration: 2000,
+        duration: 2200,
         easing: Easing.inOut(Easing.ease),
         useNativeDriver: true,
       }),
       Animated.timing(mix, {
         toValue: 0,
-        duration: 2000,
+        duration: 2200,
         easing: Easing.inOut(Easing.ease),
         useNativeDriver: true,
       }),
@@ -137,12 +89,12 @@ function useRingBorderColorMix() {
   return mix;
 }
 
-function AnimatedRingBorder({ children }: { children: React.ReactNode }) {
+function QueueRing({ children }: { children: React.ReactNode }) {
   const ringMix = useRingBorderColorMix();
-  const innerRadius = (RING_SIZE - 12) / 2;
+  const innerRadius = (RING_SIZE - RING_BORDER * 2) / 2;
 
   return (
-    <View style={styles.ringClip}>
+    <View style={queueStyles.ringOuter}>
       <LinearGradient
         colors={RING_GRADIENT_A}
         start={{ x: 0, y: 0 }}
@@ -157,72 +109,111 @@ function AnimatedRingBorder({ children }: { children: React.ReactNode }) {
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
-      <View
-        style={[
-          styles.ringInner,
-          {
-            borderRadius: innerRadius,
-          },
-        ]}
-      >
+      <View style={[queueStyles.ringInner, { margin: RING_BORDER, borderRadius: innerRadius }]}>
         {children}
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  ringClip: {
-    width: RING_SIZE,
-    height: RING_SIZE,
-    borderRadius: RING_SIZE / 2,
-    overflow: 'hidden',
-  },
-  ringInner: {
-    position: 'absolute',
-    left: 6,
-    top: 6,
-    right: 6,
-    bottom: 6,
-    backgroundColor: '#0A0A12',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+/** Six slots evenly on the ring; index 0 = top (you), then teammates clockwise. */
+function buildQueueSlots(
+  me: { id: string; name: string; photoUrl: string | null } | null,
+  waiting: Array<{ id: string; name: string; photoUrl: string | null }>,
+): QueueSlot[] {
+  const seen = new Set<string>();
+  const slots: QueueSlot[] = [];
 
-function OrbitingUserIcons() {
-  const { orbitRotate, iconCounterRotate } = useVariableOrbitRotation();
-  const n = ORBIT_USER_ICONS.length;
+  if (me) {
+    seen.add(me.id);
+    slots.push({ kind: 'user', name: me.name, photoUrl: me.photoUrl, isYou: true });
+  }
+
+  for (const w of waiting) {
+    if (slots.length >= SLOT_COUNT) break;
+    if (seen.has(w.id)) continue;
+    seen.add(w.id);
+    slots.push({ kind: 'user', name: w.name, photoUrl: w.photoUrl });
+  }
+
+  while (slots.length < SLOT_COUNT) {
+    slots.push({ kind: 'empty' });
+  }
+
+  return slots.slice(0, SLOT_COUNT);
+}
+
+/**
+ * Orbit alternates: 4s fast spin → 4s slow spin → repeat.
+ * Uses 0→1 (fast) and 1→2 (slow) so loop reset stays visually seamless (multiples of 360°).
+ */
+function useVariableOrbitRotation() {
+  const spin = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const cycle = Animated.sequence([
+      Animated.timing(spin, {
+        toValue: 1,
+        duration: ORBIT_PHASE_FAST_MS,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+      Animated.timing(spin, {
+        toValue: 2,
+        duration: ORBIT_PHASE_SLOW_MS,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ]);
+    const loop = Animated.loop(cycle, { resetBeforeIteration: true });
+    loop.start();
+    return () => loop.stop();
+  }, [spin]);
+
+  const orbitRotate = spin.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: ['0deg', '540deg', '720deg'],
+  });
+  const counterRotate = spin.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: ['0deg', '-540deg', '-720deg'],
+  });
+
+  return { orbitRotate, counterRotate };
+}
+
+function RotatingAvatarOrbit({ slots }: { slots: QueueSlot[] }) {
+  const { orbitRotate, counterRotate } = useVariableOrbitRotation();
+  const cx = VISUAL_SIZE / 2;
+  const cy = VISUAL_SIZE / 2;
 
   return (
     <Animated.View
       pointerEvents="none"
       style={{
         position: 'absolute',
-        width: ORBIT_SIZE,
-        height: ORBIT_SIZE,
+        width: VISUAL_SIZE,
+        height: VISUAL_SIZE,
         transform: [{ rotate: orbitRotate }],
       }}
     >
-      {ORBIT_USER_ICONS.map((item, i) => {
-        const θ = (2 * Math.PI * i) / n - Math.PI / 2;
-        const left = ORBIT_CX + ORBIT_RADIUS * Math.cos(θ) - ORBIT_ICON_HALF;
-        const top = ORBIT_CY + ORBIT_RADIUS * Math.sin(θ) - ORBIT_ICON_HALF;
+      {slots.map((slot, i) => {
+        const angle = (2 * Math.PI * i) / SLOT_COUNT - Math.PI / 2;
+        const left = cx + SLOT_RADIUS * Math.cos(angle) - SLOT_SIZE / 2;
+        const top = cy + SLOT_RADIUS * Math.sin(angle) - SLOT_SIZE / 2;
         return (
           <Animated.View
-            key={`${String(item.name)}-${i}`}
+            key={`orbit-slot-${i}`}
             style={{
               position: 'absolute',
               left,
               top,
-              width: ORBIT_ICON,
-              height: ORBIT_ICON,
-              alignItems: 'center',
-              justifyContent: 'center',
-              transform: [{ rotate: iconCounterRotate }],
+              width: SLOT_SIZE,
+              height: SLOT_SIZE,
+              transform: [{ rotate: counterRotate }],
             }}
           >
-            <Ionicons name={item.name} size={22} color={item.color} />
+            <QueueAvatarSlot slot={slot} index={i} />
           </Animated.View>
         );
       })}
@@ -230,57 +221,79 @@ function OrbitingUserIcons() {
   );
 }
 
-function QueueCountNumber({ value }: { value: string }) {
-  const blinkOpacity = useGradientBlinkOpacity();
-  const gradientId = useMemo(() => `queueCountGrad_${++queueGradientIdCounter}`, []);
-  const [pink, mid, blue] = gradient.primary;
+function slotInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((s) => s[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
 
-  const cx = COUNT_SVG_WIDTH / 2;
+/** Squircle orbit tile with a unique accent gradient per index. */
+function QueueAvatarSlot({ slot, index }: { slot: QueueSlot; index: number }) {
+  const accent = SLOT_ACCENTS[index % SLOT_ACCENTS.length]!;
+  const isEmpty = slot.kind === 'empty';
+  const resolvedUri =
+    slot.kind === 'user' && slot.photoUrl ? resolvePhotoUri(slot.photoUrl) : null;
 
   return (
     <View
-      style={{
-        width: COUNT_SVG_WIDTH,
-        height: COUNT_SVG_HEIGHT,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      style={[
+        queueStyles.slotWrap,
+        {
+          shadowColor: accent.glow,
+          shadowOpacity: isEmpty ? 0.35 : 0.55,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 0 },
+          elevation: 8,
+        },
+      ]}
     >
-      {/* Base numeral — soft neutral so the blink reads as color shift */}
-      <Text
-        style={{
-          position: 'absolute',
-          fontSize: COUNT_FONT_SIZE,
-          fontWeight: '800',
-          color: 'rgba(232, 232, 248, 0.92)',
-          letterSpacing: -1,
-        }}
+      <LinearGradient
+        colors={accent.ring}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={queueStyles.slotRing}
       >
-        {value}
-      </Text>
-      {/* Pulsing gradient layer on top */}
-      <Animated.View style={{ position: 'absolute', opacity: blinkOpacity }}>
-        <Svg width={COUNT_SVG_WIDTH} height={COUNT_SVG_HEIGHT}>
-          <Defs>
-            <SvgLinearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor={pink} />
-              <Stop offset="48%" stopColor={mid} />
-              <Stop offset="100%" stopColor={blue} />
-            </SvgLinearGradient>
-          </Defs>
-          <SvgText
-            x={cx}
-            y={COUNT_BASELINE_Y}
-            fill={`url(#${gradientId})`}
-            textAnchor="middle"
-            fontSize={COUNT_FONT_SIZE}
-            fontWeight="800"
-            letterSpacing={-1}
-          >
-            {value}
-          </SvgText>
-        </Svg>
-      </Animated.View>
+        <View style={[queueStyles.slotInner, isEmpty && queueStyles.slotEmpty]}>
+          {slot.kind === 'user' && resolvedUri ? (
+            <Image
+              source={{ uri: resolvedUri }}
+              style={queueStyles.slotImage}
+              resizeMode="cover"
+            />
+          ) : slot.kind === 'user' ? (
+            <Text style={queueStyles.slotInitials}>{slotInitials(slot.name)}</Text>
+          ) : (
+            <Ionicons name="person" size={20} color={accent.icon} />
+          )}
+          {slot.kind === 'user' && slot.isYou ? (
+            <View style={queueStyles.youBadge}>
+              <Text style={queueStyles.youBadgeText}>YOU</Text>
+            </View>
+          ) : null}
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
+function StatColumn({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={queueStyles.statCol}>
+      <Ionicons name={icon} size={18} color={colors.brand.purple} style={{ marginBottom: 6 }} />
+      <Text style={queueStyles.statLabel}>{label}</Text>
+      <Text style={queueStyles.statValue}>{value}</Text>
     </View>
   );
 }
@@ -291,49 +304,59 @@ type QueueParams =
 
 export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const qc = useQueryClient();
   const params = route.params as QueueParams;
   const progressive = 'progressive' in params && params.progressive;
   const sessionId = !progressive ? params.sessionId : undefined;
+  const user = useAuth((s) => s.user);
   const refreshMe = useAuth((s) => s.refreshMe);
-  const [waitingCount, setWaitingCount] = useState<number | null>(null);
   const [phase, setPhase] = useState<number | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [elapsedSec, setElapsedSec] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
-      return () => {
-        setLeaving(false);
-      };
+      return () => setLeaving(false);
     }, []),
   );
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsedSec((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const { data: session } = useQuery({
     queryKey: ['session', sessionId],
     queryFn: () => getSession(sessionId!),
     enabled: !!sessionId && !progressive,
+    refetchInterval: 5000,
   });
 
-  useEffect(() => {
-    if (session) setWaitingCount(session.waiting.length);
-  }, [session]);
+  const onQueueUpdate = useCallback(() => {
+    if (sessionId) {
+      void qc.invalidateQueries({ queryKey: ['session', sessionId] });
+    }
+  }, [qc, sessionId]);
 
-  useSessionRoom(sessionId ?? '', (payload) => {
-    if (sessionId) setWaitingCount(payload.waitingCount);
-  });
+  useSessionRoom(sessionId ?? '', onQueueUpdate);
 
   useEffect(() => {
     if (!progressive) return;
     const tick = async () => {
       const status = await getMatchmakingQueueStatus();
-      if (status) {
-        setPhase(status.phase);
-        setWaitingCount(status.waitedSeconds);
-      }
+      if (status) setPhase(status.phase);
     };
     void tick();
     const id = setInterval(() => void tick(), 2000);
     return () => clearInterval(id);
   }, [progressive]);
+
+  /** Real players in this session queue — never use the wait timer here. */
+  const playersInQueue = useMemo(() => {
+    if (progressive) return 1;
+    return session?.waiting?.length ?? 0;
+  }, [progressive, session?.waiting?.length]);
 
   useMatchEvents((p) => {
     if (progressive || p.sessionId === sessionId) {
@@ -354,65 +377,445 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
     }
   };
 
-  const countLabel = progressive
-    ? phase === null
-      ? '—'
-      : `P${phase}`
-    : waitingCount === null
-      ? '—'
-      : String(waitingCount);
+  const onHowItWorks = () => {
+    Alert.alert(t('queue.howItWorks'), t('queue.howItWorksBody'));
+  };
+
+  const centerCountLabel =
+    !progressive && !session ? '—' : String(playersInQueue);
+
+  const slots = useMemo(() => {
+    const me = user ? { id: user.id, name: user.name, photoUrl: user.photoUrl } : null;
+    if (progressive || !session) {
+      return buildQueueSlots(me, []);
+    }
+    return buildQueueSlots(me, session.waiting);
+  }, [progressive, session, user]);
+
+  const sessionTitle = session?.title?.toUpperCase() ?? t('queue.searchingMatch');
+  const gameName = session?.gameName ?? '';
+  const statPlayers = !progressive && !session ? '—' : String(playersInQueue);
 
   return (
-    <Screen>
-      <BackgroundGlow />
-      <View className="flex-1 items-center justify-center">
-        <View
-          style={{
-            width: ORBIT_SIZE,
-            height: ORBIT_SIZE,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <OrbitingUserIcons />
-          <View
-            style={{
-              width: RING_SIZE,
-              height: RING_SIZE,
-              borderRadius: RING_SIZE / 2,
-              alignItems: 'center',
-              justifyContent: 'center',
-              shadowColor: '#7B3FF2',
-              shadowOpacity: 0.6,
-              shadowRadius: 24,
-              shadowOffset: { width: 0, height: 0 },
-            }}
+    <TeamScreenBackground>
+      <SafeAreaView style={queueStyles.safe} edges={['top', 'bottom']}>
+        <View style={queueStyles.header}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            hitSlop={12}
+            style={({ pressed }) => [queueStyles.headerSide, pressed && { opacity: 0.7 }]}
           >
-            <AnimatedRingBorder>
-              <QueueCountNumber value={countLabel} />
-            </AnimatedRingBorder>
+            <Ionicons name="chevron-back" size={28} color="#fff" />
+          </Pressable>
+
+          <View style={queueStyles.headerCenter} pointerEvents="none">
+            <WordmarkPartybond size={22} letterSpacing={0.8} slant={-10} />
           </View>
+
+          <Pressable
+            onPress={onHowItWorks}
+            style={({ pressed }) => [queueStyles.howBtn, pressed && { opacity: 0.85 }]}
+          >
+            <Ionicons name="person-circle-outline" size={14} color={colors.ink.secondary} />
+            <Text style={queueStyles.howBtnText} numberOfLines={1}>
+              {t('queue.howItWorks')}
+            </Text>
+          </Pressable>
         </View>
 
-        <Text className="text-white text-2xl font-bold mt-10">{t('queue.title')}</Text>
-        <Text className="text-ink-secondary mt-2 text-center px-8">{t('queue.subtitle')}</Text>
-        {progressive ? (
-          <Text className="text-ink-secondary mt-4">{t('queue.progressiveHint')}</Text>
-        ) : session ? (
-          <Text className="text-ink-secondary mt-4">
-            {session.title} · {session.gameName}
-          </Text>
-        ) : null}
-      </View>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[queueStyles.scrollContent, { paddingHorizontal: H_PAD }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={queueStyles.gameInfo}>
+            <View style={queueStyles.gameModeRow}>
+              <Ionicons name="shield-checkmark" size={16} color={colors.brand.pink} />
+              <Text style={queueStyles.gameModeText} numberOfLines={1}>
+                {sessionTitle}
+              </Text>
+            </View>
+            {gameName ? (
+              <Text style={queueStyles.gameNameText} numberOfLines={1}>
+                {gameName}
+              </Text>
+            ) : null}
+          </View>
 
-      <View className="pb-2">
-        <GradientButton
-          title={t('queue.leave')}
-          onPress={onLeave}
-          variant="secondary"
-          loading={leaving}
-        />
-      </View>
-    </Screen>
+          <View style={[queueStyles.visualWrap, { width: Math.min(width - H_PAD * 2, 360) }]}>
+            <View style={{ width: VISUAL_SIZE, height: VISUAL_SIZE, alignSelf: 'center' }}>
+              <RotatingAvatarOrbit slots={slots} />
+
+              <View style={queueStyles.ringCenter}>
+                <QueueRing>
+                  <Text style={queueStyles.centerCount}>{centerCountLabel}</Text>
+                  {playersInQueue > 0 ? (
+                    <Text style={queueStyles.centerFound}>
+                      {t('queue.playerFound', { count: playersInQueue })}
+                    </Text>
+                  ) : null}
+                  <Text style={queueStyles.centerSub}>
+                    {progressive ? t('queue.searchingMatch') : t('queue.searchingMore')}
+                  </Text>
+                </QueueRing>
+              </View>
+            </View>
+          </View>
+
+          <View style={queueStyles.statsCard}>
+            <StatColumn icon="people" label={t('queue.statPlayers')} value={statPlayers} />
+            <View style={queueStyles.statDivider} />
+            <StatColumn
+              icon="time-outline"
+              label={t('queue.statEstimated')}
+              value={formatElapsed(elapsedSec)}
+            />
+            <View style={queueStyles.statDivider} />
+            <StatColumn
+              icon="flash"
+              label={t('queue.statAvgMatch')}
+              value={t('queue.avgMatchValue')}
+            />
+          </View>
+
+          <View style={queueStyles.tipsCard}>
+            <View style={queueStyles.tipsHeader}>
+              <Ionicons name="star" size={14} color={colors.brand.purple} />
+              <Text style={queueStyles.tipsTitle}>{t('queue.whileYouWait')}</Text>
+            </View>
+            <View style={queueStyles.tipRow}>
+              <Ionicons name="locate-outline" size={16} color={colors.brand.purple} />
+              <Text style={queueStyles.tipText}>{t('queue.tipQueueSize')}</Text>
+            </View>
+            <View style={queueStyles.tipRow}>
+              <Ionicons name="people-outline" size={16} color={colors.brand.purple} />
+              <Text style={queueStyles.tipText}>{t('queue.tipGameId')}</Text>
+            </View>
+            <View style={queueStyles.tipRow}>
+              <Ionicons name="chatbubble-outline" size={16} color={colors.brand.purple} />
+              <Text style={queueStyles.tipText}>{t('queue.tipReady')}</Text>
+            </View>
+            <Ionicons
+              name="game-controller-outline"
+              size={72}
+              color="rgba(123,63,242,0.12)"
+              style={queueStyles.tipsWatermark}
+            />
+          </View>
+        </ScrollView>
+
+        <View style={[queueStyles.footer, { paddingHorizontal: H_PAD }]}>
+          <Pressable
+            onPress={onLeave}
+            disabled={leaving}
+            style={({ pressed }) => [
+              queueStyles.leaveBtn,
+              (pressed || leaving) && { opacity: 0.88, transform: [{ scale: 0.99 }] },
+            ]}
+          >
+            <LinearGradient
+              colors={gradient.primary}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={queueStyles.leaveGradient}
+            >
+              {leaving ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Text style={queueStyles.leaveText}>{t('queue.leave').toUpperCase()}</Text>
+                  <Ionicons name="exit-outline" size={22} color="#fff" />
+                </>
+              )}
+            </LinearGradient>
+          </Pressable>
+          <Text style={queueStyles.leaveHint}>{t('queue.leaveHint')}</Text>
+        </View>
+      </SafeAreaView>
+    </TeamScreenBackground>
   );
 }
+
+const queueStyles = StyleSheet.create({
+  safe: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: H_PAD,
+    paddingTop: 4,
+    paddingBottom: 8,
+    minHeight: 44,
+  },
+  headerSide: {
+    width: 44,
+    zIndex: 2,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  headerCenter: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  howBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(12,12,20,0.85)',
+    maxWidth: 118,
+    marginLeft: 'auto',
+    zIndex: 2,
+  },
+  howBtnText: {
+    color: colors.ink.secondary,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  scrollContent: {
+    paddingBottom: 16,
+  },
+  gameInfo: {
+    alignItems: 'center',
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  gameModeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    maxWidth: '100%',
+  },
+  gameModeText: {
+    color: colors.brand.pink,
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  gameNameText: {
+    color: colors.ink.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  visualWrap: {
+    alignSelf: 'center',
+    marginVertical: 12,
+  },
+  ringCenter: {
+    position: 'absolute',
+    left: (VISUAL_SIZE - RING_SIZE) / 2,
+    top: (VISUAL_SIZE - RING_SIZE) / 2,
+    width: RING_SIZE,
+    height: RING_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.brand.purple,
+    shadowOpacity: 0.55,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 12,
+  },
+  ringOuter: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+    overflow: 'hidden',
+  },
+  ringInner: {
+    flex: 1,
+    backgroundColor: '#0A0A12',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  centerCount: {
+    color: '#fff',
+    fontSize: 52,
+    fontWeight: '800',
+    letterSpacing: -2,
+    lineHeight: 56,
+  },
+  centerFound: {
+    color: colors.brand.purple,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  centerSub: {
+    color: colors.ink.disabled,
+    fontSize: 10,
+    fontWeight: '500',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  slotWrap: {
+    width: SLOT_SIZE,
+    height: SLOT_SIZE,
+  },
+  slotRing: {
+    width: SLOT_SIZE,
+    height: SLOT_SIZE,
+    borderRadius: SLOT_CORNER + SLOT_BORDER,
+    padding: SLOT_BORDER,
+  },
+  slotInner: {
+    flex: 1,
+    borderRadius: SLOT_CORNER,
+    overflow: 'hidden',
+    backgroundColor: '#12121C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+  },
+  slotImage: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  slotInitials: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  slotEmpty: {
+    backgroundColor: 'rgba(16,14,28,0.96)',
+  },
+  youBadge: {
+    position: 'absolute',
+    bottom: 2,
+    alignSelf: 'center',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 6,
+    backgroundColor: 'rgba(123,63,242,0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  youBadgeText: {
+    color: '#fff',
+    fontSize: 7,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  statsCard: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    backgroundColor: 'rgba(20,20,28,0.92)',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    marginTop: 8,
+  },
+  statCol: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  statLabel: {
+    color: colors.ink.disabled,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  statValue: {
+    color: colors.ink.primary,
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    marginVertical: 4,
+  },
+  tipsCard: {
+    marginTop: 14,
+    backgroundColor: 'rgba(18,18,26,0.94)',
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(123,63,242,0.35)',
+    padding: 14,
+    overflow: 'hidden',
+  },
+  tipsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  tipsTitle: {
+    color: colors.brand.purple,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+  },
+  tipRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 10,
+  },
+  tipText: {
+    flex: 1,
+    color: colors.ink.secondary,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  tipsWatermark: {
+    position: 'absolute',
+    right: -8,
+    bottom: -12,
+  },
+  footer: {
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+  leaveBtn: {
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    shadowColor: colors.brand.pink,
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
+  },
+  leaveGradient: {
+    height: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  leaveText: {
+    flex: 1,
+    textAlign: 'center',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  leaveHint: {
+    color: colors.ink.disabled,
+    fontSize: 11,
+    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 15,
+  },
+});

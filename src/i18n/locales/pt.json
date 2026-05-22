@@ -249,7 +249,8 @@
     "submit": "Criar equipe e enviar convites",
     "invitesSent": "{{count}} convite(s) de squad enviado(s).",
     "inviteLabel": "Convite de squad",
-    "inviteBody": "Você recebeu um convite de squad de {{name}} para {{game}}."
+    "inviteBody": "Você recebeu um convite de squad de {{name}} para {{game}}.",
+    "inviteAcceptNoQueue": "Convite aceito. Termine sua atividade atual e abra a sessão na Home."
   },
   "session": {
     "title": "Sessão",
@@ -262,7 +263,22 @@
     "title": "Buscando jogadores...",
     "subtitle": "Você será conectado quando alguém entrar.",
     "progressiveHint": "Ampliando a busca automaticamente — aguarde.",
-    "leave": "Sair da fila"
+    "leave": "Sair da fila",
+    "howItWorks": "Como funciona",
+    "howItWorksBody": "Fique nesta tela enquanto buscamos companheiros. Quando a partida estiver pronta, você verá os IDs para adicionar no jogo.",
+    "playerFound_one": "JOGADOR ENCONTRADO",
+    "playerFound_other": "{{count}} JOGADORES ENCONTRADOS",
+    "searchingMore": "Buscando mais jogadores...",
+    "searchingMatch": "Buscando uma partida...",
+    "statPlayers": "JOGADORES NA FILA",
+    "statEstimated": "TEMPO ESTIMADO",
+    "statAvgMatch": "TEMPO MÉDIO",
+    "avgMatchValue": "2m 34s",
+    "whileYouWait": "ENQUANTO ESPERA",
+    "tipQueueSize": "Quanto mais jogadores na fila, mais rápido encontramos sua partida.",
+    "tipGameId": "Confira se seu ID do jogo está atualizado no perfil.",
+    "tipReady": "Esteja pronto para copiar o ID e convidar seu companheiro!",
+    "leaveHint": "Você sairá da fila e a busca por partida será interrompida."
   },
   "match": {
     "title": "Partida encontrada!",

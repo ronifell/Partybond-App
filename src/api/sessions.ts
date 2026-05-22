@@ -71,8 +71,15 @@ export async function sendSessionSquadInvites(sessionId: string, inviteeIds: str
   return data;
 }
 
+export type SessionSquadInviteRespond = {
+  ok: boolean;
+  sessionId: string;
+  joinedQueue?: boolean;
+  waitingCount?: number;
+};
+
 export async function respondSessionSquadInvite(inviteId: string, accept: boolean) {
-  const { data } = await api.post<{ ok: boolean; sessionId: string }>(
+  const { data } = await api.post<SessionSquadInviteRespond>(
     `/sessions/squad-invites/${inviteId}/respond`,
     { accept },
   );

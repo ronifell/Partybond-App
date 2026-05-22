@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import { navigationRef } from './navigationRef';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, ActivityIndicator } from 'react-native';
 
@@ -8,6 +9,7 @@ import { connectSocket, disconnectSocket } from '../socket';
 import { colors } from '../theme/tokens';
 import { GlobalInviteOverlay } from '../components/GlobalInviteOverlay';
 import { useGroupSocketEvents } from '../hooks/useGroupSocketEvents';
+import { useSessionSquadRealtime } from '../hooks/useSessionSquadRealtime';
 
 import { LoginScreen } from '../screens/LoginScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
@@ -53,6 +55,7 @@ const navTheme = {
 
 function AuthenticatedRealtimeLayer() {
   useGroupSocketEvents();
+  useSessionSquadRealtime();
   return <GlobalInviteOverlay />;
 }
 
@@ -87,7 +90,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer ref={navigationRef} theme={navTheme}>
       <View style={{ flex: 1 }}>
         <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg.base } }}>
           {!token ? (
