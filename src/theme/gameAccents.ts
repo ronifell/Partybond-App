@@ -114,3 +114,9 @@ export const GAME_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 export function getGameAccent(gameId: string): GameAccent {
   return GAME_ACCENTS[gameId] ?? DEFAULT_GAME_ACCENT;
 }
+
+/** Lighter glass-style fill gradient (accent tint → smoky base). */
+export function getGameGlassGradient(accent: GameAccent): readonly [string, string] {
+  const top = accent.tagBg.replace(/[\d.]+\)$/, '0.34)');
+  return [top, 'rgba(42, 40, 58, 0.48)'];
+}

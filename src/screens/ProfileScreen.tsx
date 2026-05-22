@@ -15,7 +15,7 @@ import { Logo } from '../components/ui/Logo';
 import { useAuth } from '../store/authStore';
 import { fetchGames } from '../api/games';
 import { colors, gradient } from '../theme/tokens';
-import { getGameImage } from '../theme/assets';
+import { ProfileGameListRow } from '../components/ProfileGameListRow';
 
 interface StatProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -153,7 +153,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
       {/* Top header */}
         <View
         style={{
-          paddingHorizontal: 12,
+          paddingHorizontal: 8,
           paddingTop: 2,
           flexDirection: 'row',
           alignItems: 'center',
@@ -217,7 +217,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
 
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 12,
+          paddingHorizontal: 8,
           paddingTop: 10,
           paddingBottom: tabBarHeight + 16,
           gap: 10,
@@ -409,129 +409,16 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
           {activeGamesList.length === 0 ? (
             <Text style={{ color: colors.ink.secondary, fontSize: 13 }}>{t('profile.noGameSelected')}</Text>
           ) : (
-            <View style={{ gap: 0 }}>
-              {activeGamesList.map((game, index) => {
-                const gameProfile = user?.gameProfiles.find((p) => p.gameId === game.id) ?? null;
-                const isDefault = user?.selectedGame === game.id;
-                const isLast = index === activeGamesList.length - 1;
-                return (
-                  <Pressable
-                    key={game.id}
-                    onPress={() => navigation.navigate('EditGameProfile', { gameId: game.id })}
-                    style={({ pressed }) => ({
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 10,
-                      paddingVertical: 12,
-                      paddingHorizontal: 2,
-                      borderBottomWidth: isLast ? 0 : 1,
-                      borderBottomColor: 'rgba(255,255,255,0.08)',
-                      backgroundColor: pressed ? 'rgba(255,255,255,0.04)' : 'transparent',
-                    })}
-                  >
-                    <View
-                      style={{
-                        width: 52,
-                        height: 52,
-                        borderRadius: 12,
-                        overflow: 'hidden',
-                        backgroundColor: '#1A1230',
-                        borderWidth: 1,
-                        borderColor: 'rgba(255,255,255,0.10)',
-                      }}
-                    >
-                      {getGameImage(game.id) ? (
-                        <Image
-                          source={getGameImage(game.id)!}
-                          style={{ width: '100%', height: '100%' }}
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <LinearGradient
-                          colors={gradient.primary}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-                        >
-                          <Ionicons name="flame" size={26} color="white" />
-                        </LinearGradient>
-                      )}
-                    </View>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <Text style={{ color: 'white', fontSize: 15, fontWeight: '800' }} numberOfLines={2}>
-                          {game.name}
-                        </Text>
-                        {isDefault ? (
-                          <View
-                            style={{
-                              backgroundColor: 'rgba(123,63,242,0.22)',
-                              borderColor: 'rgba(123,63,242,0.55)',
-                              borderWidth: 1,
-                              paddingHorizontal: 8,
-                              paddingVertical: 2,
-                              borderRadius: 999,
-                            }}
-                          >
-                            <Text style={{ color: '#D4C4FF', fontSize: 10, fontWeight: '800' }}>
-                              {t('profile.defaultGameBadge')}
-                            </Text>
-                          </View>
-                        ) : null}
-                        {gameProfile ? (
-                          <View
-                            style={{
-                              backgroundColor: 'rgba(0,200,83,0.18)',
-                              borderColor: 'rgba(0,200,83,0.5)',
-                              borderWidth: 1,
-                              paddingHorizontal: 8,
-                              paddingVertical: 2,
-                              borderRadius: 999,
-                            }}
-                          >
-                            <Text style={{ color: '#7CECA1', fontSize: 10, fontWeight: '800' }}>
-                              {t('profile.connected')}
-                            </Text>
-                          </View>
-                        ) : null}
-                      </View>
-                      <View style={{ marginTop: 4 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <Text
-                            style={{
-                              color: colors.ink.secondary,
-                              fontSize: 11,
-                              fontWeight: '600',
-                              width: 64,
-                            }}
-                          >
-                            {t('profile.fieldNickname')}
-                          </Text>
-                          <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
-                            {gameProfile?.nickname ?? '—'}
-                          </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
-                          <Text
-                            style={{
-                              color: colors.ink.secondary,
-                              fontSize: 11,
-                              fontWeight: '600',
-                              width: 64,
-                            }}
-                          >
-                            {t('profile.fieldPlayerId')}
-                          </Text>
-                          <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
-                            {gameProfile?.playerId ?? '—'}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    <Ionicons name="chevron-forward" size={20} color={colors.ink.secondary} />
-                  </Pressable>
-                );
-              })}
+            <View style={{ gap: 10 }}>
+              {activeGamesList.map((game) => (
+                <ProfileGameListRow
+                  key={game.id}
+                  game={game}
+                  gameProfile={user?.gameProfiles.find((p) => p.gameId === game.id) ?? null}
+                  isDefault={user?.selectedGame === game.id}
+                  onPress={() => navigation.navigate('EditGameProfile', { gameId: game.id })}
+                />
+              ))}
             </View>
           )}
         </Card>
