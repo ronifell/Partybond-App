@@ -381,8 +381,20 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
           </View>
         </View>
 
-        {/* Active games — one row per game; tap to edit that game's profile */}
-        <Card variant="dark" padding={12} radius={18}>
+        {/* Active games — parallelogram rows; tap to edit that game's profile */}
+        <Card
+          variant="dark"
+          padding={10}
+          radius={18}
+          style={{
+            borderTopWidth: 2,
+            borderTopColor: 'rgba(123, 63, 242, 0.65)',
+            shadowColor: '#7B3FF2',
+            shadowOpacity: 0.2,
+            shadowRadius: 14,
+            shadowOffset: { width: 0, height: -2 },
+          }}
+        >
           <Text
             style={{
               color: colors.brand.pink,
@@ -400,7 +412,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
               color: colors.ink.secondary,
               fontSize: 11,
               fontWeight: '500',
-              marginBottom: 10,
+              marginBottom: 8,
               lineHeight: 15,
             }}
           >
@@ -409,7 +421,7 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
           {activeGamesList.length === 0 ? (
             <Text style={{ color: colors.ink.secondary, fontSize: 13 }}>{t('profile.noGameSelected')}</Text>
           ) : (
-            <View style={{ gap: 10 }}>
+            <View style={{ gap: 6, marginHorizontal: -2 }}>
               {activeGamesList.map((game) => (
                 <ProfileGameListRow
                   key={game.id}

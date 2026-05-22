@@ -115,8 +115,8 @@ export function getGameAccent(gameId: string): GameAccent {
   return GAME_ACCENTS[gameId] ?? DEFAULT_GAME_ACCENT;
 }
 
-/** Lighter glass-style fill gradient (accent tint → smoky base). */
+/** Glass-style fill for profile parallelogram rows (accent tint → dark translucent base). */
 export function getGameGlassGradient(accent: GameAccent): readonly [string, string] {
-  const top = accent.tagBg.replace(/[\d.]+\)$/, '0.34)');
-  return [top, 'rgba(42, 40, 58, 0.48)'];
+  const top = accent.tagBg.replace(/[\d.]+\)$/, '0.22)');
+  return [top, 'rgba(14, 12, 24, 0.78)'];
 }

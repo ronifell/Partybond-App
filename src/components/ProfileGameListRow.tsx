@@ -7,11 +7,14 @@ import { useTranslation } from 'react-i18next';
 import type { Game, GameProfile } from '../api/types';
 import { getGameImage } from '../theme/assets';
 import { colors, gradient } from '../theme/tokens';
-import { GAME_ICONS, getGameAccent } from '../theme/gameAccents';
+import { GAME_ICONS, getGameAccent, getGameGlassGradient } from '../theme/gameAccents';
 
-const ROW_HEIGHT = 76;
-const ROW_RADIUS = 14;
+const ROW_HEIGHT = 68;
 const IMAGE_WIDTH = ROW_HEIGHT;
+/** Parallelogram slant — image follows outer skew; text is counter-skewed. */
+const SKEW_DEG = -14;
+const COUNTER_SKEW_DEG = 14;
+const SKEW_MARGIN_H = 4;
 
 interface Props {
   game: Game;
@@ -20,100 +23,95 @@ interface Props {
   onPress: () => void;
 }
 
-export function ProfileGameListRow({ game, gameProfile, isDefault, onPress }: Props) {
+export function ProfileGameListRow({ game, gameProfile, onPress }: Props) {
   const { t } = useTranslation();
   const accent = getGameAccent(game.id);
+  const glassColors = getGameGlassGradient(accent);
   const thumb = getGameImage(game.id);
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.outer,
-        {
-          borderColor: accent.border,
-          backgroundColor: accent.glow,
-          shadowColor: accent.tagText,
-          opacity: pressed ? 0.92 : 1,
-        },
-      ]}
-    >
-      <View style={styles.row}>
-        <View
-          style={[
-            styles.thumb,
-            {
-              borderTopLeftRadius: ROW_RADIUS,
-              borderBottomLeftRadius: ROW_RADIUS,
-            },
-          ]}
-        >
-          {thumb ? (
-            <Image source={thumb} style={styles.thumbImage} resizeMode="cover" />
-          ) : (
-            <LinearGradient
-              colors={gradient.primary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.thumbFallback}
-            >
-              <Ionicons name={GAME_ICONS[game.id] ?? 'game-controller'} size={30} color="white" />
-            </LinearGradient>
-          )}
-        </View>
-
-        <View style={styles.info}>
-          <View style={styles.titleRow}>
-            <Text style={styles.gameName} numberOfLines={1}>
-              {game.name}
-            </Text>
-            {isDefault ? (
-              <View style={[styles.badge, styles.defaultBadge]}>
-                <Text style={styles.defaultBadgeText}>{t('profile.defaultGameBadge')}</Text>
-              </View>
-            ) : null}
-            {gameProfile ? (
-              <View style={[styles.badge, styles.connectedBadge]}>
-                <Text style={styles.connectedBadgeText}>{t('profile.connected')}</Text>
-              </View>
-            ) : null}
-          </View>
-          <View style={styles.fields}>
-            <View style={styles.fieldRow}>
-              <Text style={styles.fieldLabel}>{t('profile.fieldNickname')}</Text>
-              <Text style={styles.fieldValue} numberOfLines={1}>
-                {gameProfile?.nickname ?? '—'}
-              </Text>
-            </View>
-            <View style={[styles.fieldRow, { marginTop: 2 }]}>
-              <Text style={styles.fieldLabel}>{t('profile.fieldPlayerId')}</Text>
-              <Text style={styles.fieldValue} numberOfLines={1}>
-                {gameProfile?.playerId ?? '—'}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <Ionicons
-          name="chevron-forward"
-          size={20}
-          color={colors.ink.secondary}
-          style={styles.chevron}
+    <View style={styles.wrapper}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.outer,
+          {
+            borderColor: accent.border,
+            shadowColor: accent.tagText,
+            transform: [{ skewX: `${SKEW_DEG}deg` }],
+            opacity: pressed ? 0.9 : 1,
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={[...glassColors]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
         />
-      </View>
-    </Pressable>
+        <LinearGradient
+          colors={['rgba(255,255,255,0.10)', 'rgba(255,255,255,0)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.sheen}
+          pointerEvents="none"
+        />
+
+        <View style={styles.row}>
+          <View style={styles.thumb}>
+            {thumb ? (
+              <Image source={thumb} style={styles.thumbImage} resizeMode="cover" />
+            ) : (
+              <LinearGradient
+                colors={gradient.primary}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.thumbFallback}
+              >
+                <Ionicons name={GAME_ICONS[game.id] ?? 'game-controller'} size={28} color="white" />
+              </LinearGradient>
+            )}
+          </View>
+
+          <View style={[styles.contentSkew, { transform: [{ skewX: `${COUNTER_SKEW_DEG}deg` }] }]}>
+            <View style={styles.info}>
+              <Text style={styles.gameName} numberOfLines={1}>
+                {game.name}
+              </Text>
+              <Text style={styles.fieldLine} numberOfLines={1}>
+                {t('profile.fieldNickname')} {gameProfile?.nickname ?? '—'}
+              </Text>
+              <Text style={styles.fieldLine} numberOfLines={1}>
+                {t('profile.fieldPlayerId')} {gameProfile?.playerId ?? '—'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.55)" />
+          </View>
+        </View>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    marginHorizontal: SKEW_MARGIN_H,
+    marginVertical: 3,
+  },
   outer: {
-    borderRadius: ROW_RADIUS,
     borderWidth: 1.5,
     overflow: 'hidden',
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    shadowOpacity: 0.55,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 6,
+  },
+  sheen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
   },
   row: {
     flexDirection: 'row',
@@ -124,7 +122,7 @@ const styles = StyleSheet.create({
     width: IMAGE_WIDTH,
     height: ROW_HEIGHT,
     overflow: 'hidden',
-    backgroundColor: '#1A1230',
+    backgroundColor: 'rgba(10, 10, 18, 0.9)',
   },
   thumbImage: {
     width: '100%',
@@ -135,71 +133,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  contentSkew: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 12,
+    minWidth: 0,
+  },
   info: {
     flex: 1,
     minWidth: 0,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     justifyContent: 'center',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
+    gap: 2,
   },
   gameName: {
-    color: 'white',
-    fontSize: 14,
+    color: '#FFFFFF',
+    fontSize: 15,
     fontWeight: '800',
-    flexShrink: 1,
+    letterSpacing: -0.2,
+    marginBottom: 2,
   },
-  badge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 999,
-    borderWidth: 1,
-  },
-  defaultBadge: {
-    backgroundColor: 'rgba(123,63,242,0.22)',
-    borderColor: 'rgba(123,63,242,0.55)',
-  },
-  defaultBadgeText: {
-    color: '#D4C4FF',
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  connectedBadge: {
-    backgroundColor: 'rgba(0,200,83,0.18)',
-    borderColor: 'rgba(0,200,83,0.5)',
-  },
-  connectedBadgeText: {
-    color: '#7CECA1',
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  fields: {
-    marginTop: 4,
-  },
-  fieldRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  fieldLabel: {
+  fieldLine: {
     color: colors.ink.secondary,
-    fontSize: 10,
-    fontWeight: '600',
-    width: 58,
-  },
-  fieldValue: {
-    color: 'white',
     fontSize: 11,
-    fontWeight: '600',
-    flex: 1,
-  },
-  chevron: {
-    alignSelf: 'center',
-    marginRight: 10,
+    fontWeight: '500',
+    lineHeight: 15,
   },
 });
