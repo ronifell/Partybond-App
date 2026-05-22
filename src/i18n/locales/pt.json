@@ -228,6 +228,8 @@
     "title": "Criar equipe",
     "subtitle": "Convide amigos e jogadores recentes para montar seu squad neste jogo.",
     "gameLabel": "Jogo",
+    "selectGameLabel": "ESCOLHER JOGO",
+    "playersActive": "{{count}} jogadores ativos",
     "noActiveGames": "Nenhum jogo ativo disponível no momento.",
     "name": "Nome da equipe",
     "titlePlaceholder": "Squad de sexta",

@@ -18,6 +18,7 @@ import { fetchGames } from '../api/games';
 import type { MatchLobbyPreferences } from '../api/types';
 import { MatchPreferencesModal } from '../components/MatchPreferencesModal';
 import { GameProfileRequiredNotice } from '../components/GameProfileRequiredNotice';
+import { hasGameProfileForGame } from '../utils/gameProfile';
 import { useAuth } from '../store/authStore';
 import { useMatchEvents } from '../hooks/useMatchEvents';
 import { getApiError } from '../api/client';
@@ -61,8 +62,8 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   }, [allSessions]);
 
   const hasGameProfile = useCallback(
-    (gameId: string) => (user?.gameProfiles ?? []).some((p) => p.gameId === gameId),
-    [user?.gameProfiles],
+    (gameId: string) => hasGameProfileForGame(user, gameId),
+    [user],
   );
 
   const selectedGame = useMemo(

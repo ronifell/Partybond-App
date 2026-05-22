@@ -228,6 +228,8 @@
     "title": "Create team",
     "subtitle": "Invite friends and recent players to form your squad for this game.",
     "gameLabel": "Game",
+    "selectGameLabel": "SELECT GAME",
+    "playersActive": "{{count}} players active",
     "noActiveGames": "No active games are available right now.",
     "name": "Team name",
     "titlePlaceholder": "Friday squad",

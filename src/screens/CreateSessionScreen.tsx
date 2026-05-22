@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, Pressable, Image, useWindowDimensions, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { View, Text, Pressable, useWindowDimensions, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRoute } from '@react-navigation/native';
@@ -11,27 +10,28 @@ import { Screen } from '../components/ui/Screen';
 import { BackgroundGlow } from '../components/ui/BackgroundGlow';
 import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
-import { SegmentToggle } from '../components/ui/SegmentToggle';
 import { Avatar } from '../components/ui/Avatar';
-import { getGameImage } from '../theme/assets';
+import { GameProfileRequiredNotice } from '../components/GameProfileRequiredNotice';
+import { CreateSquadGameRow } from '../components/CreateSquadGameRow';
+import { hasGameProfileForGame } from '../utils/gameProfile';
 import {
   createSession,
   fetchSquadCandidates,
   joinQueue,
+  listSessions,
   sendSessionSquadInvites,
 } from '../api/sessions';
 import { fetchGames } from '../api/games';
-import type { SessionSkillTier } from '../api/types';
-import { SESSION_SKILL_TIERS } from '../api/types';
 import { useAuth } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 import { getApiError } from '../api/client';
-import { colors, gradient } from '../theme/tokens';
+import { colors } from '../theme/tokens';
 
-const MODES = ['casual', 'competitive'] as const;
+const H_PADDING = 12;
 
-const FORM_MAX = 400;
-const H_PADDING = 24;
+/** Squad sessions invite specific players; mode/tier only apply if strangers join the queue. */
+const SQUAD_SESSION_MODE = 'casual' as const;
+const SQUAD_SESSION_SKILL_TIER = 'beginner' as const;
 
 const SECTION_LABEL_STYLE = {
   color: colors.ink.secondary,
@@ -47,23 +47,42 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
   const route = useRoute();
   const { width: windowWidth } = useWindowDimensions();
   const user = useAuth((s) => s.user);
+  const refreshMe = useAuth((s) => s.refreshMe);
   const qc = useQueryClient();
   const showTopToast = useNotificationStore((s) => s.showTopToast);
 
   const defaultGameId = (route.params as { defaultGameId?: string } | undefined)?.defaultGameId;
 
   const { data: games = [] } = useQuery({ queryKey: ['games'], queryFn: fetchGames });
+  const { data: allSessions = [] } = useQuery({
+    queryKey: ['sessions', 'all'],
+    queryFn: () => listSessions(),
+  });
   const activeGames = useMemo(() => games.filter((g) => g.status === 'active'), [games]);
 
-  const columnWidth = Math.min(windowWidth - H_PADDING * 2, FORM_MAX);
+  const playersActiveByGame = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const s of allSessions) {
+      map[s.gameId] = (map[s.gameId] ?? 0) + s.waitingCount;
+    }
+    return map;
+  }, [allSessions]);
+
+  const columnWidth = windowWidth - H_PADDING * 2;
 
   const [gameId, setGameId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [mode, setMode] = useState<(typeof MODES)[number]>('casual');
-  const [skillTier, setSkillTier] = useState<SessionSkillTier>('beginner');
   const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileGateGame, setProfileGateGame] = useState<{ id: string; name: string } | null>(
+    null,
+  );
+
+  const hasGameProfile = useCallback(
+    (gid: string) => hasGameProfileForGame(user, gid),
+    [user],
+  );
 
   const selectedGame = useMemo(
     () => activeGames.find((g) => g.id === gameId) ?? null,
@@ -157,6 +176,10 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
       setError(t('createSquad.noActiveGames'));
       return;
     }
+    if (!hasGameProfile(gid)) {
+      setProfileGateGame({ id: selectedGame.id, name: selectedGame.name });
+      return;
+    }
     setError(null);
     setLoading(true);
     try {
@@ -169,16 +192,13 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
       const session = await createSession({
         gameId: gid,
         title: title.trim(),
-        gameMode: mode,
-        skillTier,
+        gameMode: SQUAD_SESSION_MODE,
+        skillTier: SQUAD_SESSION_SKILL_TIER,
         playersNeeded,
       });
 
-      try {
-        await joinQueue(session.id);
-      } catch {
-        /* leader may already be in queue from a prior session */
-      }
+      await joinQueue(session.id);
+      await refreshMe();
 
       if (inviteList.length > 0) {
         await sendSessionSquadInvites(session.id, inviteList);
@@ -186,9 +206,14 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
       }
 
       qc.invalidateQueries({ queryKey: ['sessions'] });
-      navigation.replace('Session', { sessionId: session.id });
+      navigation.replace('Queue', { sessionId: session.id });
     } catch (err) {
-      setError(getApiError(err).message);
+      const apiErr = getApiError(err);
+      if (apiErr.code === 'no_game_profile' && selectedGame) {
+        setProfileGateGame({ id: selectedGame.id, name: selectedGame.name });
+      } else {
+        setError(apiErr.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -210,55 +235,25 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
 
           <View className="gap-5 py-2">
             <View>
-              <Text style={SECTION_LABEL_STYLE}>{t('createSquad.gameLabel')}</Text>
+              <View style={styles.selectGameHeader}>
+                <Ionicons name="game-controller" size={14} color={colors.brand.purple} />
+                <Text style={styles.selectGameLabel}>{t('createSquad.selectGameLabel')}</Text>
+              </View>
               {activeGames.length === 0 ? (
                 <Text style={{ color: colors.ink.secondary, fontSize: 14 }}>
                   {t('createSquad.noActiveGames')}
                 </Text>
               ) : (
                 <View style={styles.gameList}>
-                  {activeGames.map((g) => {
-                    const selected = gameId === g.id;
-                    const thumb = getGameImage(g.id);
-                    return (
-                      <Pressable
-                        key={g.id}
-                        onPress={() => setGameId(g.id)}
-                        style={({ pressed }) => [
-                          styles.gameRow,
-                          selected && styles.gameRowSelected,
-                          { opacity: pressed ? 0.9 : 1 },
-                        ]}
-                      >
-                        <View style={styles.gameThumb}>
-                          {thumb ? (
-                            <Image
-                              source={thumb}
-                              style={styles.gameThumbImage}
-                              resizeMode="cover"
-                            />
-                          ) : (
-                            <LinearGradient
-                              colors={gradient.primary}
-                              start={{ x: 0, y: 0 }}
-                              end={{ x: 1, y: 1 }}
-                              style={styles.gameThumbFallback}
-                            >
-                              <Ionicons name="game-controller" size={26} color="white" />
-                            </LinearGradient>
-                          )}
-                        </View>
-                        <Text style={styles.gameRowName} numberOfLines={2}>
-                          {g.name}
-                        </Text>
-                        {selected ? (
-                          <Ionicons name="checkmark-circle" size={22} color={colors.brand.purple} />
-                        ) : (
-                          <Ionicons name="ellipse-outline" size={22} color={colors.ink.secondary} />
-                        )}
-                      </Pressable>
-                    );
-                  })}
+                  {activeGames.map((g) => (
+                    <CreateSquadGameRow
+                      key={g.id}
+                      game={g}
+                      selected={gameId === g.id}
+                      playersActive={playersActiveByGame[g.id] ?? 0}
+                      onPress={() => setGameId(g.id)}
+                    />
+                  ))}
                 </View>
               )}
             </View>
@@ -271,56 +266,6 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
                 placeholder={t('createSquad.titlePlaceholder')}
                 compact
               />
-            </View>
-
-            <View>
-              <Text style={SECTION_LABEL_STYLE}>{t('createSquad.mode')}</Text>
-              <SegmentToggle
-                value={mode}
-                onChange={setMode}
-                options={MODES.map((m) => ({ value: m, label: t(`createSquad.${m}`) }))}
-              />
-            </View>
-
-            <View>
-              <Text style={SECTION_LABEL_STYLE}>{t('matchPrefs.skillLabel')}</Text>
-              <Text style={{ color: colors.ink.secondary, fontSize: 12, marginBottom: 12, lineHeight: 17 }}>
-                {t('matchPrefs.skillHint')}
-              </Text>
-              <View style={{ gap: 8 }}>
-                {SESSION_SKILL_TIERS.map((tier) => {
-                  const selected = skillTier === tier;
-                  return (
-                    <Pressable
-                      key={tier}
-                      onPress={() => setSkillTier(tier)}
-                      style={({ pressed }) => ({
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingVertical: 12,
-                        paddingHorizontal: 14,
-                        borderRadius: 12,
-                        borderWidth: 1.5,
-                        borderColor: selected ? colors.brand.purple : 'rgba(255,255,255,0.12)',
-                        backgroundColor: selected ? 'rgba(123,63,242,0.18)' : 'rgba(10,10,18,0.75)',
-                        opacity: pressed ? 0.9 : 1,
-                      })}
-                    >
-                      <Text
-                        style={{ color: colors.ink.primary, fontWeight: '700', fontSize: 15, flex: 1 }}
-                        numberOfLines={2}
-                      >
-                        {t(`matchPrefs.tier${tier.charAt(0).toUpperCase() + tier.slice(1)}`)}
-                      </Text>
-                      {selected ? (
-                        <Ionicons name="checkmark-circle" size={22} color={colors.brand.purple} />
-                      ) : (
-                        <Ionicons name="ellipse-outline" size={22} color={colors.ink.secondary} />
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </View>
             </View>
 
             <View>
@@ -369,52 +314,37 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
           </View>
         </View>
       </View>
+
+      {profileGateGame ? (
+        <GameProfileRequiredNotice
+          gameName={profileGateGame.name}
+          onDismiss={() => setProfileGateGame(null)}
+          onGoToProfile={() => {
+            const g = profileGateGame;
+            setProfileGateGame(null);
+            navigation.navigate('EditGameProfile', { gameId: g.id });
+          }}
+        />
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  gameList: {
-    gap: 8,
-  },
-  gameRow: {
+  selectGameHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.12)',
-    backgroundColor: 'rgba(10,10,18,0.75)',
+    gap: 6,
+    marginBottom: 12,
   },
-  gameRowSelected: {
-    borderColor: colors.brand.purple,
-    backgroundColor: 'rgba(123,63,242,0.18)',
+  selectGameLabel: {
+    color: colors.brand.purple,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
-  gameThumb: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#1A1230',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-  },
-  gameThumbImage: {
-    width: '100%',
-    height: '100%',
-  },
-  gameThumbFallback: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gameRowName: {
-    color: colors.ink.primary,
-    fontWeight: '700',
-    fontSize: 15,
-    flex: 1,
+  gameList: {
+    gap: 8,
   },
   subtitle: {
     color: colors.ink.secondary,
