@@ -24,7 +24,12 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Avatar } from '../components/ui/Avatar';
 import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { GradientButton } from '../components/ui/GradientButton';
-import { createGroup, fetchRecentPlayers, fetchGameProfileUsers } from '../api/social';
+import {
+  createGroup,
+  fetchRecentPlayers,
+  fetchGameProfileUsers,
+  type GameProfileUser,
+} from '../api/social';
 import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
 import { getGameImage } from '../theme/assets';
@@ -39,6 +44,7 @@ const DESC_MAX = 100;
 const MAX_MEMBERS = 20;
 
 type PlayerTab = 'recent' | 'friends';
+type SelectablePlayer = Pick<RecentPlayer, 'userId' | 'nickname' | 'photoUrl' | 'gameId' | 'gameName' | 'isOnline'>;
 
 function GroupPhotoPicker({
   uri,
@@ -78,7 +84,7 @@ function SelectablePlayerRow({
   onToggle,
   t,
 }: {
-  player: RecentPlayer;
+  player: SelectablePlayer | GameProfileUser;
   selected: boolean;
   onToggle: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
@@ -174,6 +180,12 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
     () => activeGames.find((g) => g.id === selectedGameId) ?? activeGames[0],
     [activeGames, selectedGameId],
   );
+
+  useEffect(() => {
+    if (!selectedGameId && activeGames.length > 0) {
+      setSelectedGameId(activeGames[0]!.id);
+    }
+  }, [activeGames, selectedGameId]);
 
   useEffect(() => {
     if (selectedGameId) setPlayerTab('friends');

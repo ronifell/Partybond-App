@@ -16,11 +16,11 @@ import { CreateSquadGameRow } from '../components/CreateSquadGameRow';
 import { hasGameProfileForGame } from '../utils/gameProfile';
 import {
   createSession,
-  fetchSquadCandidates,
   joinQueue,
   listSessions,
   sendSessionSquadInvites,
 } from '../api/sessions';
+import { fetchGameProfileUsers } from '../api/social';
 import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
@@ -90,8 +90,8 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
   );
 
   const { data: candidates = [], isLoading: candidatesLoading } = useQuery({
-    queryKey: ['squad-candidates', gameId],
-    queryFn: () => fetchSquadCandidates(gameId!),
+    queryKey: ['game-profile-users', gameId],
+    queryFn: () => fetchGameProfileUsers(gameId!),
     enabled: !!gameId,
   });
 
@@ -146,7 +146,6 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
           <Text style={styles.candidateMeta} numberOfLines={2}>
             {c.nickname ? `${c.nickname} · ` : ''}
             {c.isOnline ? t('recent.online') : t('createSquad.offline')}
-            {c.source === 'suggestion' ? ` · ${t('createSquad.suggestion')}` : ''}
           </Text>
         </View>
         <Pressable

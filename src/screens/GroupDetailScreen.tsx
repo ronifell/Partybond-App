@@ -73,6 +73,15 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
   >([]);
   const [squadModalOpen, setSquadModalOpen] = useState(false);
   const [memberMenuId, setMemberMenuId] = useState<string | null>(null);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    date.setHours(21, 0, 0, 0);
+    return date;
+  });
+  const [selectedHour, setSelectedHour] = useState(21);
+  const [selectedMinute, setSelectedMinute] = useState(0);
 
   const { data: group, refetch } = useQuery({
     queryKey: ['group', groupId],
@@ -114,10 +123,17 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
       showTopToast(t('groups.scheduleAlreadyExists'));
       return;
     }
+    setScheduleModalOpen(true);
+  };
+
+  const confirmSchedule = async () => {
+    const startsAt = new Date(selectedDate);
+    startsAt.setHours(selectedHour, selectedMinute, 0, 0);
+    const dayOfWeek = startsAt.getDay();
+    const timeLocal = `${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`;
+    setScheduleModalOpen(false);
     try {
-      const d = new Date();
-      const day = d.getDay();
-      await createGroupSchedule(groupId, { dayOfWeek: day === 0 ? 2 : day, timeLocal: '21:00' });
+      await createGroupSchedule(groupId, { dayOfWeek, timeLocal, startsAt: startsAt.toISOString() });
       await refetch();
       showTopToast(t('groupDetail.scheduleDone'));
     } catch (err) {
@@ -460,6 +476,89 @@ export function GroupDetailScreen({ navigation, route }: NativeStackScreenProps<
         </Pressable>
       </Modal>
 
+      <Modal visible={scheduleModalOpen} transparent animationType="fade">
+        <Pressable style={styles.modalBackdrop} onPress={() => setScheduleModalOpen(false)}>
+          <Pressable style={styles.scheduleModalSheet} onPress={() => {}}>
+            <Text style={styles.modalTitle}>{t('groupChat.scheduleMatch')}</Text>
+            <Text style={styles.scheduleLabel}>{t('groupChat.selectDate')}</Text>
+            <View style={styles.datePickerRow}>
+              <Pressable
+                onPress={() => {
+                  const next = new Date(selectedDate);
+                  next.setDate(next.getDate() - 1);
+                  setSelectedDate(next);
+                }}
+                style={styles.dateNavBtn}
+              >
+                <Ionicons name="chevron-back" size={18} color={colors.ink.secondary} />
+              </Pressable>
+              <Text style={styles.dateLabel}>
+                {selectedDate.toLocaleDateString(undefined, {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </Text>
+              <Pressable
+                onPress={() => {
+                  const next = new Date(selectedDate);
+                  next.setDate(next.getDate() + 1);
+                  setSelectedDate(next);
+                }}
+                style={styles.dateNavBtn}
+              >
+                <Ionicons name="chevron-forward" size={18} color={colors.ink.secondary} />
+              </Pressable>
+            </View>
+
+            <Text style={[styles.scheduleLabel, { marginTop: 12 }]}>{t('groupChat.selectTime')}</Text>
+            <View style={styles.scheduleTimeRow}>
+              <ScrollView style={styles.scheduleTimeCol} showsVerticalScrollIndicator={false}>
+                {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                  <Pressable
+                    key={hour}
+                    onPress={() => setSelectedHour(hour)}
+                    style={[styles.scheduleTimeOption, selectedHour === hour && styles.scheduleTimeOptionActive]}
+                  >
+                    <Text style={[styles.scheduleTimeText, selectedHour === hour && styles.scheduleTimeTextActive]}>
+                      {String(hour).padStart(2, '0')}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+              <Text style={styles.scheduleColon}>:</Text>
+              <ScrollView style={styles.scheduleTimeCol} showsVerticalScrollIndicator={false}>
+                {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                  <Pressable
+                    key={minute}
+                    onPress={() => setSelectedMinute(minute)}
+                    style={[styles.scheduleTimeOption, selectedMinute === minute && styles.scheduleTimeOptionActive]}
+                  >
+                    <Text
+                      style={[
+                        styles.scheduleTimeText,
+                        selectedMinute === minute && styles.scheduleTimeTextActive,
+                      ]}
+                    >
+                      {String(minute).padStart(2, '0')}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+            <View style={styles.scheduleActions}>
+              <Pressable style={styles.scheduleCancelBtn} onPress={() => setScheduleModalOpen(false)}>
+                <Text style={styles.scheduleCancelText}>{t('common.cancel')}</Text>
+              </Pressable>
+              <Pressable style={styles.scheduleConfirmBtn} onPress={confirmSchedule}>
+                <Text style={styles.scheduleConfirmText}>{t('common.confirm')}</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       <Modal visible={!!memberMenuId} transparent animationType="fade">
         <Pressable style={styles.modalBackdrop} onPress={() => setMemberMenuId(null)}>
           <View style={styles.memberMenuSheet}>
@@ -791,11 +890,110 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     maxHeight: '55%',
   },
+  scheduleModalSheet: {
+    backgroundColor: '#12121A',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 28,
+  },
   modalTitle: {
     color: '#fff',
     fontSize: 17,
     fontWeight: '800',
     marginBottom: 14,
+  },
+  scheduleLabel: {
+    color: colors.ink.secondary,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  datePickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  dateNavBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#1A1A24',
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateLabel: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  scheduleTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    height: 140,
+    marginBottom: 14,
+  },
+  scheduleTimeCol: {
+    flex: 1,
+    backgroundColor: '#1A1A24',
+    borderRadius: 10,
+  },
+  scheduleTimeOption: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: CARD_BORDER,
+  },
+  scheduleTimeOptionActive: {
+    backgroundColor: 'rgba(123,63,242,0.2)',
+  },
+  scheduleTimeText: {
+    color: colors.ink.secondary,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  scheduleTimeTextActive: {
+    color: colors.brand.purple,
+    fontWeight: '800',
+  },
+  scheduleColon: {
+    color: colors.ink.secondary,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  scheduleActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  scheduleCancelBtn: {
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 10,
+    paddingVertical: 12,
+    backgroundColor: '#1A1A24',
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+  },
+  scheduleConfirmBtn: {
+    flex: 1,
+    alignItems: 'center',
+    borderRadius: 10,
+    paddingVertical: 12,
+    backgroundColor: colors.brand.purple,
+  },
+  scheduleCancelText: {
+    color: colors.ink.secondary,
+    fontWeight: '700',
+  },
+  scheduleConfirmText: {
+    color: '#fff',
+    fontWeight: '800',
   },
   modalEmpty: {
     color: colors.ink.secondary,

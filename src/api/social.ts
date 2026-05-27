@@ -9,17 +9,36 @@ import type {
   RecentPlayer,
 } from './types';
 
+export type GameProfileUser = {
+  userId: string;
+  name: string;
+  nickname: string;
+  gameId: string;
+  gameName: string;
+  photoUrl: string | null;
+  isOnline: boolean;
+};
+
 export async function fetchRecentPlayers(): Promise<RecentPlayer[]> {
   const { data } = await api.get<{ players: RecentPlayer[] }>('/users/me/recent-players');
   return data.players;
 }
 
-export async function fetchGameProfileUsers(gameId: string): Promise<RecentPlayer[]> {
-  const { data } = await api.get<{ users: RecentPlayer[] }>('/users/game-profile-users', {
+export async function fetchGameProfileUsers(gameId: string): Promise<GameProfileUser[]> {
+  const { data } = await api.get<{
+    users: Array<{
+      userId: string;
+      name: string;
+      nickname: string;
+      photoUrl: string | null;
+      isOnline: boolean;
+    }>;
+  }>('/users/game-profile-users', {
     params: { gameId },
   });
   return data.users.map((u) => ({
     userId: u.userId,
+    name: u.name,
     nickname: u.nickname || u.name,
     gameId,
     gameName: '',
