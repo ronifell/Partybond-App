@@ -336,6 +336,27 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
             </View>
           </Pressable>
 
+          <Pressable
+            onPress={() => navigation.navigate('EditProfile')}
+            hitSlop={8}
+            style={({ pressed }) => ({
+              marginTop: 8,
+              marginLeft: 2,
+              alignSelf: 'flex-start',
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <Text
+              style={{
+                color: colors.brand.purple,
+                fontSize: 12,
+                fontWeight: '700',
+              }}
+            >
+              Click here to enter what you are looking for
+            </Text>
+          </Pressable>
+
           {user?.lookingFor ? (
             <View
               style={{

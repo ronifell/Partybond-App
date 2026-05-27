@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 
 import { Screen } from '../components/ui/Screen';
 import { Input } from '../components/ui/Input';
@@ -14,12 +15,16 @@ import { useAuth } from '../store/authStore';
 import { useOnboarding } from '../store/onboardingStore';
 import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
+import { fetchGames } from '../api/games';
 
 export function OnboardingGameInfoScreen({ route, navigation }: NativeStackScreenProps<any>) {
   const { t } = useTranslation();
   const setUser = useAuth((s) => s.setUser);
   const setCelebrationPending = useOnboarding((s) => s.setCelebrationPending);
   const gameId = (route.params as { gameId: string }).gameId;
+
+  const { data: games = [] } = useQuery({ queryKey: ['games'], queryFn: fetchGames });
+  const gameName = useMemo(() => games.find((g) => g.id === gameId)?.name ?? t('common.appName'), [games, gameId, t]);
 
   const [nickname, setNickname] = useState('');
   const [playerId, setPlayerId] = useState('');
@@ -56,7 +61,7 @@ export function OnboardingGameInfoScreen({ route, navigation }: NativeStackScree
         <OnboardingHeader
           current={4}
           total={4}
-          title={t('onboarding.step4Title')}
+          title={t('onboarding.step4Title', { game: gameName })}
           subtitle={t('onboarding.step4Subtitle')}
         />
 
@@ -90,7 +95,7 @@ export function OnboardingGameInfoScreen({ route, navigation }: NativeStackScree
           >
             <Ionicons name="information-circle" size={20} color="#C5A8FF" />
             <Text style={{ color: '#D8D8E8', flex: 1, fontSize: 13, lineHeight: 18, fontWeight: '500' }}>
-              {t('onboarding.help')}
+              {t('onboarding.help', { game: gameName })}
             </Text>
           </View>
           {error ? (

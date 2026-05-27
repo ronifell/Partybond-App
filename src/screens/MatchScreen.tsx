@@ -458,13 +458,14 @@ export function MatchScreen({ navigation, route }: NativeStackScreenProps<any>) 
     );
   }
 
-  const rawGuide = t('match.guideSteps', { returnObjects: true });
+  const gameName = match.gameName || t('common.appName');
+  const rawGuide = t('match.guideSteps', { returnObjects: true, game: gameName });
   const guideSteps: GuideStep[] =
     Array.isArray(rawGuide) &&
     rawGuide.length > 0 &&
     typeof (rawGuide[0] as GuideStep).title === 'string'
       ? (rawGuide as GuideStep[])
-      : ((t('match.guide', { returnObjects: true }) as string[]) ?? []).map((title) => ({
+      : ((t('match.guide', { returnObjects: true, game: gameName }) as string[]) ?? []).map((title) => ({
           title,
           body: '',
         }));

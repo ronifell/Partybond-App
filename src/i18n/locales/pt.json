@@ -115,13 +115,13 @@
     "step2Skip": "Pular por agora",
     "step3Title": "Escolha um jogo",
     "step3Subtitle": "Mais jogos chegam em breve.",
-    "step4Title": "Seus dados do Free Fire",
+    "step4Title": "Seus dados do {{game}}",
     "step4Subtitle": "Precisamos disso para outros jogadores te adicionarem no jogo.",
     "nickname": "Nickname no jogo",
     "nicknamePlaceholder": "ProSniper",
     "playerId": "ID do jogador",
     "playerIdPlaceholder": "1234567890",
-    "help": "Abra o Free Fire → Perfil → copie o ID",
+    "help": "Abra {{game}} → Perfil → copie o ID",
     "welcomeCta": "Começar",
     "completeTitle": "Tudo pronto!",
     "completeSubtitle": "Você está pronto para encontrar jogadores e jogar junto.",
@@ -297,7 +297,7 @@
     "guideTitle": "Próximos passos",
     "guide": [
       "Copie o ID do jogador",
-      "Abra o Free Fire",
+      "Abra {{game}}",
       "Adicione o jogador",
       "Entre no lobby"
     ],
@@ -307,7 +307,7 @@
         "body": "Toque no botão acima para copiar o ID do seu companheiro."
       },
       {
-        "title": "Abrir o Free Fire",
+        "title": "Abrir {{game}}",
         "body": "Abra o jogo no seu aparelho para adicioná-lo como amigo."
       },
       {
