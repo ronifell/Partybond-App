@@ -10,6 +10,9 @@ import {
   Image,
   StyleSheet,
   Alert,
+  Modal,
+  ScrollView,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -125,6 +128,16 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
   const [pinnedOpen, setPinnedOpen] = useState(true);
   const [sending, setSending] = useState(false);
   const chatListRef = useRef<FlatList>(null);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    date.setHours(21, 0, 0, 0);
+    return date;
+  });
+  const [selectedHour, setSelectedHour] = useState(21);
+  const [selectedMinute, setSelectedMinute] = useState(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['chat', conversationId],
@@ -172,6 +185,15 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
     };
   }, [conversationId, qc]);
 
+  useEffect(() => {
+    const onShow = Keyboard.addListener('keyboardDidShow', () => setKeyboardOpen(true));
+    const onHide = Keyboard.addListener('keyboardDidHide', () => setKeyboardOpen(false));
+    return () => {
+      onShow.remove();
+      onHide.remove();
+    };
+  }, []);
+
   const scrollChatToEnd = () => {
     requestAnimationFrame(() => {
       chatListRef.current?.scrollToEnd({ animated: true });
@@ -214,10 +236,22 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
       showTopToast(t('groups.scheduleAlreadyExists'));
       return;
     }
+    setScheduleModalOpen(true);
+  };
+
+  const confirmSchedule = async () => {
+    if (!groupId) return;
+    setScheduleModalOpen(false);
     try {
-      const d = new Date();
-      const day = d.getDay();
-      await createGroupSchedule(groupId, { dayOfWeek: day === 0 ? 2 : day, timeLocal: '21:00' });
+      const startsAt = new Date(selectedDate);
+      startsAt.setHours(selectedHour, selectedMinute, 0, 0);
+      const selectedDay = startsAt.getDay();
+      const timeLocal = `${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`;
+      await createGroupSchedule(groupId, {
+        dayOfWeek: selectedDay,
+        timeLocal,
+        startsAt: startsAt.toISOString(),
+      });
       await refetchGroup();
       showTopToast(t('groupDetail.scheduleDone'));
     } catch (err) {
@@ -268,7 +302,7 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
               ref={chatListRef}
               data={messages}
               keyExtractor={(m) => m.id}
-              contentContainerStyle={{ padding: 16, gap: 8 }}
+              contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: keyboardOpen ? 12 : 24 }}
               renderItem={({ item }) => {
                 const mine = item.senderId === user?.id;
                 return (
@@ -436,7 +470,10 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
         style={{ flex: 1 }}
         data={rows}
         keyExtractor={(r) => r.id}
-        contentContainerStyle={styles.chatList}
+        contentContainerStyle={[
+          styles.chatList,
+          { paddingBottom: activeTab === 'chat' ? (keyboardOpen ? 14 : Math.max(insets.bottom, 8) + 108) : 16 },
+        ]}
         renderItem={({ item }) => {
           if (item.kind === 'date') {
             return (
@@ -588,8 +625,8 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <View style={{ flex: 1 }}>{tabContent()}</View>
 
@@ -621,7 +658,8 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
               </Pressable>
             </View>
 
-            <View style={[styles.quickActions, { paddingBottom: Math.max(insets.bottom, 8) }]}>
+            {!keyboardOpen ? (
+              <View style={[styles.quickActions, { paddingBottom: Math.max(insets.bottom, 8) }]}>
               <Pressable
                 onPress={() => navigation.navigate('Home')}
                 style={({ pressed }) => [styles.quickBtn, styles.quickPurple, { opacity: pressed ? 0.88 : 1 }]}
@@ -657,10 +695,113 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
                 <Ionicons name="ellipsis-horizontal" size={20} color={colors.ink.secondary} />
                 <Text style={styles.quickBtnText}>{t('groupChat.more')}</Text>
               </Pressable>
-            </View>
+              </View>
+            ) : null}
           </>
         ) : null}
       </KeyboardAvoidingView>
+
+      {scheduleModalOpen ? (
+        <Modal visible={scheduleModalOpen} transparent animationType="fade">
+          <Pressable style={styles.modalBackdrop} onPress={() => setScheduleModalOpen(false)}>
+            <Pressable style={styles.modalSheet} onPress={() => {}}>
+              <Text style={styles.modalTitle}>{t('groupChat.scheduleMatch')}</Text>
+              
+              <Text style={styles.modalLabel}>{t('groupChat.selectDate')}</Text>
+              <View style={styles.datePickerRow}>
+                <Pressable
+                  onPress={() => {
+                    const next = new Date(selectedDate);
+                    next.setDate(next.getDate() - 1);
+                    setSelectedDate(next);
+                  }}
+                  style={styles.dateNavBtn}
+                >
+                  <Ionicons name="chevron-back" size={18} color={colors.ink.secondary} />
+                </Pressable>
+                <Text style={styles.dateLabel}>
+                  {selectedDate.toLocaleDateString(undefined, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    const next = new Date(selectedDate);
+                    next.setDate(next.getDate() + 1);
+                    setSelectedDate(next);
+                  }}
+                  style={styles.dateNavBtn}
+                >
+                  <Ionicons name="chevron-forward" size={18} color={colors.ink.secondary} />
+                </Pressable>
+              </View>
+
+              <Text style={[styles.modalLabel, { marginTop: 16 }]}>{t('groupChat.selectTime')}</Text>
+              <View style={styles.timeSelector}>
+                <View style={styles.timeColumn}>
+                  <Text style={styles.timeColumnLabel}>{t('groupChat.hour')}</Text>
+                  <ScrollView style={styles.timeScroll} showsVerticalScrollIndicator={false}>
+                    {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                      <Pressable
+                        key={hour}
+                        onPress={() => setSelectedHour(hour)}
+                        style={({ pressed }) => [
+                          styles.timeOption,
+                          selectedHour === hour && styles.timeOptionActive,
+                          { opacity: pressed ? 0.8 : 1 },
+                        ]}
+                      >
+                        <Text style={[styles.timeOptionText, selectedHour === hour && styles.timeOptionTextActive]}>
+                          {String(hour).padStart(2, '0')}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
+                <Text style={styles.timeSeparator}>:</Text>
+                <View style={styles.timeColumn}>
+                  <Text style={styles.timeColumnLabel}>{t('groupChat.minute')}</Text>
+                  <ScrollView style={styles.timeScroll} showsVerticalScrollIndicator={false}>
+                    {Array.from({ length: 60 }, (_, i) => i).map((minute) => (
+                      <Pressable
+                        key={minute}
+                        onPress={() => setSelectedMinute(minute)}
+                        style={({ pressed }) => [
+                          styles.timeOption,
+                          selectedMinute === minute && styles.timeOptionActive,
+                          { opacity: pressed ? 0.8 : 1 },
+                        ]}
+                      >
+                        <Text style={[styles.timeOptionText, selectedMinute === minute && styles.timeOptionTextActive]}>
+                          {String(minute).padStart(2, '0')}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
+              </View>
+
+              <View style={styles.modalActions}>
+                <Pressable
+                  onPress={() => setScheduleModalOpen(false)}
+                  style={({ pressed }) => [styles.modalBtn, styles.modalBtnCancel, { opacity: pressed ? 0.8 : 1 }]}
+                >
+                  <Text style={styles.modalBtnCancelText}>{t('common.cancel')}</Text>
+                </Pressable>
+                <Pressable
+                  onPress={confirmSchedule}
+                  style={({ pressed }) => [styles.modalBtn, styles.modalBtnConfirm, { opacity: pressed ? 0.8 : 1 }]}
+                >
+                  <Text style={styles.modalBtnConfirmText}>{t('common.confirm')}</Text>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
+      ) : null}
     </View>
   );
 }
@@ -1126,4 +1267,127 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dmSendText: { color: '#fff', fontWeight: '800' },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: '#12121A',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 32,
+    gap: 16,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  modalLabel: {
+    color: colors.ink.secondary,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  datePickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  dateNavBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#1A1A24',
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateLabel: {
+    flex: 1,
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  timeSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    height: 150,
+  },
+  timeColumn: {
+    flex: 1,
+    height: '100%',
+  },
+  timeColumnLabel: {
+    color: colors.ink.secondary,
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  timeScroll: {
+    flex: 1,
+    backgroundColor: '#1A1A24',
+    borderRadius: 10,
+  },
+  timeOption: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: CARD_BORDER,
+  },
+  timeOptionActive: {
+    backgroundColor: 'rgba(123,63,242,0.15)',
+  },
+  timeOptionText: {
+    color: colors.ink.secondary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  timeOptionTextActive: {
+    color: colors.brand.purple,
+    fontWeight: '800',
+  },
+  timeSeparator: {
+    color: colors.ink.secondary,
+    fontSize: 20,
+    fontWeight: '700',
+    marginTop: 24,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalBtnCancel: {
+    backgroundColor: '#1A1A24',
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+  },
+  modalBtnConfirm: {
+    backgroundColor: colors.brand.purple,
+  },
+  modalBtnCancelText: {
+    color: colors.ink.secondary,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  modalBtnConfirmText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '800',
+  },
 });

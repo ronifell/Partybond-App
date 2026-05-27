@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Avatar } from '../components/ui/Avatar';
 import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { GradientButton } from '../components/ui/GradientButton';
-import { createGroup, fetchRecentPlayers } from '../api/social';
+import { createGroup, fetchRecentPlayers, fetchGameProfileUsers } from '../api/social';
 import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
 import { getGameImage } from '../theme/assets';
@@ -152,7 +152,7 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
   const [groupPhotoUri, setGroupPhotoUri] = useState<string | null>(null);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(user?.selectedGame ?? null);
   const [gamePickerOpen, setGamePickerOpen] = useState(false);
-  const [playerTab, setPlayerTab] = useState<PlayerTab>('recent');
+  const [playerTab, setPlayerTab] = useState<PlayerTab>('friends');
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [creating, setCreating] = useState(false);
@@ -162,6 +162,11 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
     queryKey: ['recent-players'],
     queryFn: fetchRecentPlayers,
   });
+  const { data: gameProfileUsers = [] } = useQuery({
+    queryKey: ['game-profile-users', selectedGameId],
+    queryFn: () => (selectedGameId ? fetchGameProfileUsers(selectedGameId) : Promise.resolve([])),
+    enabled: !!selectedGameId,
+  });
 
   const activeGames = useMemo(() => games.filter((g) => g.status === 'active'), [games]);
 
@@ -170,11 +175,32 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
     [activeGames, selectedGameId],
   );
 
+  useEffect(() => {
+    if (selectedGameId) setPlayerTab('friends');
+  }, [selectedGameId]);
+
   const filteredRecent = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return recentPlayers;
     return recentPlayers.filter((p) => p.nickname.toLowerCase().includes(q));
   }, [recentPlayers, search]);
+
+  const gameUsersForSelectedGame = useMemo(
+    () =>
+      gameProfileUsers.map((p) => ({
+        ...p,
+        gameName: selectedGame?.name ?? p.gameName,
+      })),
+    [gameProfileUsers, selectedGame?.name],
+  );
+
+  const filteredGameUsers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return gameUsersForSelectedGame;
+    return gameUsersForSelectedGame.filter((p) => p.nickname.toLowerCase().includes(q));
+  }, [gameUsersForSelectedGame, search]);
+
+  const displayPlayers = playerTab === 'recent' ? filteredRecent : filteredGameUsers;
 
   const pickGroupPhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -377,7 +403,7 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
                 style={styles.playerTabBtn}
               >
                 <Ionicons
-                  name="people-outline"
+                  name="game-controller-outline"
                   size={16}
                   color={playerTab === 'friends' ? colors.brand.purple : colors.ink.secondary}
                 />
@@ -387,7 +413,7 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
                     playerTab === 'friends' && styles.playerTabTextActive,
                   ]}
                 >
-                  {t('createGroup.tabFriends')}
+                  {t('createGroup.tabGameUsers')}
                 </Text>
                 {playerTab === 'friends' ? <View style={styles.playerTabUnderline} /> : null}
               </Pressable>
@@ -410,7 +436,21 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
                 )}
               </View>
             ) : (
-              <Text style={styles.emptyPlayers}>{t('createGroup.friendsEmpty')}</Text>
+              <View style={styles.playerList}>
+                {filteredGameUsers.length === 0 ? (
+                  <Text style={styles.emptyPlayers}>{t('createGroup.noGameProfileUsers')}</Text>
+                ) : (
+                  filteredGameUsers.map((p) => (
+                    <SelectablePlayerRow
+                      key={p.userId}
+                      player={p}
+                      selected={selectedIds.has(p.userId)}
+                      onToggle={() => togglePlayer(p.userId)}
+                      t={t}
+                    />
+                  ))
+                )}
+              </View>
             )}
           </ScrollView>
         </KeyboardAvoidingView>
@@ -436,6 +476,7 @@ export function CreateGroupScreen({ navigation }: NativeStackScreenProps<any>) {
                 key={g.id}
                 onPress={() => {
                   setSelectedGameId(g.id);
+                  setPlayerTab('friends');
                   setGamePickerOpen(false);
                 }}
                 style={({ pressed }) => [

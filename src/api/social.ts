@@ -14,6 +14,20 @@ export async function fetchRecentPlayers(): Promise<RecentPlayer[]> {
   return data.players;
 }
 
+export async function fetchGameProfileUsers(gameId: string): Promise<RecentPlayer[]> {
+  const { data } = await api.get<{ users: RecentPlayer[] }>('/users/game-profile-users', {
+    params: { gameId },
+  });
+  return data.users.map((u) => ({
+    userId: u.userId,
+    nickname: u.nickname || u.name,
+    gameId,
+    gameName: '',
+    photoUrl: u.photoUrl,
+    isOnline: u.isOnline,
+  }));
+}
+
 export async function fetchPublicUser(userId: string): Promise<PublicUser> {
   const { data } = await api.get<{ user: PublicUser }>(`/users/${userId}/public`);
   return data.user;
@@ -51,7 +65,12 @@ export async function fetchPendingGroupInvites(): Promise<GroupInvite[]> {
 
 export async function createGroupSchedule(
   groupId: string,
-  input: { dayOfWeek: number; timeLocal: string; frequency?: 'weekly' | 'biweekly' },
+  input: {
+    dayOfWeek: number;
+    timeLocal: string;
+    frequency?: 'weekly' | 'biweekly';
+    startsAt?: string;
+  },
 ) {
   const { data } = await api.post(`/groups/${groupId}/schedules`, input);
   return data;
