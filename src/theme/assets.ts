@@ -1,4 +1,5 @@
 import type { ImageSourcePropType } from 'react-native';
+import { ADMIN_URL } from '../config/env';
 
 /**
  * Custom branding & content images.
@@ -44,36 +45,21 @@ export const ONBOARDING_WELCOME_BACKGROUND: ImageSourcePropType = require('../..
 export const ONBOARDING_WELCOME_OVERLAY = 0.28;
 
 // ──────────────────────────────────────────────────────────────────────
-// 3) GAME IMAGES — thumbnails shown on Session cards & game tiles.
-//    The key is the `Game.id` (must match what the backend seeds).
-//    Recommended: square 512×512 PNG/JPG per game.
-//    Path:  Frontend/assets/games/<gameId>.png
-//
-//    Seeded game ids (backend): free_fire | elden_ring_nightreign | valorant |
-//    cod_mobile | league_of_legends | fortnite | counter_strike_2 | ea_sports_fc_26 |
-//    minecraft | roblox | pubg_mobile | mobile_legends — add a key when you have art.
+// 3) GAME IMAGES — served from the admin panel at runtime.
+//    Set EXPO_PUBLIC_ADMIN_URL in Frontend/.env to the admin panel origin.
+//    Example: EXPO_PUBLIC_ADMIN_URL=http://18.231.112.145:3000
+//    Upload images via the admin panel's game management page; they are
+//    saved as <gameId>.png under the admin panel's /games/ static route.
 // ──────────────────────────────────────────────────────────────────────
-export const GAME_IMAGES: Record<string, ImageSourcePropType> = {
-  free_fire: require('../../assets/games/free_fire.png'),
-  elden_ring_nightreign: require('../../assets/games/elden_ring_nightreign.png'),
-  valorant: require('../../assets/games/valorant.png'),
-  cod_mobile: require('../../assets/games/cod_mobile.png'),
-  league_of_legends: require('../../assets/games/league_of_legends.png'),
-  fortnite: require('../../assets/games/fortnite.png'),
-  counter_strike_2: require('../../assets/games/counter_strike_2.png'),
-  ea_sports_fc_26: require('../../assets/games/ea_sports_fc_26.png'),
-  minecraft: require('../../assets/games/minecraft.png'),
-  roblox: require('../../assets/games/roblox.png'),
-  pubg_mobile: require('../../assets/games/pubg_mobile.png'),
-  mobile_legends: require('../../assets/games/mobile_legends.png'),
-};
 
 /**
- * Look up a game image by id, or return null to render the gradient icon
- * fallback. Helper used by SessionCard / GameTile.
+ * Returns a remote URI for the game's thumbnail, pointing at the admin panel.
+ * Falls back to null (renders the gradient/icon placeholder) when
+ * EXPO_PUBLIC_ADMIN_URL is not configured.
  */
 export function getGameImage(gameId: string): ImageSourcePropType | null {
-  return GAME_IMAGES[gameId] ?? null;
+  if (!ADMIN_URL) return null;
+  return { uri: `${ADMIN_URL}/games/${gameId}.png` };
 }
 
 // ──────────────────────────────────────────────────────────────────────

@@ -14,6 +14,33 @@ const defaultUrl =
 export const API_URL = fromProcessEnv ?? fromConstants ?? defaultUrl;
 
 /**
+ * On the Android emulator `localhost` / `127.0.0.1` refers to the emulator
+ * itself, not the host machine. Remap to the special alias 10.0.2.2 so that
+ * URLs typed as "localhost" in .env work transparently on the emulator.
+ * Physical devices still need the machine's actual LAN IP in .env.
+ */
+function remapLocalhostForAndroid(url: string): string {
+  if (Platform.OS !== 'android') return url;
+  return url.replace(/localhost/g, '10.0.2.2').replace(/127\.0\.0\.1/g, '10.0.2.2');
+}
+
+/**
+ * Base URL of the admin panel (Next.js). Set EXPO_PUBLIC_ADMIN_URL in Frontend/.env.
+ * Used to load game images at runtime: `${ADMIN_URL}/games/<gameId>.png`
+ * Returns null when the env var is absent, which triggers the gradient/icon fallback.
+ *
+ * Local development:
+ *   Android emulator  → EXPO_PUBLIC_ADMIN_URL=http://localhost:3000  (auto-remapped to 10.0.2.2)
+ *   Physical device   → EXPO_PUBLIC_ADMIN_URL=http://<your-machine-LAN-IP>:3000
+ * Production         → EXPO_PUBLIC_ADMIN_URL=https://admin.yourdomain.com
+ */
+export const ADMIN_URL = (() => {
+  const raw = (process.env.EXPO_PUBLIC_ADMIN_URL ?? '').trim().replace(/\/$/, '');
+  if (!raw) return null;
+  return remapLocalhostForAndroid(raw);
+})();
+
+/**
  * Scheme + host + port only. Uploads are served at `${origin}/uploads/...`, not under `/api/v1`
  * (axios `baseURL` is `${API_URL}/api/v1`). Use this when building static asset URLs.
  */
