@@ -26,8 +26,7 @@ function remapLocalhostForAndroid(url: string): string {
 
 /**
  * Base URL of the admin panel (Next.js). Set EXPO_PUBLIC_ADMIN_URL in Frontend/.env.
- * Used to load game images at runtime: `${ADMIN_URL}/games/<gameId>.png`
- * Returns null when the env var is absent, which triggers the gradient/icon fallback.
+ * Optional — game images are loaded from the backend at `${API_URL}/game-images/<gameId>`.
  *
  * Local development:
  *   Android emulator  → EXPO_PUBLIC_ADMIN_URL=http://localhost:3000  (auto-remapped to 10.0.2.2)

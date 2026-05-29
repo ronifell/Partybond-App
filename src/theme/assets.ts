@@ -1,5 +1,5 @@
 import type { ImageSourcePropType } from 'react-native';
-import { ADMIN_URL } from '../config/env';
+import { getApiOrigin } from '../config/env';
 
 /**
  * Custom branding & content images.
@@ -45,21 +45,19 @@ export const ONBOARDING_WELCOME_BACKGROUND: ImageSourcePropType = require('../..
 export const ONBOARDING_WELCOME_OVERLAY = 0.28;
 
 // ──────────────────────────────────────────────────────────────────────
-// 3) GAME IMAGES — served from the admin panel at runtime.
-//    Set EXPO_PUBLIC_ADMIN_URL in Frontend/.env to the admin panel origin.
-//    Example: EXPO_PUBLIC_ADMIN_URL=http://18.231.112.145:3000
-//    Upload images via the admin panel's game management page; they are
-//    saved as <gameId>.png under the admin panel's /games/ static route.
+// 3) GAME IMAGES — served by the backend at runtime.
+//    Loaded from `${API_URL}/game-images/<gameId>` (any png/jpg/webp/gif on disk).
+//    Upload via the admin panel Games page (POST /api/v1/admin/games/:id/image).
 // ──────────────────────────────────────────────────────────────────────
 
 /**
- * Returns a remote URI for the game's thumbnail, pointing at the admin panel.
- * Falls back to null (renders the gradient/icon placeholder) when
- * EXPO_PUBLIC_ADMIN_URL is not configured.
+ * Returns a remote URI for the game's thumbnail from the backend.
+ * Falls back to null (renders the gradient/icon placeholder) when unavailable.
  */
 export function getGameImage(gameId: string): ImageSourcePropType | null {
-  if (!ADMIN_URL) return null;
-  return { uri: `${ADMIN_URL}/games/${gameId}.png` };
+  const origin = getApiOrigin();
+  if (!origin) return null;
+  return { uri: `${origin}/game-images/${gameId}` };
 }
 
 // ──────────────────────────────────────────────────────────────────────
