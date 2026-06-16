@@ -94,6 +94,9 @@
     "oauthGoogleShort": "Google",
     "oauthApple": "Continue with Apple",
     "oauthAppleShort": "Apple",
+    "haveInviteCode": "Have an invite code?",
+    "inviteCode": "Invite code",
+    "inviteCodePlaceholder": "8 characters, e.g. AB23KX9Y",
     "errors": {
       "generic": "Something went wrong. Please try again.",
       "invalidCredentials": "Invalid email or password.",
@@ -369,7 +372,12 @@
     "menuFriends": "Friends",
     "menuPrivacy": "Privacy & Security",
     "menuNotifications": "Notifications",
-    "menuHelp": "Help & Support"
+    "menuHelp": "Help & Support",
+    "menuPremiumUpgrade": "Upgrade to Premium",
+    "menuPremiumActive": "Manage Premium",
+    "menuPremiumBadge": "PRO",
+    "menuInviteFriends": "Invite friends",
+    "premiumBadge": "PRO"
   },
   "settings": {
     "title": "Settings",
@@ -460,6 +468,12 @@
     "createNew": "Create a new group",
     "createCardTitle": "Create Group",
     "createCardBody": "Build your squad and play together",
+    "autoCardTitle": "Auto-form Squad",
+    "autoCardBody": "Let the matcher build your squad",
+    "autoCardActive": "{{current}}/{{total}} joined — tap to view",
+    "autoCardPro": "PRO",
+    "shareCardTitle": "Invite Friends",
+    "shareCardBody": "Share Partybond and earn premium",
     "invitesCardTitle": "Invites",
     "invitesPending": "{{count}} pending",
     "invitesEmpty": "No pending invites.",
@@ -609,5 +623,115 @@
     "report": "Report user",
     "reportTitle": "Report this user?",
     "reportConfirm": "Our team will review this report."
+  },
+  "premium": {
+    "headerTitle": "Partybond Premium",
+    "heroBadge": "PRO",
+    "heroTitle": "Form the perfect squad in seconds",
+    "heroBody": "Premium unlocks automatic group formation, advanced filters, and a profile badge that lets your teammates know you mean business.",
+    "activeBadge": "Premium active",
+    "renewsOn": "Renews on {{date}}",
+    "until": "Until",
+    "benefitsTitle": "What you get",
+    "benefits": {
+      "autoGroup": {
+        "title": "Automatic group creation",
+        "body": "Tell the matcher how many players you need and it forms the squad for you — even when you don't know anyone."
+      },
+      "advancedFilters": {
+        "title": "Advanced auto-group filters",
+        "body": "Fine-tune candidates by skill tier, play style, and game mode."
+      },
+      "priority": {
+        "title": "Priority matchmaking",
+        "body": "Premium users go to the front of the global queue so matches start faster."
+      },
+      "badge": {
+        "title": "Premium profile badge",
+        "body": "Stand out to teammates and groups with a gold badge on your profile."
+      }
+    },
+    "planTitle": "Choose a plan",
+    "planMonthly": "Monthly",
+    "noPlans": "No plans available right now — make sure your Google Play Console subscription is set to active and matches the configured product ID.",
+    "ctaUpgrade": "Upgrade to Premium",
+    "ctaManage": "Manage subscription",
+    "restorePurchase": "Restore previous purchase",
+    "successTitle": "Welcome to Premium",
+    "successBody": "Your premium features are now active. Tap Auto-form Group to try it.",
+    "errorLoadProducts": "Could not load subscription plans. Pull to retry.",
+    "errorPurchase": "Could not complete the purchase. Try again in a moment.",
+    "yourSubscriptions": "Your subscriptions",
+    "disclaimer": "Subscriptions auto-renew through your Google Play account until canceled. Manage from Google Play → Subscriptions.",
+    "iosTitle": "Premium is coming to iOS soon",
+    "iosBody": "We're working on Apple subscription support. Premium features remain available on Android in the meantime."
+  },
+  "invite": {
+    "headerTitle": "Invite friends",
+    "heroTitle": "Share Partybond",
+    "heroBody": "Send your code to a friend. When they install the app, you both get {{days}} free days of Premium.",
+    "yourCode": "Your invite code",
+    "tapToCopy": "Tap to copy",
+    "copied": "Copied!",
+    "shareLinkLabel": "Share link",
+    "shareCta": "Share with friends",
+    "shareDialogTitle": "Invite friends to Partybond",
+    "shareMessage": "Join me on Partybond — the matchmaking app for gamers. Use my invite code {{code}} when you sign up: {{url}}",
+    "statsTitle": "Your referrals",
+    "statInvited": "Invited",
+    "statRewarded": "Joined",
+    "statDaysEarned": "Days earned",
+    "historyTitle": "Recent invites",
+    "historyEmpty": "Nobody has used your code yet. Send it to a friend!",
+    "unknownInvitee": "New friend",
+    "status": {
+      "pending": "Pending",
+      "registered": "Joined",
+      "rewarded": "Rewarded",
+      "expired": "Expired"
+    }
+  },
+  "autoGroup": {
+    "headerTitle": "Auto-form Squad",
+    "defaultName": "Auto Squad",
+    "premiumGateTitle": "Premium feature",
+    "premiumGateBody": "Automatic group formation is part of Partybond Premium. Upgrade to let the matcher build your squad for you.",
+    "premiumGateCta": "See Premium",
+    "formGame": "Game",
+    "maxPlayersHint": "Up to {{count}} players",
+    "formName": "Squad name",
+    "formNamePlaceholder": "Friday night Free Fire",
+    "formPlayers": "Players needed",
+    "formPrefs": "Match preferences",
+    "formMode": "Game mode",
+    "formStyle": "Play style",
+    "formSkill": "Skill tier",
+    "modeCasual": "Casual",
+    "modeCompetitive": "Competitive",
+    "styleRelaxed": "Relaxed",
+    "styleFocused": "Focused",
+    "startCta": "Start auto-matching",
+    "upgradeCta": "Unlock with Premium",
+    "helperText": "The matcher invites suitable players in waves. You stay in control — they only join after accepting.",
+    "errorPickGame": "Pick an active game first.",
+    "errorAlreadyPending": "You already have a pending auto-group. Cancel it before starting a new one.",
+    "statusLabel": {
+      "searching": "Searching for players",
+      "ready": "Almost ready",
+      "fulfilled": "Squad ready!",
+      "expired": "Search expired",
+      "canceled": "Canceled"
+    },
+    "statusPlayersJoined": "Players joined",
+    "confirmedMembers": "Confirmed",
+    "noMembersYet": "Just you so far — invites are going out.",
+    "pendingInvitesTitle": "Pending invites ({{count}})",
+    "pendingLabel": "PENDING",
+    "openGroupCta": "Open group",
+    "cancelCta": "Cancel auto-search",
+    "cancelConfirmTitle": "Cancel auto-search?",
+    "cancelConfirmBody": "Pending invites will be canceled. You can keep the group and invite people manually.",
+    "cancelYes": "Yes, cancel",
+    "startNewCta": "Start a new auto-search"
   }
 }

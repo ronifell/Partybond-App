@@ -94,6 +94,9 @@
     "oauthGoogleShort": "Google",
     "oauthApple": "Continuar com Apple",
     "oauthAppleShort": "Apple",
+    "haveInviteCode": "Tem um código de convite?",
+    "inviteCode": "Código de convite",
+    "inviteCodePlaceholder": "8 caracteres, ex.: AB23KX9Y",
     "errors": {
       "generic": "Algo deu errado. Tente novamente.",
       "invalidCredentials": "E-mail ou senha inválidos.",
@@ -369,7 +372,12 @@
     "menuFriends": "Amigos",
     "menuPrivacy": "Privacidade e Segurança",
     "menuNotifications": "Notificações",
-    "menuHelp": "Ajuda e Suporte"
+    "menuHelp": "Ajuda e Suporte",
+    "menuPremiumUpgrade": "Assinar Premium",
+    "menuPremiumActive": "Gerenciar Premium",
+    "menuPremiumBadge": "PRO",
+    "menuInviteFriends": "Convidar amigos",
+    "premiumBadge": "PRO"
   },
   "settings": {
     "title": "Configurações",
@@ -460,6 +468,12 @@
     "createNew": "Criar novo grupo",
     "createCardTitle": "Criar Grupo",
     "createCardBody": "Monte seu squad e joguem juntos",
+    "autoCardTitle": "Squad Automático",
+    "autoCardBody": "Deixe o sistema montar seu squad",
+    "autoCardActive": "{{current}}/{{total}} entraram — toque para ver",
+    "autoCardPro": "PRO",
+    "shareCardTitle": "Convidar Amigos",
+    "shareCardBody": "Compartilhe e ganhe Premium",
     "invitesCardTitle": "Convites",
     "invitesPending": "{{count}} pendentes",
     "invitesEmpty": "Nenhum convite pendente.",
@@ -609,5 +623,115 @@
     "report": "Denunciar usuário",
     "reportTitle": "Denunciar este usuário?",
     "reportConfirm": "Nossa equipe analisará a denúncia."
+  },
+  "premium": {
+    "headerTitle": "Partybond Premium",
+    "heroBadge": "PRO",
+    "heroTitle": "Monte o squad perfeito em segundos",
+    "heroBody": "O Premium libera a formação automática de grupos, filtros avançados e um selo no perfil para mostrar que você está no topo.",
+    "activeBadge": "Premium ativo",
+    "renewsOn": "Renova em {{date}}",
+    "until": "Até",
+    "benefitsTitle": "O que você ganha",
+    "benefits": {
+      "autoGroup": {
+        "title": "Formação automática de grupos",
+        "body": "Diga quantos jogadores precisa e o sistema monta o squad por você — mesmo que você não conheça ninguém."
+      },
+      "advancedFilters": {
+        "title": "Filtros avançados",
+        "body": "Ajuste fino dos candidatos por nível, estilo e modo de jogo."
+      },
+      "priority": {
+        "title": "Prioridade no matchmaking",
+        "body": "Usuários Premium vão para o início da fila global e encontram partidas mais rápido."
+      },
+      "badge": {
+        "title": "Selo Premium",
+        "body": "Destaque-se com um selo dourado no seu perfil."
+      }
+    },
+    "planTitle": "Escolha um plano",
+    "planMonthly": "Mensal",
+    "noPlans": "Nenhum plano disponível no momento — confirme se a assinatura está ativa no Google Play Console e bate com o ID configurado.",
+    "ctaUpgrade": "Assinar Premium",
+    "ctaManage": "Gerenciar assinatura",
+    "restorePurchase": "Restaurar compra anterior",
+    "successTitle": "Bem-vindo ao Premium",
+    "successBody": "Os recursos Premium já estão ativos. Toque em Squad Automático para experimentar.",
+    "errorLoadProducts": "Não foi possível carregar os planos. Puxe para tentar novamente.",
+    "errorPurchase": "Não foi possível concluir a compra. Tente novamente em instantes.",
+    "yourSubscriptions": "Suas assinaturas",
+    "disclaimer": "As assinaturas renovam automaticamente pelo Google Play até serem canceladas. Gerencie em Google Play → Assinaturas.",
+    "iosTitle": "O Premium chega ao iOS em breve",
+    "iosBody": "Estamos preparando o suporte a assinaturas Apple. Enquanto isso, o Premium continua disponível no Android."
+  },
+  "invite": {
+    "headerTitle": "Convidar amigos",
+    "heroTitle": "Compartilhe o Partybond",
+    "heroBody": "Envie seu código para um amigo. Quando ele instalar, vocês dois ganham {{days}} dias grátis de Premium.",
+    "yourCode": "Seu código de convite",
+    "tapToCopy": "Toque para copiar",
+    "copied": "Copiado!",
+    "shareLinkLabel": "Link para compartilhar",
+    "shareCta": "Compartilhar com amigos",
+    "shareDialogTitle": "Convidar amigos para o Partybond",
+    "shareMessage": "Vem jogar no Partybond — o app de matchmaking para gamers. Use meu código {{code}} ao se cadastrar: {{url}}",
+    "statsTitle": "Seus convites",
+    "statInvited": "Enviados",
+    "statRewarded": "Entraram",
+    "statDaysEarned": "Dias ganhos",
+    "historyTitle": "Convites recentes",
+    "historyEmpty": "Ninguém usou seu código ainda. Compartilhe com um amigo!",
+    "unknownInvitee": "Novo amigo",
+    "status": {
+      "pending": "Pendente",
+      "registered": "Entrou",
+      "rewarded": "Recompensado",
+      "expired": "Expirado"
+    }
+  },
+  "autoGroup": {
+    "headerTitle": "Squad Automático",
+    "defaultName": "Squad Automático",
+    "premiumGateTitle": "Recurso Premium",
+    "premiumGateBody": "A formação automática faz parte do Partybond Premium. Assine para deixar o sistema montar o squad por você.",
+    "premiumGateCta": "Ver Premium",
+    "formGame": "Jogo",
+    "maxPlayersHint": "Até {{count}} jogadores",
+    "formName": "Nome do squad",
+    "formNamePlaceholder": "Free Fire de sexta",
+    "formPlayers": "Jogadores necessários",
+    "formPrefs": "Preferências de partida",
+    "formMode": "Modo de jogo",
+    "formStyle": "Estilo",
+    "formSkill": "Nível",
+    "modeCasual": "Casual",
+    "modeCompetitive": "Competitivo",
+    "styleRelaxed": "Relaxado",
+    "styleFocused": "Focado",
+    "startCta": "Iniciar auto-matchmaking",
+    "upgradeCta": "Liberar com Premium",
+    "helperText": "O sistema convida jogadores em ondas. Você mantém o controle — eles só entram após aceitar.",
+    "errorPickGame": "Selecione um jogo ativo primeiro.",
+    "errorAlreadyPending": "Você já tem um auto-squad em andamento. Cancele antes de iniciar outro.",
+    "statusLabel": {
+      "searching": "Procurando jogadores",
+      "ready": "Quase pronto",
+      "fulfilled": "Squad completo!",
+      "expired": "Busca expirada",
+      "canceled": "Cancelado"
+    },
+    "statusPlayersJoined": "Jogadores no squad",
+    "confirmedMembers": "Confirmados",
+    "noMembersYet": "Só você por enquanto — os convites estão saindo.",
+    "pendingInvitesTitle": "Convites pendentes ({{count}})",
+    "pendingLabel": "PENDENTE",
+    "openGroupCta": "Abrir grupo",
+    "cancelCta": "Cancelar busca",
+    "cancelConfirmTitle": "Cancelar busca?",
+    "cancelConfirmBody": "Os convites pendentes serão cancelados. Você pode manter o grupo e convidar pessoas manualmente.",
+    "cancelYes": "Sim, cancelar",
+    "startNewCta": "Iniciar nova busca"
   }
 }

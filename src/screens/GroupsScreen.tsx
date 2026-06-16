@@ -26,12 +26,14 @@ import { HexagonFrame } from '../components/ui/HexagonFrame';
 import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { useMainTabs } from '../hooks/useMainTabs';
 import { useAuth } from '../store/authStore';
+import { usePremium } from '../hooks/usePremium';
 import {
   fetchGroups,
   fetchPendingGroupInvites,
   respondGroupInvite,
 } from '../api/social';
 import { fetchGames } from '../api/games';
+import { fetchAutoGroupRequests } from '../api/autoGroup';
 import type { GroupSummary } from '../api/types';
 import { getGameImage } from '../theme/assets';
 import { colors, gradient } from '../theme/tokens';
@@ -203,6 +205,15 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
   });
 
   const { data: games = [] } = useQuery({ queryKey: ['games'], queryFn: fetchGames });
+  const { isPremium } = usePremium();
+  const { data: autoRequests = [] } = useQuery({
+    queryKey: ['auto-groups'],
+    queryFn: fetchAutoGroupRequests,
+  });
+  const openAutoRequest = useMemo(
+    () => autoRequests.find((r) => r.status === 'searching' || r.status === 'ready'),
+    [autoRequests],
+  );
 
   const gameName = useMemo(() => {
     const id = user?.selectedGame;
@@ -314,6 +325,63 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
         </Pressable>
 
         <Pressable
+          onPress={() =>
+            navigation.navigate(
+              'AutoGroup',
+              openAutoRequest ? { requestId: openAutoRequest.id } : undefined,
+            )
+          }
+          style={({ pressed }) => [styles.actionCard, { opacity: pressed ? 0.92 : 1 }]}
+        >
+          <View style={styles.actionCardIcon}>
+            <LinearGradient
+              colors={[...gradient.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.autoIconBox}
+            >
+              <Ionicons name="sparkles" size={20} color="#fff" />
+            </LinearGradient>
+          </View>
+          <View style={styles.actionCardText}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.actionCardTitle} numberOfLines={1}>
+                {t('groups.autoCardTitle')}
+              </Text>
+              {!isPremium ? (
+                <View
+                  style={{
+                    paddingHorizontal: 5,
+                    paddingVertical: 1,
+                    borderRadius: 6,
+                    backgroundColor: 'rgba(255,77,166,0.18)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,77,166,0.45)',
+                  }}
+                >
+                  <Text style={{ color: '#FFA1C9', fontSize: 8, fontWeight: '800' }}>
+                    {t('groups.autoCardPro')}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+            <Text style={styles.actionCardBody} numberOfLines={2}>
+              {openAutoRequest
+                ? t('groups.autoCardActive', {
+                    current: openAutoRequest.confirmedCount,
+                    total: openAutoRequest.playersNeeded,
+                  })
+                : t('groups.autoCardBody')}
+            </Text>
+          </View>
+          <View style={styles.chevronBtn} pointerEvents="none">
+            <Ionicons name="chevron-forward" size={16} color="#fff" />
+          </View>
+        </Pressable>
+      </View>
+
+      <View style={styles.actionRow}>
+        <Pressable
           onPress={() => setActiveTab('invites')}
           style={({ pressed }) => [styles.actionCard, { opacity: pressed ? 0.92 : 1 }]}
         >
@@ -328,6 +396,28 @@ export function GroupsScreen({ navigation }: NativeStackScreenProps<any>) {
             </Text>
             <Text style={styles.invitesPending} numberOfLines={1}>
               {t('groups.invitesPending', { count: invites.length })}
+            </Text>
+          </View>
+          <View style={styles.chevronBtn} pointerEvents="none">
+            <Ionicons name="chevron-forward" size={16} color="#fff" />
+          </View>
+        </Pressable>
+
+        <Pressable
+          onPress={() => navigation.navigate('InviteFriends')}
+          style={({ pressed }) => [styles.actionCard, { opacity: pressed ? 0.92 : 1 }]}
+        >
+          <View style={styles.actionCardIcon}>
+            <View style={styles.shareIconBox}>
+              <Ionicons name="share-social" size={20} color={colors.brand.blue} />
+            </View>
+          </View>
+          <View style={styles.actionCardText}>
+            <Text style={styles.actionCardTitle} numberOfLines={1}>
+              {t('groups.shareCardTitle')}
+            </Text>
+            <Text style={styles.actionCardBody} numberOfLines={2}>
+              {t('groups.shareCardBody')}
             </Text>
           </View>
           <View style={styles.chevronBtn} pointerEvents="none">
@@ -563,6 +653,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(123,63,242,0.35)',
+  },
+  autoIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shareIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,209,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,209,255,0.35)',
   },
   actionCardText: {
     flex: 1,

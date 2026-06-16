@@ -25,6 +25,10 @@ export interface User {
   currentSessionId: string | null;
   currentMatchId: string | null;
   locale: string;
+  /** ISO date string of when the user's premium runs out (null if never had premium). */
+  premiumUntil: string | null;
+  /** Convenience: true iff `premiumUntil` is in the future. Computed by the server. */
+  isPremium: boolean;
   gameProfiles: GameProfile[];
 }
 

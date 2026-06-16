@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import * as Localization from 'expo-localization';
+import * as Clipboard from 'expo-clipboard';
 
 import { Screen } from '../components/ui/Screen';
 import { Input } from '../components/ui/Input';
@@ -14,6 +15,13 @@ import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
 import { colors } from '../theme/tokens';
 
+/** Invite codes are 8 base32-ish chars (server enforces). Loose client-side check. */
+const INVITE_CODE_REGEX = /^[A-Z0-9]{6,16}$/;
+
+function normalizeInviteCode(raw: string): string {
+  return raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16);
+}
+
 export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
   const { t, i18n } = useTranslation();
   const setSession = useAuth((s) => s.setSession);
@@ -21,8 +29,33 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // One-time clipboard probe — if the user copied an invite code from a chat,
+  // offer it as a prefill. We do NOT silently auto-fill (privacy).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const has = await Clipboard.hasStringAsync();
+        if (!has || cancelled) return;
+        const raw = await Clipboard.getStringAsync();
+        const candidate = normalizeInviteCode(raw ?? '');
+        if (!cancelled && INVITE_CODE_REGEX.test(candidate)) {
+          setInviteCode(candidate);
+          setInviteOpen(true);
+        }
+      } catch {
+        // Clipboard access may be denied; harmless.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const onSubmit = async () => {
     setError(null);
@@ -34,12 +67,14 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
     setLoading(true);
     try {
       const locale = i18n.language || Localization.getLocales()[0]?.languageCode || 'en';
+      const normalizedInvite = inviteCode ? normalizeInviteCode(inviteCode) : '';
       const res = await register({
         email: email.trim().toLowerCase(),
         password,
         name: name.trim(),
         age: ageNum,
         locale,
+        inviteCode: normalizedInvite || undefined,
       });
       await setSession(res.token, res.user);
     } catch (err) {
@@ -125,6 +160,33 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
               <Ionicons name="lock-closed-outline" size={20} color={colors.brand.purple} />
             }
           />
+
+          {inviteOpen ? (
+            <Input
+              label={t('auth.inviteCode')}
+              value={inviteCode}
+              onChangeText={(v) => setInviteCode(normalizeInviteCode(v))}
+              autoCapitalize="characters"
+              placeholder={t('auth.inviteCodePlaceholder')}
+              leftIcon={<Ionicons name="gift-outline" size={20} color={colors.brand.pink} />}
+            />
+          ) : (
+            <Pressable
+              onPress={() => setInviteOpen(true)}
+              style={({ pressed }) => ({
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6,
+                opacity: pressed ? 0.6 : 1,
+              })}
+            >
+              <Ionicons name="gift-outline" size={14} color={colors.brand.pink} />
+              <Text style={{ color: colors.brand.pink, fontSize: 13, fontWeight: '700' }}>
+                {t('auth.haveInviteCode')}
+              </Text>
+            </Pressable>
+          )}
+
           {error ? (
             <Text style={{ color: colors.status.error, fontSize: 13, fontWeight: '600' }}>
               {error}

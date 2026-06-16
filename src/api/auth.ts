@@ -18,6 +18,7 @@ export async function register(input: {
   name: string;
   age: number;
   locale?: string;
+  inviteCode?: string;
 }): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>('/auth/register', input);
   return { ...data, user: normalizeUser(data.user as ApiUserPayload) };

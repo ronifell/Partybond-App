@@ -267,6 +267,26 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
                 >
                   {user?.name ?? t('common.player')}
                 </Text>
+                {user?.isPremium ? (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 3,
+                      paddingHorizontal: 7,
+                      paddingVertical: 2,
+                      borderRadius: 999,
+                      backgroundColor: 'rgba(255,210,63,0.18)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,210,63,0.5)',
+                    }}
+                  >
+                    <Ionicons name="star" size={10} color="#FFD23F" />
+                    <Text style={{ color: '#FFD23F', fontSize: 9, fontWeight: '900', letterSpacing: 0.5 }}>
+                      {t('profile.premiumBadge')}
+                    </Text>
+                  </View>
+                ) : null}
                 <Ionicons name="create-outline" size={16} color={colors.brand.purple} />
               </View>
               {/* Level + XP bar */}
@@ -552,6 +572,23 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
         {/* Menu list */}
         <Card variant="dark" padding={0} radius={18}>
           <View>
+            <MenuRow
+              icon={user?.isPremium ? 'star' : 'star-outline'}
+              iconColor="#FFD23F"
+              label={
+                user?.isPremium
+                  ? t('profile.menuPremiumActive')
+                  : t('profile.menuPremiumUpgrade')
+              }
+              badge={user?.isPremium ? t('profile.menuPremiumBadge') : undefined}
+              onPress={() => navigation.navigate('Premium')}
+            />
+            <MenuRow
+              icon="gift-outline"
+              iconColor="#FF4DA6"
+              label={t('profile.menuInviteFriends')}
+              onPress={() => navigation.navigate('InviteFriends')}
+            />
             <MenuRow
               icon="people-outline"
               iconColor="#00D1FF"

@@ -28,7 +28,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A12"
       },
-      "permissions": ["READ_EXTERNAL_STORAGE", "CAMERA"]
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "CAMERA",
+        "com.android.vending.BILLING"
+      ]
     },
     "plugins": [
       "expo-localization",

@@ -1,6 +1,7 @@
 import { createNavigationContainerRef, StackActions } from '@react-navigation/native';
+import type { AppStackParamList } from './types';
 
-export const navigationRef = createNavigationContainerRef();
+export const navigationRef = createNavigationContainerRef<AppStackParamList>();
 
 export function navigateToQueue(sessionId: string) {
   if (!navigationRef.isReady()) return;

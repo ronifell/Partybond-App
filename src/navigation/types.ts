@@ -23,4 +23,7 @@ export type AppStackParamList = {
   Match: { matchId: string };
   EditGameProfile: { gameId: string };
   EditProfile: undefined;
+  Premium: undefined;
+  InviteFriends: undefined;
+  AutoGroup: { requestId?: string } | undefined;
 };

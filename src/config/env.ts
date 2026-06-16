@@ -87,3 +87,43 @@ export const GOOGLE_IOS_CLIENT_ID = pickGoogleId(
   process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   googleExtra?.googleIosClientId,
 );
+
+// ---------------------------------------------------------------------------
+// Premium / Invite-link config (Google Play Billing + Share-a-friend referrals)
+// ---------------------------------------------------------------------------
+
+const premiumExtra = Constants.expoConfig?.extra as
+  | { premiumProductIds?: string; inviteBaseUrl?: string }
+  | undefined;
+
+function pickString(envValue: string | undefined, extraValue: string | undefined): string {
+  const fromEnv = envValue?.trim();
+  if (fromEnv) return fromEnv;
+  const fromExtra = extraValue?.trim();
+  if (fromExtra) return fromExtra;
+  return '';
+}
+
+const premiumProductIdsRaw = pickString(
+  process.env.EXPO_PUBLIC_PREMIUM_PRODUCT_IDS,
+  premiumExtra?.premiumProductIds,
+);
+
+/** Premium subscription product IDs registered in Google Play Console. */
+export const PREMIUM_PRODUCT_IDS = (premiumProductIdsRaw || 'partybond.premium.monthly')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+/** Default product the upgrade button buys when the user hasn't explicitly picked one. */
+export const PRIMARY_PREMIUM_PRODUCT_ID = PREMIUM_PRODUCT_IDS[0] ?? 'partybond.premium.monthly';
+
+/**
+ * Base URL of the backend invite landing page (e.g. https://api.partybond.com/i).
+ * The /i/<code> route redirects to the Play Store / App Store. When unset, the app
+ * falls back to a raw Play Store URL.
+ */
+export const INVITE_BASE_URL = pickString(
+  process.env.EXPO_PUBLIC_INVITE_BASE_URL,
+  premiumExtra?.inviteBaseUrl,
+);

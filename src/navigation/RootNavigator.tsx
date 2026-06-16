@@ -37,6 +37,9 @@ import { AddToGroupScreen } from '../screens/AddToGroupScreen';
 import { CreateGroupScreen } from '../screens/CreateGroupScreen';
 import { OnboardingWelcomeScreen } from '../screens/OnboardingWelcomeScreen';
 import { OnboardingCompleteScreen } from '../screens/OnboardingCompleteScreen';
+import { PremiumScreen } from '../screens/PremiumScreen';
+import { InviteFriendsScreen } from '../screens/InviteFriendsScreen';
+import { AutoGroupScreen } from '../screens/AutoGroupScreen';
 import { useOnboarding } from '../store/onboardingStore';
 
 const Stack = createNativeStackNavigator();
@@ -145,6 +148,21 @@ export function RootNavigator() {
               <Stack.Screen
                 name="AddToGroup"
                 component={AddToGroupScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+              <Stack.Screen
+                name="Premium"
+                component={PremiumScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+              <Stack.Screen
+                name="InviteFriends"
+                component={InviteFriendsScreen}
+                options={{ contentStyle: { backgroundColor: '#000000' } }}
+              />
+              <Stack.Screen
+                name="AutoGroup"
+                component={AutoGroupScreen}
                 options={{ contentStyle: { backgroundColor: '#000000' } }}
               />
             </>

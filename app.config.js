@@ -24,6 +24,9 @@ const googleAndroidClientId = pick(
 );
 const googleIosClientId = pick(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, googleWebClientId);
 
+const premiumProductIds = pick(process.env.EXPO_PUBLIC_PREMIUM_PRODUCT_IDS) || 'partybond.premium.monthly';
+const inviteBaseUrl = pick(process.env.EXPO_PUBLIC_INVITE_BASE_URL);
+
 if (process.env.EAS_BUILD === 'true' && !googleWebClientId) {
   console.warn(
     '[Partybond] EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID is missing for this EAS build. ' +
@@ -40,6 +43,8 @@ module.exports = {
       googleWebClientId,
       googleAndroidClientId,
       googleIosClientId,
+      premiumProductIds,
+      inviteBaseUrl,
     },
   },
 };
