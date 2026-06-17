@@ -512,6 +512,10 @@
     "inviteFrom": "{{name}} convidou você",
     "inviteAccept": "Aceitar",
     "inviteDecline": "Recusar",
+    "squadFillInviteLabel": "Convite para completar squad",
+    "squadFillInviteFrom": "{{name}} convidou você para preencher uma vaga",
+    "autoSquadInviteLabel": "Convite de squad automático",
+    "autoSquadInviteFrom": "{{name}} está formando um squad — toque em Aceitar para entrar",
     "scheduleLeaderOnlyTitle": "Somente o líder",
     "scheduleLeaderOnlyBody": "Apenas quem criou o grupo pode agendar sessões semanais.",
     "scheduleFailedTitle": "Não foi possível agendar",
@@ -718,6 +722,36 @@
     "upgradeCta": "Liberar com Premium",
     "gameChangeHint": "Toque para trocar o jogo",
     "helperText": "O sistema convida jogadores em ondas. Você mantém o controle — eles só entram após aceitar.",
+    "helpTitle": "Como funciona",
+    "helpSubtitleClosed": "Toque para ver as 4 etapas",
+    "helpSubtitleOpen": "Toque para ocultar",
+    "helpSteps": {
+      "pick": {
+        "title": "Escolha o jogo e o tamanho do squad",
+        "body": "Escolha um jogo ativo e quantos jogadores precisa (2 a 16, incluindo você). Valores acima do limite do jogo ficam desativados."
+      },
+      "prefs": {
+        "title": "Defina suas preferências",
+        "body": "Modo, estilo e nível ajudam o sistema a achar jogadores no seu ritmo."
+      },
+      "invite": {
+        "title": "Convidamos jogadores em ondas",
+        "body": "Os convites vão para jogadores compatíveis. Eles aparecem em \"Pendentes\" enquanto decidem — convidamos a mais para o caso de recusarem."
+      },
+      "join": {
+        "title": "Eles entram ao aceitar",
+        "body": "Ninguém entra sem aceitar. Abra o chat do grupo enquanto o squad é formado, ou cancele a qualquer momento."
+      }
+    },
+    "helpTipsTitle": "Boas práticas",
+    "helpTips": {
+      "duration": "A busca dura cerca de 30 minutos antes de expirar.",
+      "oneAtATime": "Você só pode ter uma busca automática ativa por vez.",
+      "control": "Você no controle: cancele a qualquer momento — o grupo continua e você pode convidar manualmente.",
+      "premium": "O Squad Automático é Premium — os convites e o matcher só rodam para contas Premium."
+    },
+    "statusHelpTitle": "O que você está vendo",
+    "statusHelpBody": "Confirmados = convites aceitos. Pendentes = convidados, aguardando resposta. O sistema envia novos convites a cada poucos segundos enquanto a busca está ativa.",
     "errorPickGame": "Selecione um jogo ativo primeiro.",
     "errorAlreadyPending": "Você já tem um auto-squad em andamento. Cancele antes de iniciar outro.",
     "statusLabel": {

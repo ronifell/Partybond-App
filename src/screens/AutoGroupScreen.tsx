@@ -62,6 +62,7 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
   const [skillTier, setSkillTier] = useState<SessionSkillTier>('intermediate');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const { data: games = [] } = useQuery({ queryKey: ['games'], queryFn: fetchGames });
   const activeGames = useMemo(() => games.filter((g) => g.status === 'active'), [games]);
@@ -120,8 +121,12 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
     setError(null);
     setSubmitting(true);
     try {
+      // Backend requires name length >= 2, so treat 1-char input as "empty"
+      // and fall back to the localized default instead of surfacing a zod 400.
+      const trimmed = name.trim();
+      const finalName = trimmed.length >= 2 ? trimmed : t('autoGroup.defaultName');
       const result = await createAutoGroup({
-        name: name.trim() || t('autoGroup.defaultName'),
+        name: finalName,
         gameId: selectedGameId,
         gameMode,
         playStyle,
@@ -168,7 +173,13 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
         onPress: async () => {
           await cancelAutoGroup(requestId);
           setRequestId(null);
-          await qc.invalidateQueries({ queryKey: ['auto-group'] });
+          // Invalidate both the single-request query (this screen) and the
+          // requests list (My Groups tile) so the "auto-search in progress"
+          // badge clears immediately instead of after the next refetch.
+          await Promise.all([
+            qc.invalidateQueries({ queryKey: ['auto-group'] }),
+            qc.invalidateQueries({ queryKey: ['auto-groups'] }),
+          ]);
         },
       },
     ]);
@@ -220,6 +231,31 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
           </View>
         </Card>
       ) : null}
+
+      <HelpCard
+        open={helpOpen}
+        onToggle={() => setHelpOpen((v) => !v)}
+        title={t('autoGroup.helpTitle')}
+        subtitle={t(helpOpen ? 'autoGroup.helpSubtitleOpen' : 'autoGroup.helpSubtitleClosed')}
+        steps={[
+          { key: 'pick',   icon: 'game-controller' as const },
+          { key: 'prefs',  icon: 'options'         as const },
+          { key: 'invite', icon: 'paper-plane'     as const },
+          { key: 'join',   icon: 'people'          as const },
+        ].map((s, idx) => ({
+          number: idx + 1,
+          icon: s.icon,
+          title: t(`autoGroup.helpSteps.${s.key}.title`),
+          body: t(`autoGroup.helpSteps.${s.key}.body`),
+        }))}
+        tipsTitle={t('autoGroup.helpTipsTitle')}
+        tips={[
+          t('autoGroup.helpTips.duration'),
+          t('autoGroup.helpTips.oneAtATime'),
+          t('autoGroup.helpTips.control'),
+          t('autoGroup.helpTips.premium'),
+        ]}
+      />
 
       <SectionLabel>{t('autoGroup.formGame')}</SectionLabel>
       {activeGames.length === 0 ? (
@@ -432,6 +468,13 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
           </View>
         </Card>
 
+        {request.status === 'searching' || request.status === 'ready' ? (
+          <StatusHelpTip
+            title={t('autoGroup.statusHelpTitle')}
+            body={t('autoGroup.statusHelpBody')}
+          />
+        ) : null}
+
         <Card variant="dark" padding={16} radius={20}>
           <Text
             style={{
@@ -563,7 +606,35 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
               {t('autoGroup.headerTitle')}
             </Text>
           </View>
-          <View style={{ width: 38 }} />
+          {!requestId ? (
+            <Pressable
+              onPress={() => setHelpOpen((v) => !v)}
+              hitSlop={8}
+              accessibilityLabel={t('autoGroup.helpTitle')}
+              accessibilityHint={t(helpOpen ? 'autoGroup.helpSubtitleOpen' : 'autoGroup.helpSubtitleClosed')}
+              style={({ pressed }) => ({
+                width: 38,
+                height: 38,
+                borderRadius: 19,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: helpOpen
+                  ? 'rgba(123,63,242,0.18)'
+                  : 'rgba(255,255,255,0.06)',
+                borderWidth: helpOpen ? 1 : 0,
+                borderColor: helpOpen ? 'rgba(123,63,242,0.55)' : 'transparent',
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Ionicons
+                name="help-circle-outline"
+                size={20}
+                color={helpOpen ? ACCENT.purple : 'white'}
+              />
+            </Pressable>
+          ) : (
+            <View style={{ width: 38 }} />
+          )}
         </View>
         <ScrollView
           contentContainerStyle={{ padding: 16, paddingBottom: 48, gap: 12 }}
@@ -886,6 +957,222 @@ function GameThumbnail({ game }: { game: Game | null }) {
       ) : (
         <Ionicons name="game-controller" size={18} color={ACCENT.blue} />
       )}
+    </View>
+  );
+}
+
+interface HelpStep {
+  number: number;
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  body: string;
+}
+
+/**
+ * Collapsible "How it works" card shown above the configurator. Helps
+ * first-time users understand the auto-matching flow without dominating the
+ * screen — collapsed by default, expandable via either the card header itself
+ * or the help button in the screen's nav bar.
+ */
+function HelpCard({
+  open,
+  onToggle,
+  title,
+  subtitle,
+  steps,
+  tipsTitle,
+  tips,
+}: {
+  open: boolean;
+  onToggle: () => void;
+  title: string;
+  subtitle: string;
+  steps: HelpStep[];
+  tipsTitle: string;
+  tips: string[];
+}) {
+  return (
+    <GradientBorder radius={18} intensity={open ? 0.85 : 0.55}>
+      <Pressable
+        onPress={onToggle}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+        style={({ pressed }) => ({
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 12,
+          paddingVertical: 14,
+          paddingHorizontal: 14,
+          opacity: pressed ? 0.92 : 1,
+        })}
+      >
+        <View
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(255,77,166,0.15)',
+            borderWidth: 1,
+            borderColor: 'rgba(255,77,166,0.45)',
+          }}
+        >
+          <Ionicons name="sparkles" size={18} color={ACCENT.pink} />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ color: 'white', fontWeight: '800', fontSize: 15 }}>{title}</Text>
+          <Text style={{ color: colors.ink.disabled, fontSize: 12, marginTop: 2 }}>
+            {subtitle}
+          </Text>
+        </View>
+        <Ionicons
+          name={open ? 'chevron-up' : 'chevron-down'}
+          size={18}
+          color={colors.ink.secondary}
+        />
+      </Pressable>
+
+      {open ? (
+        <View
+          style={{
+            paddingHorizontal: 14,
+            paddingBottom: 16,
+            paddingTop: 2,
+            gap: 14,
+            borderTopWidth: 1,
+            borderTopColor: 'rgba(255,255,255,0.06)',
+          }}
+        >
+          <View style={{ gap: 14, paddingTop: 12 }}>
+            {steps.map((s) => (
+              <View
+                key={s.number}
+                style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}
+              >
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 14,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(123,63,242,0.20)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(123,63,242,0.50)',
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: '800', fontSize: 12 }}>
+                    {s.number}
+                  </Text>
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <View
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                  >
+                    <Ionicons name={s.icon} size={14} color={ACCENT.blue} />
+                    <Text style={{ color: 'white', fontWeight: '700', fontSize: 13 }}>
+                      {s.title}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      color: colors.ink.secondary,
+                      fontSize: 12,
+                      marginTop: 4,
+                      lineHeight: 17,
+                    }}
+                  >
+                    {s.body}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <View
+            style={{
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: 'rgba(0,209,255,0.30)',
+              backgroundColor: 'rgba(0,209,255,0.06)',
+              padding: 12,
+              gap: 6,
+            }}
+          >
+            <Text
+              style={{
+                color: ACCENT.blue,
+                fontSize: 11,
+                fontWeight: '800',
+                letterSpacing: 0.8,
+                textTransform: 'uppercase',
+              }}
+            >
+              {tipsTitle}
+            </Text>
+            {tips.map((tip, idx) => (
+              <View
+                key={idx}
+                style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}
+              >
+                <Text
+                  style={{ color: ACCENT.blue, fontSize: 12, lineHeight: 17 }}
+                  selectable={false}
+                >
+                  •
+                </Text>
+                <Text
+                  style={{
+                    color: colors.ink.secondary,
+                    fontSize: 12,
+                    flex: 1,
+                    lineHeight: 17,
+                  }}
+                >
+                  {tip}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+    </GradientBorder>
+  );
+}
+
+/**
+ * Small dimmed tip card shown beside the live status header so the user can
+ * tell at a glance what "Confirmed" vs "Pending" mean while they wait.
+ */
+function StatusHelpTip({ title, body }: { title: string; body: string }) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 10,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(0,209,255,0.28)',
+        backgroundColor: 'rgba(0,209,255,0.06)',
+        padding: 12,
+      }}
+    >
+      <Ionicons name="information-circle" size={18} color={ACCENT.blue} />
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={{ color: 'white', fontWeight: '700', fontSize: 13 }}>{title}</Text>
+        <Text
+          style={{
+            color: colors.ink.secondary,
+            fontSize: 12,
+            marginTop: 3,
+            lineHeight: 17,
+          }}
+        >
+          {body}
+        </Text>
+      </View>
     </View>
   );
 }

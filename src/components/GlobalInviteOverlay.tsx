@@ -4,7 +4,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
-import { fetchPendingGroupInvites, respondGroupInvite } from '../api/social';
+import {
+  fetchPendingGroupInvites,
+  fetchPendingSquadFillInvites,
+  respondGroupInvite,
+  respondSquadFillInvite,
+} from '../api/social';
 import {
   fetchPendingSessionSquadInvites,
   respondSessionSquadInvite,
@@ -22,6 +27,7 @@ import { colors } from '../theme/tokens';
 const CARD_BG = 'rgba(18,18,26,0.97)';
 const CARD_BORDER = 'rgba(123,63,242,0.45)';
 const SQUAD_BORDER = 'rgba(0,209,255,0.45)';
+const SQUAD_FILL_BORDER = 'rgba(255,77,166,0.55)';
 
 export function GlobalInviteOverlay() {
   const insets = useSafeAreaInsets();
@@ -47,11 +53,21 @@ export function GlobalInviteOverlay() {
     refetchOnReconnect: true,
   });
 
+  const { data: squadFillInvites = [] } = useQuery({
+    queryKey: ['squad-fill-invites', 'pending'],
+    queryFn: fetchPendingSquadFillInvites,
+    refetchInterval: 8000,
+    refetchOnReconnect: true,
+  });
+
   const squadInvite = squadInvites[0];
+  const squadFillInvite = squadFillInvites[0];
   const groupInvite = groupInvites[0];
+  // Priority: time-sensitive session squad → auto-form / squad-fill → manual group.
   const showSquadCard = !!squadInvite;
-  const showGroupCard = !showSquadCard && !!groupInvite;
-  const showInviteCard = showSquadCard || showGroupCard;
+  const showSquadFillCard = !showSquadCard && !!squadFillInvite;
+  const showGroupCard = !showSquadCard && !showSquadFillCard && !!groupInvite;
+  const showInviteCard = showSquadCard || showSquadFillCard || showGroupCard;
   const showToast = !!toastMessage;
 
   const onRespondGroup = async (accept: boolean) => {
@@ -105,6 +121,28 @@ export function GlobalInviteOverlay() {
     }
   };
 
+  const onRespondSquadFill = async (accept: boolean) => {
+    if (!squadFillInvite || busyAction) return;
+    setBusyAction(accept ? 'accept' : 'decline');
+    try {
+      await respondSquadFillInvite(squadFillInvite.id, accept);
+      await qc.invalidateQueries({ queryKey: ['squad-fill-invites', 'pending'] });
+      if (accept) {
+        // The matcher tracks fulfillment server-side, so we re-pull groups,
+        // chats, and any open auto-group request the user might be viewing.
+        await qc.invalidateQueries({ queryKey: ['groups'] });
+        await qc.invalidateQueries({ queryKey: ['chats'] });
+        await qc.invalidateQueries({ queryKey: ['auto-group'] });
+        await qc.invalidateQueries({ queryKey: ['auto-groups'] });
+      }
+    } catch (err) {
+      const apiErr = getApiError(err);
+      showTopToast(apiErr.message, 4000);
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
   if (!showToast && !showInviteCard) return null;
 
   return (
@@ -151,6 +189,62 @@ export function GlobalInviteOverlay() {
                 style={({ pressed }) => [
                   styles.acceptBtn,
                   styles.squadAcceptBtn,
+                  (pressed || !!busyAction) && styles.btnDim,
+                ]}
+              >
+                {busyAction === 'accept' ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.acceptText}>{t('groups.inviteAccept')}</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
+        {showSquadFillCard && squadFillInvite ? (
+          <View style={[styles.card, styles.squadFillCard]}>
+            <Text style={[styles.label, styles.squadFillLabel]}>
+              {t(
+                squadFillInvite.group.isAutoFormed
+                  ? 'groups.autoSquadInviteLabel'
+                  : 'groups.squadFillInviteLabel',
+              )}
+            </Text>
+            <Text style={styles.title} numberOfLines={1}>
+              {squadFillInvite.group.name}
+            </Text>
+            <Text style={styles.subtitle} numberOfLines={2}>
+              {t(
+                squadFillInvite.group.isAutoFormed
+                  ? 'groups.autoSquadInviteFrom'
+                  : 'groups.squadFillInviteFrom',
+                { name: squadFillInvite.inviter.name },
+              )}
+            </Text>
+
+            <View style={styles.actions}>
+              <Pressable
+                disabled={!!busyAction}
+                onPress={() => void onRespondSquadFill(false)}
+                style={({ pressed }) => [
+                  styles.declineBtn,
+                  (pressed || !!busyAction) && styles.btnDim,
+                ]}
+              >
+                {busyAction === 'decline' ? (
+                  <ActivityIndicator color={colors.ink.secondary} size="small" />
+                ) : (
+                  <Text style={styles.declineText}>{t('groups.inviteDecline')}</Text>
+                )}
+              </Pressable>
+
+              <Pressable
+                disabled={!!busyAction}
+                onPress={() => void onRespondSquadFill(true)}
+                style={({ pressed }) => [
+                  styles.acceptBtn,
+                  styles.squadFillAcceptBtn,
                   (pressed || !!busyAction) && styles.btnDim,
                 ]}
               >
@@ -243,6 +337,9 @@ const styles = StyleSheet.create({
   squadCard: {
     borderColor: SQUAD_BORDER,
   },
+  squadFillCard: {
+    borderColor: SQUAD_FILL_BORDER,
+  },
   label: {
     color: colors.brand.purple,
     fontSize: 11,
@@ -252,6 +349,9 @@ const styles = StyleSheet.create({
   },
   squadLabel: {
     color: colors.brand.blue,
+  },
+  squadFillLabel: {
+    color: colors.brand.pink,
   },
   title: {
     color: '#fff',
@@ -289,6 +389,9 @@ const styles = StyleSheet.create({
   },
   squadAcceptBtn: {
     backgroundColor: colors.brand.blue,
+  },
+  squadFillAcceptBtn: {
+    backgroundColor: colors.brand.pink,
   },
   declineText: {
     color: colors.ink.primary,

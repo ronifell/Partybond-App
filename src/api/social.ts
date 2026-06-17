@@ -7,6 +7,7 @@ import type {
   GroupSummary,
   PublicUser,
   RecentPlayer,
+  SquadFillInvite,
 } from './types';
 
 export type GameProfileUser = {
@@ -116,6 +117,24 @@ export async function fetchSquadFillSuggestions(groupId: string) {
 
 export async function inviteSquadFill(groupId: string, inviteeId: string, sessionId?: string) {
   const { data } = await api.post(`/groups/${groupId}/squad-fill/invites`, { inviteeId, sessionId });
+  return data;
+}
+
+/**
+ * Lists pending squad-fill invites for the current user — surfaced through
+ * GlobalInviteOverlay so they appear as Accept/Decline modal cards (same
+ * pattern as group / session-squad invites). Includes auto-form squad invites.
+ */
+export async function fetchPendingSquadFillInvites(): Promise<SquadFillInvite[]> {
+  const { data } = await api.get<{ invites: SquadFillInvite[] }>('/groups/squad-fill/pending');
+  return data.invites;
+}
+
+export async function respondSquadFillInvite(inviteId: string, accept: boolean) {
+  const { data } = await api.post<{ ok: true; groupId?: string }>(
+    `/groups/squad-fill/${inviteId}/respond`,
+    { accept },
+  );
   return data;
 }
 

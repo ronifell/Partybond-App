@@ -79,6 +79,23 @@ export interface GroupInvite {
   expiresAt: string;
 }
 
+/**
+ * Pending invite sent by the squad-fill matcher (manual squad-fill from a
+ * group's detail screen OR the Premium auto-form squad matcher). When
+ * `group.isAutoFormed` is true, the UI labels it as an auto-squad invite.
+ */
+export interface SquadFillInvite {
+  id: string;
+  group: {
+    id: string;
+    name: string;
+    photoUrl: string | null;
+    isAutoFormed: boolean;
+  };
+  inviter: { id: string; name: string; photoUrl: string | null };
+  expiresAt: string;
+}
+
 export interface GroupSummary {
   id: string;
   name: string;

@@ -512,6 +512,10 @@
     "inviteFrom": "{{name}} invited you",
     "inviteAccept": "Accept",
     "inviteDecline": "Decline",
+    "squadFillInviteLabel": "Squad fill invite",
+    "squadFillInviteFrom": "{{name}} invited you to fill an open slot",
+    "autoSquadInviteLabel": "Auto-squad invite",
+    "autoSquadInviteFrom": "{{name}} is forming a squad — tap Accept to join",
     "scheduleLeaderOnlyTitle": "Leader only",
     "scheduleLeaderOnlyBody": "Only the group creator can schedule weekly sessions.",
     "scheduleFailedTitle": "Could not schedule",
@@ -718,6 +722,36 @@
     "upgradeCta": "Unlock with Premium",
     "gameChangeHint": "Tap to change game",
     "helperText": "The matcher invites suitable players in waves. You stay in control — they only join after accepting.",
+    "helpTitle": "How it works",
+    "helpSubtitleClosed": "Tap to see the 4-step flow",
+    "helpSubtitleOpen": "Tap to hide",
+    "helpSteps": {
+      "pick": {
+        "title": "Pick your game & squad size",
+        "body": "Choose any active game and the total players you need (2-16, including you). Counts above the game's limit are greyed out."
+      },
+      "prefs": {
+        "title": "Set your preferences",
+        "body": "Game mode, play style, and skill tier help the matcher find players who fit the vibe you're after."
+      },
+      "invite": {
+        "title": "We invite players in waves",
+        "body": "Invites go out to suitable players. You'll see them under \"Pending\" while they decide — extras are invited in case some decline."
+      },
+      "join": {
+        "title": "They opt in to join",
+        "body": "Nobody joins without accepting first. Open the group chat while the squad fills, or cancel anytime."
+      }
+    },
+    "helpTipsTitle": "Good to know",
+    "helpTips": {
+      "duration": "Searches run for about 30 minutes before expiring.",
+      "oneAtATime": "You can only have one auto-search active at a time.",
+      "control": "You stay in control: cancel anytime, the group stays and you can invite people manually.",
+      "premium": "Auto-form is a Premium feature — invites and the matcher only run for Premium accounts."
+    },
+    "statusHelpTitle": "What you're seeing",
+    "statusHelpBody": "Confirmed = accepted invites. Pending = invited, waiting on response. The matcher tops up new invites every few seconds while the search is active.",
     "errorPickGame": "Pick an active game first.",
     "errorAlreadyPending": "You already have a pending auto-group. Cancel it before starting a new one.",
     "statusLabel": {
