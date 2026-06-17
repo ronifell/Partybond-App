@@ -27,11 +27,22 @@ export interface SubscriptionRow {
 export interface BillingProducts {
   premiumProductIds: string[];
   playPackageName: string;
+  googlePlayConfigured: boolean;
+  /** True when the backend's mock billing provider is enabled (no real money). */
+  mockEnabled: boolean;
+  /** Days granted by a single mock purchase, used for the confirmation message. */
+  mockDurationDays: number;
 }
 
 export async function fetchPremiumProducts(): Promise<BillingProducts> {
   const { data } = await api.get<BillingProducts>('/billing/products');
-  return data;
+  return {
+    premiumProductIds: data.premiumProductIds ?? [],
+    playPackageName: data.playPackageName ?? '',
+    googlePlayConfigured: !!data.googlePlayConfigured,
+    mockEnabled: !!data.mockEnabled,
+    mockDurationDays: Number(data.mockDurationDays ?? 30),
+  };
 }
 
 export async function fetchPremiumStatus(): Promise<{
@@ -63,5 +74,21 @@ export async function verifyGooglePlayPurchase(input: {
     status: PremiumStatus;
     subscription: SubscriptionRow;
   }>('/billing/google-play/verify', input);
+  return data;
+}
+
+/**
+ * Mock purchase — pretends the store accepted the payment and credits premium.
+ * Only callable while the backend has `BILLING_MOCK_ENABLED=true`. Used as a
+ * stand-in until the real Play/App Store integration ships.
+ */
+export async function purchaseMockPremium(input?: {
+  productId?: string;
+  durationDays?: number;
+}): Promise<{ status: PremiumStatus; subscription: SubscriptionRow }> {
+  const { data } = await api.post<{
+    status: PremiumStatus;
+    subscription: SubscriptionRow;
+  }>('/billing/mock/purchase', input ?? {});
   return data;
 }

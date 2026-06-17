@@ -664,7 +664,11 @@
     "yourSubscriptions": "Suas assinaturas",
     "disclaimer": "As assinaturas renovam automaticamente pelo Google Play até serem canceladas. Gerencie em Google Play → Assinaturas.",
     "iosTitle": "O Premium chega ao iOS em breve",
-    "iosBody": "Estamos preparando o suporte a assinaturas Apple. Enquanto isso, o Premium continua disponível no Android."
+    "iosBody": "Estamos preparando o suporte a assinaturas Apple. Enquanto isso, o Premium continua disponível no Android.",
+    "mockBannerTitle": "Modo de teste",
+    "mockBannerBody": "O pagamento real ainda não está integrado. Toque em Assinar para liberar {{days}} dias de Premium para teste.",
+    "mockPlanDescription": "Concessão de teste — {{days}} dias de Premium, sem cobrança real.",
+    "mockPriceLabel": "Grátis (teste)"
   },
   "invite": {
     "headerTitle": "Convidar amigos",
@@ -710,8 +714,9 @@
     "modeCompetitive": "Competitivo",
     "styleRelaxed": "Relaxado",
     "styleFocused": "Focado",
-    "startCta": "Iniciar auto-matchmaking",
+    "startCta": "Criar Squad",
     "upgradeCta": "Liberar com Premium",
+    "gameChangeHint": "Toque para trocar o jogo",
     "helperText": "O sistema convida jogadores em ondas. Você mantém o controle — eles só entram após aceitar.",
     "errorPickGame": "Selecione um jogo ativo primeiro.",
     "errorAlreadyPending": "Você já tem um auto-squad em andamento. Cancele antes de iniciar outro.",

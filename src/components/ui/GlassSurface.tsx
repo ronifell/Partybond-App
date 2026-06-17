@@ -39,52 +39,72 @@ interface VariantSpec {
   intensity: number;
   bg: string;
   border: string;
+  borderWidth: number;
   sheen: readonly [string, string];
   tint: readonly [string, string] | null;
   /** Top edge "neon piping" — a 1.5px gradient bar across the top inside the card. */
   showTopAccent: boolean;
+  /** When false we skip the BlurView and render a fully opaque flat surface. */
+  blur: boolean;
 }
+
+// `default` and `dark` use the flat "My Groups card" look — opaque dark surface,
+// hairline border, no blur / sheen / neon piping. The accent variants
+// (subtle / strong / tinted) keep the original glass treatment for hero,
+// selected, and brand-tinted surfaces.
+const FLAT_BG = '#0D0D12';
+const FLAT_BORDER = 'rgba(255, 255, 255, 0.08)';
 
 const VARIANTS: Record<Variant, VariantSpec> = {
   default: {
-    intensity: Platform.OS === 'android' ? 40 : 18,
-    bg: 'rgba(10, 10, 18, 0.92)',
-    border: 'rgba(255, 255, 255, 0.12)',
-    sheen: ['rgba(255,255,255,0.04)', 'rgba(255,255,255,0)'],
+    intensity: 0,
+    bg: FLAT_BG,
+    border: FLAT_BORDER,
+    borderWidth: 1,
+    sheen: ['rgba(255,255,255,0)', 'rgba(255,255,255,0)'],
     tint: null,
-    showTopAccent: true,
+    showTopAccent: false,
+    blur: false,
   },
   subtle: {
     intensity: Platform.OS === 'android' ? 40 : 18,
     bg: 'rgba(10, 10, 18, 0.80)',
     border: 'rgba(255, 255, 255, 0.10)',
+    borderWidth: 1.5,
     sheen: ['rgba(255,255,255,0.03)', 'rgba(255,255,255,0)'],
     tint: null,
     showTopAccent: false,
+    blur: true,
   },
   strong: {
     intensity: Platform.OS === 'android' ? 95 : 55,
     bg: 'rgba(48, 32, 84, 0.85)',
     border: 'rgba(123, 63, 242, 0.65)',
+    borderWidth: 1.5,
     sheen: ['rgba(255,255,255,0.18)', 'rgba(255,255,255,0)'],
     tint: ['rgba(123, 63, 242, 0.22)', 'rgba(0, 209, 255, 0.12)'],
     showTopAccent: true,
+    blur: true,
   },
   tinted: {
     intensity: Platform.OS === 'android' ? 80 : 40,
     bg: 'rgba(52, 32, 92, 0.78)',
     border: 'rgba(255, 255, 255, 0.26)',
+    borderWidth: 1.5,
     sheen: ['rgba(255,255,255,0.18)', 'rgba(255,255,255,0)'],
     tint: ['rgba(255, 77, 166, 0.18)', 'rgba(0, 209, 255, 0.12)'],
     showTopAccent: true,
+    blur: true,
   },
   dark: {
-    intensity: Platform.OS === 'android' ? 40 : 18,
-    bg: 'rgba(10, 10, 18, 0.92)',
-    border: 'rgba(255, 255, 255, 0.12)',
-    sheen: ['rgba(255,255,255,0.04)', 'rgba(255,255,255,0)'],
+    intensity: 0,
+    bg: FLAT_BG,
+    border: FLAT_BORDER,
+    borderWidth: 1,
+    sheen: ['rgba(255,255,255,0)', 'rgba(255,255,255,0)'],
     tint: null,
-    showTopAccent: true,
+    showTopAccent: false,
+    blur: false,
   },
 };
 
@@ -109,7 +129,7 @@ export function GlassSurface(props: Props): React.ReactElement {
     {
       borderRadius: radius,
       overflow: 'hidden',
-      borderWidth: 1.5,
+      borderWidth: v.borderWidth,
       borderColor: v.border,
     },
     glow
@@ -120,42 +140,47 @@ export function GlassSurface(props: Props): React.ReactElement {
           shadowOffset: { width: 0, height: 10 },
           elevation: 14,
         }
-      : {
-          // Stronger ambient — gives every card real "lift" off the background.
-          shadowColor: '#000',
-          shadowOpacity: 0.5,
-          shadowRadius: 16,
-          shadowOffset: { width: 0, height: 10 },
-          elevation: 8,
-        },
+      : v.blur
+        ? {
+            shadowColor: '#000',
+            shadowOpacity: 0.5,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 10 },
+            elevation: 8,
+          }
+        : {
+            // Flat "My Groups" style — keep depth subtle so cards sit calmly
+            // on the dark page background rather than floating.
+            shadowColor: '#000',
+            shadowOpacity: 0.25,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 3,
+          },
     style,
   ];
 
-  const inner = (
-    <BlurView
-      intensity={v.intensity}
-      tint="dark"
-      style={{ borderRadius: radius, overflow: 'hidden' }}
+  const body = (
+    <View
+      style={{
+        backgroundColor: v.bg,
+        borderRadius: radius,
+        overflow: 'hidden',
+      }}
     >
-      <View
-        style={{
-          backgroundColor: v.bg,
-          borderRadius: radius,
-          overflow: 'hidden',
-        }}
-      >
-        {/* Brand-color diagonal wash */}
-        {v.tint ? (
-          <LinearGradient
-            colors={v.tint}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-            pointerEvents="none"
-          />
-        ) : null}
+      {/* Brand-color diagonal wash */}
+      {v.tint ? (
+        <LinearGradient
+          colors={v.tint}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          pointerEvents="none"
+        />
+      ) : null}
 
-        {/* Top sheen */}
+      {/* Top sheen — accent variants only. */}
+      {v.blur ? (
         <LinearGradient
           colors={v.sheen}
           start={{ x: 0, y: 0 }}
@@ -169,27 +194,41 @@ export function GlassSurface(props: Props): React.ReactElement {
           }}
           pointerEvents="none"
         />
+      ) : null}
 
-        {/* Top edge neon piping — 1.5px bright gradient bar */}
-        {v.showTopAccent ? (
-          <LinearGradient
-            colors={['rgba(255, 77, 166, 0.85)', 'rgba(123, 63, 242, 0.85)', 'rgba(0, 209, 255, 0.85)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 1.5,
-            }}
-            pointerEvents="none"
-          />
-        ) : null}
+      {/* Top edge neon piping — 1.5px bright gradient bar */}
+      {v.showTopAccent ? (
+        <LinearGradient
+          colors={['rgba(255, 77, 166, 0.85)', 'rgba(123, 63, 242, 0.85)', 'rgba(0, 209, 255, 0.85)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 1.5,
+          }}
+          pointerEvents="none"
+        />
+      ) : null}
 
-        <View style={{ padding }}>{children}</View>
-      </View>
+      <View style={{ padding }}>{children}</View>
+    </View>
+  );
+
+  // For flat variants, drop the BlurView entirely — it slows rendering and
+  // would tint a fully-opaque surface.
+  const inner = v.blur ? (
+    <BlurView
+      intensity={v.intensity}
+      tint="dark"
+      style={{ borderRadius: radius, overflow: 'hidden' }}
+    >
+      {body}
     </BlurView>
+  ) : (
+    body
   );
 
   if ('onPress' in props && props.onPress) {

@@ -19,7 +19,12 @@ import { Screen } from '../components/ui/Screen';
 import { Card } from '../components/ui/Card';
 import { colors } from '../theme/tokens';
 import { PREMIUM_PRODUCT_IDS, PRIMARY_PREMIUM_PRODUCT_ID } from '../config/env';
-import { verifyGooglePlayPurchase } from '../api/billing';
+import {
+  fetchPremiumProducts,
+  purchaseMockPremium,
+  verifyGooglePlayPurchase,
+  type BillingProducts,
+} from '../api/billing';
 import { usePremium } from '../hooks/usePremium';
 import {
   buyPremiumSubscription,
@@ -42,6 +47,7 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
   const [plansLoading, setPlansLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<BillingProducts | null>(null);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -50,10 +56,40 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
     };
   }, []);
 
+  // True whenever the backend reports the mock provider is on. While in mock
+  // mode we skip Google Play entirely so the flow works on iOS, Android, and
+  // Expo Go alike — clicking Upgrade goes straight to the server stub.
+  const mockEnabled = !!products?.mockEnabled;
+
   const loadPlans = useCallback(async () => {
     setPlansLoading(true);
     setError(null);
     try {
+      const productsResp = await fetchPremiumProducts().catch(() => null);
+      if (mounted.current) setProducts(productsResp);
+
+      // In mock mode there are no real Play products to look up — build a
+      // synthetic plan list so the UI still shows a "Monthly" card and price.
+      if (productsResp?.mockEnabled) {
+        if (!mounted.current) return;
+        setPlans(
+          (productsResp.premiumProductIds.length > 0
+            ? productsResp.premiumProductIds
+            : [PRIMARY_PREMIUM_PRODUCT_ID]
+          ).map((productId) => ({
+            productId,
+            title: t('premium.planMonthly'),
+            description: t('premium.mockPlanDescription', {
+              days: productsResp.mockDurationDays,
+            }),
+            localizedPrice: t('premium.mockPriceLabel'),
+            price: '0',
+            currency: 'TEST',
+          })),
+        );
+        return;
+      }
+
       const result = await loadSubscriptionProducts(PREMIUM_PRODUCT_IDS);
       if (!mounted.current) return;
       setPlans(result);
@@ -77,6 +113,17 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
     setError(null);
     try {
       const productId = plans[0]?.productId ?? PRIMARY_PREMIUM_PRODUCT_ID;
+
+      // Mock provider: pretend Play accepted the purchase and call the
+      // server-side stub. Same downstream effect (Subscription row + premium).
+      if (mockEnabled) {
+        await purchaseMockPremium({ productId });
+        await refresh();
+        Alert.alert(t('premium.successTitle'), t('premium.successBody'));
+        return;
+      }
+
+      // Real provider: Google Play → server verification.
       const purchase = await buyPremiumSubscription(productId);
       if (!purchase) {
         setPurchasing(false);
@@ -99,7 +146,7 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
     } finally {
       if (mounted.current) setPurchasing(false);
     }
-  }, [plans, purchasing, refresh, t]);
+  }, [plans, purchasing, refresh, t, mockEnabled]);
 
   const onRestore = useCallback(async () => {
     await refresh();
@@ -162,6 +209,33 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
           contentContainerStyle={{ padding: 16, paddingBottom: 48, gap: 16 }}
           showsVerticalScrollIndicator={false}
         >
+          {mockEnabled ? (
+            <View
+              style={{
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255,193,7,0.55)',
+                backgroundColor: 'rgba(255,193,7,0.08)',
+                padding: 12,
+                flexDirection: 'row',
+                gap: 10,
+                alignItems: 'flex-start',
+              }}
+            >
+              <Ionicons name="construct" size={18} color="#FFC107" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#FFC107', fontWeight: '800', fontSize: 12 }}>
+                  {t('premium.mockBannerTitle')}
+                </Text>
+                <Text style={{ color: colors.ink.secondary, fontSize: 12, marginTop: 2 }}>
+                  {t('premium.mockBannerBody', {
+                    days: products?.mockDurationDays ?? 30,
+                  })}
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
           {/* Hero */}
           <View
             style={{
@@ -279,8 +353,8 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
             </View>
           </Card>
 
-          {/* Plan / CTA */}
-          {Platform.OS === 'android' ? (
+          {/* Plan / CTA — shown on Android, or on any platform when mock billing is on. */}
+          {Platform.OS === 'android' || mockEnabled ? (
             <Card variant="dark" padding={16} radius={20}>
               <Text
                 style={{

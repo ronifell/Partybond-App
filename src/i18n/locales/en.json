@@ -664,7 +664,11 @@
     "yourSubscriptions": "Your subscriptions",
     "disclaimer": "Subscriptions auto-renew through your Google Play account until canceled. Manage from Google Play → Subscriptions.",
     "iosTitle": "Premium is coming to iOS soon",
-    "iosBody": "We're working on Apple subscription support. Premium features remain available on Android in the meantime."
+    "iosBody": "We're working on Apple subscription support. Premium features remain available on Android in the meantime.",
+    "mockBannerTitle": "Test mode",
+    "mockBannerBody": "Real payments aren't wired up yet. Tap Upgrade to grant yourself {{days}} test days of Premium.",
+    "mockPlanDescription": "Test grant — {{days}} days of Premium, no real charge.",
+    "mockPriceLabel": "Free (test)"
   },
   "invite": {
     "headerTitle": "Invite friends",
@@ -710,8 +714,9 @@
     "modeCompetitive": "Competitive",
     "styleRelaxed": "Relaxed",
     "styleFocused": "Focused",
-    "startCta": "Start auto-matching",
+    "startCta": "Create Squad",
     "upgradeCta": "Unlock with Premium",
+    "gameChangeHint": "Tap to change game",
     "helperText": "The matcher invites suitable players in waves. You stay in control — they only join after accepting.",
     "errorPickGame": "Pick an active game first.",
     "errorAlreadyPending": "You already have a pending auto-group. Cancel it before starting a new one.",
