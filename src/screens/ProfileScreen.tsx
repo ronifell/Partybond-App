@@ -15,6 +15,8 @@ import { Logo } from '../components/ui/Logo';
 import { useAuth } from '../store/authStore';
 import { fetchGames } from '../api/games';
 import { colors, gradient } from '../theme/tokens';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '../config/constants';
+import { openLegalDocument } from '../utils/legal';
 import { ProfileGameListRow } from '../components/ProfileGameListRow';
 
 interface StatProps {
@@ -595,7 +597,18 @@ export function ProfileScreen({ navigation }: NativeStackScreenProps<any>) {
               label={t('profile.menuFriends')}
               badge={0}
             />
-            <MenuRow icon="shield-checkmark-outline" iconColor="#FF4DA6" label={t('profile.menuPrivacy')} />
+            <MenuRow
+              icon="document-text-outline"
+              iconColor="#FF4DA6"
+              label={t('profile.menuTerms')}
+              onPress={() => void openLegalDocument(TERMS_OF_USE_URL)}
+            />
+            <MenuRow
+              icon="shield-checkmark-outline"
+              iconColor="#7B3FF2"
+              label={t('profile.menuPrivacyPolicy')}
+              onPress={() => void openLegalDocument(PRIVACY_POLICY_URL)}
+            />
             <MenuRow icon="notifications-outline" iconColor="#FFC44D" label={t('profile.menuNotifications')} />
             <MenuRow
               icon="help-circle-outline"

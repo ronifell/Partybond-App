@@ -12,9 +12,10 @@ import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
 import { Avatar } from '../components/ui/Avatar';
 import { updateProfile, uploadProfilePhoto, type ProfilePhotoUploadMeta } from '../api/users';
+import { getApiError } from '../api/client';
 import { LOOKING_FOR_MAX_LENGTH } from '../api/types';
 import { useAuth } from '../store/authStore';
-import { getApiError } from '../api/client';
+import { MIN_USER_AGE } from '../config/constants';
 import { colors } from '../theme/tokens';
 
 export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
@@ -72,8 +73,8 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<any>) {
 
   const onSave = async () => {
     const ageNum = Number(age);
-    if (!name.trim() || !ageNum || ageNum < 13) {
-      setError(t('auth.errors.generic'));
+    if (!name.trim() || !ageNum || ageNum < MIN_USER_AGE) {
+      setError(t('auth.errors.ageTooYoung', { min: MIN_USER_AGE }));
       return;
     }
     setError(null);

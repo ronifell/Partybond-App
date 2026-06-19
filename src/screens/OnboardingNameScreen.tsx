@@ -12,6 +12,7 @@ import { OnboardingBackBar } from '../components/OnboardingBackBar';
 import { useAuth } from '../store/authStore';
 import { updateProfile } from '../api/users';
 import { getApiError } from '../api/client';
+import { MIN_USER_AGE } from '../config/constants';
 import { colors } from '../theme/tokens';
 
 export function OnboardingNameScreen({ navigation }: NativeStackScreenProps<any>) {
@@ -25,8 +26,8 @@ export function OnboardingNameScreen({ navigation }: NativeStackScreenProps<any>
 
   const onNext = async () => {
     const ageNum = Number(age);
-    if (!name.trim() || !ageNum || ageNum < 13) {
-      setError(t('auth.errors.generic'));
+    if (!name.trim() || !ageNum || ageNum < MIN_USER_AGE) {
+      setError(t('auth.errors.ageTooYoung', { min: MIN_USER_AGE }));
       return;
     }
     setError(null);

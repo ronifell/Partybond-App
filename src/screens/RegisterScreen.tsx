@@ -11,9 +11,12 @@ import { Input } from '../components/ui/Input';
 import { GradientButton } from '../components/ui/GradientButton';
 import { Logo } from '../components/ui/Logo';
 import { register } from '../api/auth';
-import { useAuth } from '../store/authStore';
 import { getApiError } from '../api/client';
+import { useAuth } from '../store/authStore';
+import { MIN_USER_AGE, PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '../config/constants';
 import { colors } from '../theme/tokens';
+import { LegalConsentRow } from '../components/LegalConsentRow';
+import { openLegalDocument } from '../utils/legal';
 
 /** Invite codes are 8 base32-ish chars (server enforces). Loose client-side check. */
 const INVITE_CODE_REGEX = /^[A-Z0-9]{6,16}$/;
@@ -31,6 +34,8 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
   const [age, setAge] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,9 +64,13 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
 
   const onSubmit = async () => {
     setError(null);
+    if (!acceptedTerms || !acceptedPrivacy) {
+      setError(t('auth.errors.legalConsentRequired'));
+      return;
+    }
     const ageNum = Number(age);
-    if (!email || !password || !name || !ageNum || ageNum < 13) {
-      setError(t('auth.errors.generic'));
+    if (!email || !password || !name || !ageNum || ageNum < MIN_USER_AGE) {
+      setError(t('auth.errors.ageTooYoung', { min: MIN_USER_AGE }));
       return;
     }
     setLoading(true);
@@ -192,12 +201,32 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
               {error}
             </Text>
           ) : null}
+
+          <View style={{ gap: 12, marginTop: 4 }}>
+            <LegalConsentRow
+              checked={acceptedTerms}
+              onToggle={() => setAcceptedTerms((v) => !v)}
+              prefix={t('auth.legal.acceptTermsPrefix')}
+              linkLabel={t('auth.legal.termsLink')}
+              suffix={t('auth.legal.acceptTermsSuffix')}
+              onOpenLink={() => void openLegalDocument(TERMS_OF_USE_URL)}
+            />
+            <LegalConsentRow
+              checked={acceptedPrivacy}
+              onToggle={() => setAcceptedPrivacy((v) => !v)}
+              prefix={t('auth.legal.acceptPrivacyPrefix')}
+              linkLabel={t('auth.legal.privacyLink')}
+              suffix={t('auth.legal.acceptPrivacySuffix')}
+              onOpenLink={() => void openLegalDocument(PRIVACY_POLICY_URL)}
+            />
+          </View>
         </View>
 
         <GradientButton
           title={t('auth.register')}
           onPress={onSubmit}
           loading={loading}
+          disabled={!acceptedTerms || !acceptedPrivacy}
           leftAdornment={<Ionicons name="flash" size={18} color="white" />}
         />
 
