@@ -14,8 +14,9 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "http://18.231.112.145:4000",
-        "EXPO_PUBLIC_ADMIN_URL": "http://18.231.112.145:3000"
+        "EXPO_PUBLIC_API_URL": "http://179.197.64.25",
+        "EXPO_PUBLIC_ADMIN_URL": "http://179.197.64.25:3000",
+        "EXPO_PUBLIC_INVITE_BASE_URL": "http://179.197.64.25/i"
       }
     },
     "production": {

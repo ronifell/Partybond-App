@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 const fromConstants = (Constants.expoConfig?.extra as { apiUrl?: string } | undefined)?.apiUrl;
 
 // Preferred source: `.env` via Expo's public env vars.
-// Example: EXPO_PUBLIC_API_URL=http://18.231.112.145:4000
+// Example: EXPO_PUBLIC_API_URL=http://179.197.64.25:4000
 const fromProcessEnv = process.env.EXPO_PUBLIC_API_URL;
 
 // Default backend URL for when no env/config is provided.
