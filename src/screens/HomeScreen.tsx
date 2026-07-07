@@ -17,6 +17,7 @@ import { listSessions, quickJoinGame } from '../api/sessions';
 import { fetchGames } from '../api/games';
 import type { MatchLobbyPreferences } from '../api/types';
 import { MatchPreferencesModal } from '../components/MatchPreferencesModal';
+import { SupportProjectModal } from '../components/SupportProjectModal';
 import { GameProfileRequiredNotice } from '../components/GameProfileRequiredNotice';
 import { hasGameProfileForGame } from '../utils/gameProfile';
 import { useAuth } from '../store/authStore';
@@ -38,6 +39,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   const [joiningGameId, setJoiningGameId] = useState<string | null>(null);
   const [prefModalGame, setPrefModalGame] = useState<{ id: string; name: string } | null>(null);
   const [profileGateGame, setProfileGateGame] = useState<{ id: string; name: string } | null>(null);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   // All games (the new "Active Sessions" list).
   const {
@@ -121,7 +123,11 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
     <Screen padded={false}>
       {/* Top fixed area — header + profile pill */}
       <View style={{ paddingHorizontal: 12, paddingTop: 0 }}>
-        <HeaderBar notifications={3} />
+        <HeaderBar
+          notifications={3}
+          onSupportPress={() => setSupportOpen(true)}
+          onPremiumPress={() => navigation.navigate('Premium')}
+        />
         <View style={{ marginTop: 6, marginBottom: 0 }}>
           <ProfilePill
             user={user}
@@ -275,6 +281,8 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
           }}
         />
       ) : null}
+
+      <SupportProjectModal visible={supportOpen} onClose={() => setSupportOpen(false)} />
     </Screen>
   );
 }

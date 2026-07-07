@@ -200,6 +200,25 @@
     "joinNeedsProfileHint": "From your Profile, open this game and enter your nickname and player ID.",
     "joinNeedsProfileCta": "Add game profile"
   },
+  "support": {
+    "title": "❤️ Support Partybond",
+    "subtitle": "A voluntary contribution to help Partybond grow and stay maintained.",
+    "mission1": "🎮 No player should have to play alone.",
+    "mission2": "🌎 Partybond is an independent project built to connect players, strengthen friendships, and turn matches into memorable experiences.",
+    "mission3": "🤝 Virtual players. Real friendships.",
+    "companySection": "COMPANY INFORMATION",
+    "legalNameLabel": "Legal name",
+    "cnpjLabel": "CNPJ",
+    "emailLabel": "Contact email",
+    "transparencyTitle": "TRANSPARENCY & SECURITY",
+    "transparencyBody": "Partybond is operated transparently. Your voluntary contribution helps keep servers running, fund improvements, and support ongoing development — it does not replace Premium benefits.",
+    "donationSection": "❤️ SUPPORT WITH ANY AMOUNT",
+    "pixLabel": "Pix",
+    "copyPix": "Copy Pix key",
+    "pixCopied": "Pix key copied!",
+    "disclaimer": "This donation is voluntary and does not include Partybond Premium 👑 benefits.",
+    "emailOpenFailed": "Could not open your email app."
+  },
   "matchPrefs": {
     "title": "Match Preferences",
     "subtitle": "You are only matched with players who chose the same play style and skill level for this game.",

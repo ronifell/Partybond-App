@@ -200,6 +200,25 @@
     "joinNeedsProfileHint": "No Perfil, abra este jogo e informe apelido e ID do jogador.",
     "joinNeedsProfileCta": "Adicionar perfil do jogo"
   },
+  "support": {
+    "title": "❤️ Apoie o Partybond",
+    "subtitle": "Contribuição voluntária para ajudar no crescimento e manutenção do projeto.",
+    "mission1": "🎮 Nenhum jogador deveria ficar sem companhia para jogar.",
+    "mission2": "🌎 O Partybond é um projeto independente criado para conectar jogadores, fortalecer amizades e transformar partidas em experiências memoráveis.",
+    "mission3": "🤝 Jogadores virtuais. Amizades reais.",
+    "companySection": "INFORMAÇÕES DA EMPRESA",
+    "legalNameLabel": "Razão Social",
+    "cnpjLabel": "CNPJ",
+    "emailLabel": "E-mail de contato",
+    "transparencyTitle": "TRANSPARÊNCIA E SEGURANÇA",
+    "transparencyBody": "O Partybond é operado de forma transparente. Sua contribuição voluntária ajuda a manter servidores, melhorias e o desenvolvimento contínuo do app — sem substituir os benefícios do Premium.",
+    "donationSection": "❤️ APOIAR COM QUALQUER VALOR",
+    "pixLabel": "Pix",
+    "copyPix": "Copiar chave Pix",
+    "pixCopied": "Chave Pix copiada!",
+    "disclaimer": "Esta doação é voluntária e não inclui benefícios do Partybond Premium 👑.",
+    "emailOpenFailed": "Não foi possível abrir o app de e-mail."
+  },
   "matchPrefs": {
     "title": "Preferências de partida",
     "subtitle": "Você só é pareado com quem escolheu o mesmo estilo de jogo e o mesmo nível de habilidade neste jogo.",
