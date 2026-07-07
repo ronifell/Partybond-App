@@ -205,6 +205,14 @@
     "subtitle": "Você só é pareado com quem escolheu o mesmo estilo de jogo e o mesmo nível de habilidade neste jogo.",
     "modalSubtitle": "Encontre o time ideal para o seu jogo.",
     "playStyleLabel": "ESTILO DE JOGO",
+    "platformSectionLabel": "DISPOSITIVO / PLATAFORMA",
+    "platformHint": "Você só será pareado com jogadores na mesma plataforma.",
+    "platform": {
+      "playstation": "PlayStation",
+      "xbox": "Xbox",
+      "pc": "PC",
+      "mobile": "Mobile"
+    },
     "modeLabel": "Estilo de jogo",
     "skillSectionLabel": "NÍVEL DE HABILIDADE",
     "skillLabel": "Nível de habilidade",

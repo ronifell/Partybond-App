@@ -1,8 +1,15 @@
+export const GAME_PLATFORMS = ['playstation', 'xbox', 'pc', 'mobile'] as const;
+export type GamePlatform = (typeof GAME_PLATFORMS)[number];
+
+export function isGamePlatform(value: string | null | undefined): value is GamePlatform {
+  return !!value && (GAME_PLATFORMS as readonly string[]).includes(value);
+}
+
 export interface GameProfile {
   gameId: string;
   nickname: string;
   playerId: string;
-  platform?: string | null;
+  platform?: GamePlatform | null;
 }
 
 export type PlayStyle = 'relaxed' | 'focused';
@@ -49,12 +56,14 @@ export type SessionSkillTier = (typeof SESSION_SKILL_TIERS)[number];
 export interface MatchLobbyPreferences {
   gameMode: SessionMode;
   playStyle: PlayStyle;
+  platform: GamePlatform;
 }
 
 export interface QueueStatus {
   gameId: string;
   gameMode: SessionMode;
   playStyle: PlayStyle;
+  platform: GamePlatform;
   phase: 1 | 2 | 3;
   waitedSeconds: number;
   joinedAt: string;

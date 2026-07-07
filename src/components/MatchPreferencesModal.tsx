@@ -14,7 +14,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { GradientButton } from './ui/GradientButton';
-import type { MatchLobbyPreferences, PlayStyle, SessionMode } from '../api/types';
+import type { GamePlatform, MatchLobbyPreferences, PlayStyle, SessionMode } from '../api/types';
+import { isGamePlatform } from '../api/types';
 import { colors, gradient } from '../theme/tokens';
 import { getGameImage } from '../theme/assets';
 
@@ -28,20 +29,42 @@ const PLAY_STYLE_GRADIENT_COLORS = ['#FF4DA6', '#7B3FF2', '#00D1FF'] as const;
 
 const PLAY_STYLES: PlayStyle[] = ['relaxed', 'focused'];
 
+const PLATFORM_ROWS: GamePlatform[][] = [
+  ['playstation', 'xbox'],
+  ['pc', 'mobile'],
+];
+
+const PLATFORM_ICONS: Record<GamePlatform, keyof typeof Ionicons.glyphMap> = {
+  playstation: 'logo-playstation',
+  xbox: 'logo-xbox',
+  pc: 'desktop-outline',
+  mobile: 'phone-portrait-outline',
+};
+
 interface Props {
   visible: boolean;
   /** Current game (from home card). */
   gameId?: string;
   gameName?: string;
+  /** Saved platform from the user's game profile, if any. */
+  defaultPlatform?: string | null;
   onClose: () => void;
   onConfirm: (prefs: MatchLobbyPreferences) => void;
 }
 
-export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onConfirm }: Props) {
+export function MatchPreferencesModal({
+  visible,
+  gameId,
+  gameName,
+  defaultPlatform,
+  onClose,
+  onConfirm,
+}: Props) {
   const { t } = useTranslation();
   const { height: winH } = useWindowDimensions();
   const [mode, setMode] = useState<SessionMode>('casual');
   const [playStyle, setPlayStyle] = useState<PlayStyle>('relaxed');
+  const [platform, setPlatform] = useState<GamePlatform>('pc');
 
   const genreLabel = useMemo(
     () =>
@@ -57,8 +80,9 @@ export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onCo
     if (visible) {
       setMode('casual');
       setPlayStyle('relaxed');
+      setPlatform(isGamePlatform(defaultPlatform) ? defaultPlatform : 'pc');
     }
-  }, [visible]);
+  }, [visible, defaultPlatform]);
 
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
@@ -337,6 +361,78 @@ export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onCo
                   </View>
                 </View>
 
+                {/* Device / platform */}
+                <View style={{ paddingHorizontal: 16, marginTop: 14 }}>
+                  <Text
+                    style={{
+                      color: 'rgba(197, 168, 255, 0.95)',
+                      fontSize: 10,
+                      fontWeight: '800',
+                      letterSpacing: 1,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {t('matchPrefs.platformSectionLabel')}
+                  </Text>
+                  <Text
+                    style={{
+                      color: colors.ink.secondary,
+                      fontSize: 11,
+                      lineHeight: 15,
+                      fontWeight: '500',
+                      marginBottom: 8,
+                    }}
+                  >
+                    {t('matchPrefs.platformHint')}
+                  </Text>
+                  {PLATFORM_ROWS.map((row, rowIndex) => (
+                    <View
+                      key={row.join('-')}
+                      style={{
+                        flexDirection: 'row',
+                        gap: 10,
+                        marginTop: rowIndex > 0 ? 10 : 0,
+                      }}
+                    >
+                      {row.map((p) => {
+                        const selected = platform === p;
+                        return (
+                          <Pressable
+                            key={p}
+                            onPress={() => setPlatform(p)}
+                            style={({ pressed }) => ({
+                              flex: 1,
+                              paddingVertical: 12,
+                              borderRadius: 14,
+                              borderWidth: selected ? 2 : 1.5,
+                              borderColor: selected ? colors.brand.purple : 'rgba(255,255,255,0.12)',
+                              backgroundColor: selected ? 'rgba(123,63,242,0.14)' : 'rgba(255,255,255,0.04)',
+                              alignItems: 'center',
+                              opacity: pressed ? 0.9 : 1,
+                            })}
+                          >
+                            <Ionicons
+                              name={PLATFORM_ICONS[p]}
+                              size={22}
+                              color={selected ? colors.brand.purple : colors.ink.primary}
+                            />
+                            <Text
+                              style={{
+                                color: selected ? colors.brand.purple : colors.ink.primary,
+                                fontWeight: '800',
+                                fontSize: 13,
+                                marginTop: 6,
+                              }}
+                            >
+                              {t(`matchPrefs.platform.${p}`)}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  ))}
+                </View>
+
                 {/* How you want to play today */}
                 <View style={{ paddingHorizontal: 16, marginTop: 14 }}>
                   <Text
@@ -393,7 +489,7 @@ export function MatchPreferencesModal({ visible, gameId, gameName, onClose, onCo
                   <GradientButton
                     size="md"
                     title={t('matchPrefs.confirm')}
-                    onPress={() => onConfirm({ gameMode: mode, playStyle })}
+                    onPress={() => onConfirm({ gameMode: mode, playStyle, platform })}
                     leftAdornment={<Ionicons name="locate" size={20} color="#fff" />}
                   />
                   <Pressable

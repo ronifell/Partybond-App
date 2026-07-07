@@ -251,6 +251,11 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
         visible={!!prefModalGame}
         gameId={prefModalGame?.id}
         gameName={prefModalGame?.name}
+        defaultPlatform={
+          prefModalGame
+            ? user?.gameProfiles.find((p) => p.gameId === prefModalGame.id)?.platform ?? null
+            : null
+        }
         onClose={() => setPrefModalGame(null)}
         onConfirm={(prefs) => {
           const g = prefModalGame;

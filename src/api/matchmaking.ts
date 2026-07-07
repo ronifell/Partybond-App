@@ -9,6 +9,7 @@ export async function joinMatchmakingQueue(
     gameId,
     gameMode: prefs.gameMode,
     playStyle: prefs.playStyle,
+    platform: prefs.platform,
   });
   return { status: data.status };
 }
