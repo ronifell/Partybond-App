@@ -21,7 +21,8 @@ import { Card } from '../components/ui/Card';
 import { Logo } from '../components/ui/Logo';
 import { Avatar } from '../components/ui/Avatar';
 import { GradientButton } from '../components/ui/GradientButton';
-import { blockUser, fetchPublicUser, openDirectChat, reportUser } from '../api/social';
+import { blockUser, fetchPublicUser, openDirectChat } from '../api/social';
+import { ReportUserModal } from '../components/ReportUserModal';
 import { fetchGames } from '../api/games';
 import { useAuth } from '../store/authStore';
 import { getGameImage } from '../theme/assets';
@@ -133,6 +134,7 @@ export function UserProfileScreen({ navigation, route }: NativeStackScreenProps<
     gameId?: string;
   };
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [gameCardContentHeight, setGameCardContentHeight] = useState(0);
 
   const { data: profile } = useQuery({
@@ -176,16 +178,8 @@ export function UserProfileScreen({ navigation, route }: NativeStackScreenProps<
   };
 
   const onReport = () => {
-    Alert.alert(t('moderation.reportTitle'), t('moderation.reportConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('moderation.report'),
-        onPress: async () => {
-          await reportUser(userId, 'other');
-          setMenuOpen(false);
-        },
-      },
-    ]);
+    setMenuOpen(false);
+    setReportOpen(true);
   };
 
   if (!profile) {
@@ -396,6 +390,13 @@ export function UserProfileScreen({ navigation, route }: NativeStackScreenProps<
           />
         </View>
       </SafeAreaView>
+
+      <ReportUserModal
+        visible={reportOpen}
+        reportedId={userId}
+        reportedName={profile.name}
+        onClose={() => setReportOpen(false)}
+      />
     </TeamScreenBackground>
   );
 }

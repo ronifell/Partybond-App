@@ -644,8 +644,26 @@
     "blockTitle": "Bloquear este usuário?",
     "blockConfirm": "Ele não poderá enviar mensagens nem aparecer no matchmaking.",
     "report": "Denunciar usuário",
-    "reportTitle": "Denunciar este usuário?",
-    "reportConfirm": "Nossa equipe analisará a denúncia."
+    "reportTitle": "Denunciar usuário",
+    "reportConfirm": "Nossa equipe analisará a denúncia.",
+    "reportModalSubtitle": "Conte o que aconteceu com {{name}}. Você pode anexar capturas de tela como evidência.",
+    "reasonLabel": "MOTIVO",
+    "reason": {
+      "spam": "Spam",
+      "harassment": "Assédio",
+      "offensive_language": "Linguagem ofensiva",
+      "inappropriate_content": "Conteúdo inadequado",
+      "other": "Outro"
+    },
+    "descriptionLabel": "Descrição",
+    "descriptionPlaceholder": "Descreva o que aconteceu…",
+    "descriptionHint": "Mais detalhes ajudam nossa equipe a analisar mais rápido.",
+    "imagesLabel": "IMAGENS (OPCIONAL)",
+    "imagesHint": "Até 4 imagens — capturas de chat, perfil ou comportamento.",
+    "attach": "Anexar",
+    "submitReport": "Enviar denúncia",
+    "reportSuccess": "Obrigado — nossa equipe analisará sua denúncia.",
+    "imagesPermissionDenied": "Permita acesso à galeria para anexar capturas de tela."
   },
   "premium": {
     "headerTitle": "Partybond Premium",

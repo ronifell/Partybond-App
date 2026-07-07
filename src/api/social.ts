@@ -1,4 +1,5 @@
-import { api } from './client';
+import { api, getToken } from './client';
+import { getApiOrigin } from '../config/env';
 import type {
   ChatMessage,
   ConversationSummary,
@@ -172,10 +173,84 @@ export async function blockUser(userId: string) {
   await api.post('/moderation/block', { userId });
 }
 
+export const REPORT_CATEGORIES = [
+  'spam',
+  'harassment',
+  'offensive_language',
+  'inappropriate_content',
+  'other',
+] as const;
+
+export type ReportCategory = (typeof REPORT_CATEGORIES)[number];
+
+export const MAX_REPORT_ATTACHMENTS = 4;
+
+export type ReportAttachmentMeta = {
+  uri: string;
+  mimeType?: string | null;
+  fileName?: string | null;
+};
+
+function normalizeImageMime(mime?: string | null): string {
+  if (!mime || mime === 'application/octet-stream') return 'image/jpeg';
+  if (/^image\/(png|jpe?g|webp)$/i.test(mime)) return mime.toLowerCase();
+  return 'image/jpeg';
+}
+
 export async function reportUser(
   reportedId: string,
-  category: string,
+  category: ReportCategory,
   details?: string,
-) {
-  await api.post('/moderation/report', { reportedId, category, details });
+  attachments?: ReportAttachmentMeta[],
+): Promise<void> {
+  if (!attachments?.length) {
+    await api.post('/moderation/report', { reportedId, category, details });
+    return;
+  }
+
+  const origin = getApiOrigin().replace(/\/$/, '');
+  const url = `${origin}/api/v1/moderation/report`;
+
+  const buildForm = () => {
+    const form = new FormData();
+    form.append('reportedId', reportedId);
+    form.append('category', category);
+    if (details?.trim()) form.append('details', details.trim());
+
+    attachments.forEach((attachment, index) => {
+      const type = normalizeImageMime(attachment.mimeType);
+      const ext = type === 'image/png' ? 'png' : type === 'image/webp' ? 'webp' : 'jpg';
+      const name = attachment.fileName?.trim() || `report-${Date.now()}-${index}.${ext}`;
+      form.append('attachments', {
+        uri: attachment.uri,
+        name,
+        type,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+    });
+
+    return form;
+  };
+
+  const token = await getToken();
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: buildForm(),
+  });
+
+  const text = await res.text();
+  let body: { error?: { message?: string } } = {};
+  try {
+    body = text ? (JSON.parse(text) as typeof body) : {};
+  } catch {
+    body = {};
+  }
+
+  if (!res.ok) {
+    const msg = body.error?.message || text || `Report failed (${res.status})`;
+    throw new Error(msg);
+  }
 }

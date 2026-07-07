@@ -644,8 +644,26 @@
     "blockTitle": "Block this user?",
     "blockConfirm": "They won't be able to message or match with you.",
     "report": "Report user",
-    "reportTitle": "Report this user?",
-    "reportConfirm": "Our team will review this report."
+    "reportTitle": "Report user",
+    "reportConfirm": "Our team will review this report.",
+    "reportModalSubtitle": "Tell us what happened with {{name}}. You can attach screenshots as evidence.",
+    "reasonLabel": "REASON",
+    "reason": {
+      "spam": "Spam",
+      "harassment": "Harassment",
+      "offensive_language": "Offensive language",
+      "inappropriate_content": "Inappropriate content",
+      "other": "Other"
+    },
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe what happened…",
+    "descriptionHint": "More detail helps our team review faster.",
+    "imagesLabel": "IMAGES (OPTIONAL)",
+    "imagesHint": "Up to 4 images — chat, profile, or behavior screenshots.",
+    "attach": "Attach",
+    "submitReport": "Submit report",
+    "reportSuccess": "Thanks — our team will review your report.",
+    "imagesPermissionDenied": "Allow photo library access to attach screenshots."
   },
   "premium": {
     "headerTitle": "Partybond Premium",
