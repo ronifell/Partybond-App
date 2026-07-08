@@ -2,7 +2,7 @@
   "expo": {
     "name": "Partybond",
     "slug": "partybond",
-    "version": "1.0.1",
+    "version": "1.1.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "partybond",
@@ -23,7 +23,7 @@
     },
     "android": {
       "package": "com.partybond.app",
-      "versionCode": 2,
+      "versionCode": 7,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A12"
@@ -55,7 +55,9 @@
         "expo-build-properties",
         {
           "android": {
-            "usesCleartextTraffic": true
+            "usesCleartextTraffic": true,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
           }
         }
       ]
@@ -64,7 +66,7 @@
       "apiUrl": "http://179.197.64.25",
       "expoAuthProxyRedirectUri": "https://auth.expo.io/@hayatokato/partybond",
       "eas": {
-        "projectId": "a0d3c1fb-416e-4821-8a69-cd9e1a28dec2"
+        "projectId": "d1b515a5-14cf-44d9-9016-9ded037a88c3"
       }
     }
   }

@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "eas": "eas",
     "eas:login": "eas login",
-    "build:apk:preview": "eas build --platform android --profile preview"
+    "build:apk:preview": "eas build --platform android --profile preview",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.3",
@@ -52,6 +53,7 @@
     "@babel/core": "^7.25.2",
     "@types/react": "~18.2.79",
     "eas-cli": "^19.0.8",
+    "patch-package": "^8.0.1",
     "tailwindcss": "3.3.2",
     "typescript": "~5.3.3"
   }

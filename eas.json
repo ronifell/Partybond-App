@@ -22,6 +22,13 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://179.197.64.25",
+        "EXPO_PUBLIC_INVITE_BASE_URL": "http://179.197.64.25/i",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "432113151448-mk8qja7d3e69vai7vp8caaallfrbjms3.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "432113151448-bt9aodr5u7edt01oepjn5vgevmfral6g.apps.googleusercontent.com",
+        "EXPO_PUBLIC_PREMIUM_PRODUCT_IDS": "partybond.premium.monthly"
       }
     }
   },
