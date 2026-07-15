@@ -23,6 +23,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TeamScreenBackground } from '../components/ui/TeamScreenBackground';
 import { WordmarkPartybond } from '../components/ui/WordmarkPartybond';
 import { resolvePhotoUri } from '../components/ui/Avatar';
+import { SafetyTipsCard } from '../components/SafetyTipsCard';
 import { getSession, leaveQueue } from '../api/sessions';
 import { getMatchmakingQueueStatus, leaveMatchmakingQueue } from '../api/matchmaking';
 import { useAuth } from '../store/authStore';
@@ -502,6 +503,8 @@ export function QueueScreen({ navigation, route }: NativeStackScreenProps<any>) 
               style={queueStyles.tipsWatermark}
             />
           </View>
+
+          <SafetyTipsCard variant="full" style={queueStyles.safetyCard} />
         </ScrollView>
 
         <View style={[queueStyles.footer, { paddingHorizontal: H_PAD }]}>
@@ -781,6 +784,9 @@ const queueStyles = StyleSheet.create({
     position: 'absolute',
     right: -8,
     bottom: -12,
+  },
+  safetyCard: {
+    marginTop: 14,
   },
   footer: {
     paddingTop: 8,

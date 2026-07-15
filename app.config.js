@@ -27,6 +27,7 @@ const googleIosClientId = pick(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, goo
 const premiumProductIds = pick(process.env.EXPO_PUBLIC_PREMIUM_PRODUCT_IDS) || 'partybond.premium.monthly';
 const inviteBaseUrl = pick(process.env.EXPO_PUBLIC_INVITE_BASE_URL);
 const apiUrl = pick(process.env.EXPO_PUBLIC_API_URL, appJson.expo.extra?.apiUrl);
+const launchAtIso = pick(process.env.EXPO_PUBLIC_LAUNCH_AT_ISO);
 
 if (process.env.EAS_BUILD === 'true' && !googleWebClientId) {
   console.warn(
@@ -47,6 +48,7 @@ module.exports = {
       googleIosClientId,
       premiumProductIds,
       inviteBaseUrl,
+      launchAtIso,
     },
   },
 };

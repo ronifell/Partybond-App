@@ -24,6 +24,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { Avatar } from '../components/ui/Avatar';
 import { GroupNextSessionCard } from '../components/GroupNextSessionCard';
+import { SafetyTipsCard } from '../components/SafetyTipsCard';
 import {
   createGroupSchedule,
   fetchGroup,
@@ -487,35 +488,38 @@ export function ChatScreen({ navigation, route }: NativeStackScreenProps<any>) {
           return renderMessage(item.message);
         }}
         ListHeaderComponent={
-          pinned && pinnedOpen ? (
-            <Pressable
-              onPress={() => setPinnedOpen((o) => !o)}
-              style={styles.pinnedCard}
-            >
-              <View style={styles.pinnedHead}>
-                <Ionicons name="pin" size={16} color={colors.brand.purple} />
-                <Text style={styles.pinnedTitle}>{t('groupChat.pinnedTitle')}</Text>
-                <Ionicons
-                  name={pinnedOpen ? 'chevron-up' : 'chevron-down'}
-                  size={16}
-                  color={colors.ink.secondary}
-                  style={{ marginLeft: 'auto' }}
-                />
-              </View>
-              <Text style={styles.pinnedBody}>{pinned.body}</Text>
-              <Text style={styles.pinnedMeta}>
-                {t('groupChat.pinnedMeta', { date: formatPinnedMeta(pinned.pinnedAt) })}
-              </Text>
-            </Pressable>
-          ) : pinned && !pinnedOpen ? (
-            <Pressable onPress={() => setPinnedOpen(true)} style={styles.pinnedCollapsed}>
-              <Ionicons name="pin" size={14} color={colors.brand.purple} />
-              <Text style={styles.pinnedCollapsedText} numberOfLines={1}>
-                {pinned.body}
-              </Text>
-              <Ionicons name="chevron-down" size={14} color={colors.ink.secondary} />
-            </Pressable>
-          ) : null
+          <View>
+            {pinned && pinnedOpen ? (
+              <Pressable
+                onPress={() => setPinnedOpen((o) => !o)}
+                style={styles.pinnedCard}
+              >
+                <View style={styles.pinnedHead}>
+                  <Ionicons name="pin" size={16} color={colors.brand.purple} />
+                  <Text style={styles.pinnedTitle}>{t('groupChat.pinnedTitle')}</Text>
+                  <Ionicons
+                    name={pinnedOpen ? 'chevron-up' : 'chevron-down'}
+                    size={16}
+                    color={colors.ink.secondary}
+                    style={{ marginLeft: 'auto' }}
+                  />
+                </View>
+                <Text style={styles.pinnedBody}>{pinned.body}</Text>
+                <Text style={styles.pinnedMeta}>
+                  {t('groupChat.pinnedMeta', { date: formatPinnedMeta(pinned.pinnedAt) })}
+                </Text>
+              </Pressable>
+            ) : pinned && !pinnedOpen ? (
+              <Pressable onPress={() => setPinnedOpen(true)} style={styles.pinnedCollapsed}>
+                <Ionicons name="pin" size={14} color={colors.brand.purple} />
+                <Text style={styles.pinnedCollapsedText} numberOfLines={1}>
+                  {pinned.body}
+                </Text>
+                <Ionicons name="chevron-down" size={14} color={colors.ink.secondary} />
+              </Pressable>
+            ) : null}
+            <SafetyTipsCard variant="compact" style={styles.safetyBanner} />
+          </View>
         }
       />
     );
@@ -987,6 +991,9 @@ const styles = StyleSheet.create({
     flex: 1,
     color: colors.ink.secondary,
     fontSize: 12,
+  },
+  safetyBanner: {
+    marginBottom: 10,
   },
   datePillWrap: {
     alignItems: 'center',

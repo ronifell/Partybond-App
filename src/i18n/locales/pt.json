@@ -828,5 +828,21 @@
     "cancelConfirmBody": "Os convites pendentes serão cancelados. Você pode manter o grupo e convidar pessoas manualmente.",
     "cancelYes": "Sim, cancelar",
     "startNewCta": "Iniciar nova busca"
+  },
+  "safety": {
+    "title": "Dicas de Segurança",
+    "intro": "Para sua proteção, siga estas orientações no Partybond.",
+    "compactHint": "Toque para ver as dicas de segurança do Partybond.",
+    "tipPasswords": "Nunca compartilhe senhas, códigos de verificação ou dados bancários.",
+    "tipMoney": "Não envie dinheiro para outros usuários.",
+    "tipDocuments": "Evite compartilhar documentos, CPF, endereço, telefone ou outras informações pessoais desnecessárias.",
+    "tipNoRequest": "O Partybond nunca solicitará sua senha, códigos de confirmação ou pagamentos pelo chat.",
+    "tipReport": "Identificou um golpe, assédio ou violação das regras? Use a opção Denunciar."
+  },
+  "supportFooter": {
+    "title": "Encontrou algum erro?",
+    "body": "Fale com o suporte pelo WhatsApp {{phone}} — respondemos o mais rápido possível.",
+    "whatsappGreeting": "Olá, encontrei um problema no Partybond e gostaria de relatar:",
+    "openFailed": "Não foi possível abrir o WhatsApp. Salve o número {{phone}} e envie sua mensagem por lá."
   }
 }

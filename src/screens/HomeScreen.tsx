@@ -18,6 +18,7 @@ import { fetchGames } from '../api/games';
 import type { MatchLobbyPreferences } from '../api/types';
 import { MatchPreferencesModal } from '../components/MatchPreferencesModal';
 import { SupportProjectModal } from '../components/SupportProjectModal';
+import { SupportFooter } from '../components/SupportFooter';
 import { GameProfileRequiredNotice } from '../components/GameProfileRequiredNotice';
 import { hasGameProfileForGame } from '../utils/gameProfile';
 import { useAuth } from '../store/authStore';
@@ -199,6 +200,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
               </View>
             ) : null
           }
+          ListHeaderComponent={<SupportFooter style={{ marginBottom: 12 }} />}
           refreshControl={
             <RefreshControl
               refreshing={isRefetchingGames}

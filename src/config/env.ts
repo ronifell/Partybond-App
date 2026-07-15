@@ -127,3 +127,29 @@ export const INVITE_BASE_URL = pickString(
   process.env.EXPO_PUBLIC_INVITE_BASE_URL,
   premiumExtra?.inviteBaseUrl,
 );
+
+// ---------------------------------------------------------------------------
+// Launch-day banner
+// ---------------------------------------------------------------------------
+
+const launchExtra = Constants.expoConfig?.extra as { launchAtIso?: string } | undefined;
+
+/**
+ * ISO 8601 datetime that marks the official launch moment
+ * (e.g. `2026-07-16T21:00:00Z` for 18:00 in São Paulo, UTC-3).
+ *
+ * When set and still in the future the app shows a full-width banner on Home
+ * telling users to come back at the launch time. Auto-hides after that moment
+ * so no rebuild is needed the next day. Leave empty to disable entirely.
+ */
+export const LAUNCH_AT_ISO = pickString(
+  process.env.EXPO_PUBLIC_LAUNCH_AT_ISO,
+  launchExtra?.launchAtIso,
+);
+
+/** Parsed Date instance for LAUNCH_AT_ISO, or null when unset/invalid. */
+export function getLaunchAt(): Date | null {
+  if (!LAUNCH_AT_ISO) return null;
+  const d = new Date(LAUNCH_AT_ISO);
+  return Number.isNaN(d.getTime()) ? null : d;
+}

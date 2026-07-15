@@ -828,5 +828,21 @@
     "cancelConfirmBody": "Pending invites will be canceled. You can keep the group and invite people manually.",
     "cancelYes": "Yes, cancel",
     "startNewCta": "Start a new auto-search"
+  },
+  "safety": {
+    "title": "Safety Tips",
+    "intro": "Follow these guidelines to stay safe on Partybond.",
+    "compactHint": "Tap to view Partybond safety guidelines.",
+    "tipPasswords": "Never share passwords, verification codes, or banking data.",
+    "tipMoney": "Do not send money to other users.",
+    "tipDocuments": "Avoid sharing IDs, tax numbers, addresses, phone numbers, or other unnecessary personal info.",
+    "tipNoRequest": "Partybond will never ask for your password, confirmation codes, or payments via chat.",
+    "tipReport": "Spot a scam, harassment, or rule-breaking? Use the Report option."
+  },
+  "supportFooter": {
+    "title": "Found an issue?",
+    "body": "Message support on WhatsApp {{phone}} — we reply as fast as we can.",
+    "whatsappGreeting": "Hi, I found an issue on Partybond and would like to report it:",
+    "openFailed": "We couldn't open WhatsApp. Save the number {{phone}} and send your message from there."
   }
 }
