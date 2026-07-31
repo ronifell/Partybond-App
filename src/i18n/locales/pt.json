@@ -110,6 +110,7 @@
       "invalidCredentials": "E-mail ou senha inválidos.",
       "emailInUse": "Este e-mail já está em uso.",
       "ageTooYoung": "Você precisa ter pelo menos {{min}} anos para usar o Partybond.",
+      "minorNotAllowed": "O Partybond não é permitido para menores de 18 anos",
       "legalConsentRequired": "Aceite os Termos de Uso e a Política de Privacidade para continuar.",
       "googleNotConfigured": "Login com Google não configurado. Adicione EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID.",
       "googleExpoProxyRedirect": "No Expo Go, o Google precisa da URL de proxy da Expo: defina EXPO_PUBLIC_EXPO_AUTH_PROXY_REDIRECT_URI (https://auth.expo.io/@sua-conta/slug) igual ao Google Cloud, ou faça login na CLI da Expo para o app resolver o nome do projeto.",

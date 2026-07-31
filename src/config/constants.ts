@@ -1,5 +1,5 @@
 /** Minimum age to register and use Partybond (matches Terms of Use / Privacy Policy). */
-export const MIN_USER_AGE = 14;
+export const MIN_USER_AGE = 18;
 
 /** Upper bound for age field validation (matches backend). */
 export const MAX_USER_AGE = 120;

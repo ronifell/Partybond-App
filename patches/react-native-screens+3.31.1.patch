@@ -1,0 +1,16 @@
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStack.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStack.kt
+index 458465c..44aedae 100644
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStack.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/ScreenStack.kt
+@@ -315,8 +315,10 @@ class ScreenStack(context: Context?) : ScreenContainer(context) {
+         super.drawChild(op.canvas!!, op.child, op.drawingTime)
+     }
+ 
++    // Do not replace with removeLast() — on compileSdk 35 the call resolves to the
++    // Android 15 Java List API and crashes on Android 14 and below (NoSuchMethodError).
+     private fun obtainDrawingOp(): DrawingOp =
+-        if (drawingOpPool.isEmpty()) DrawingOp() else drawingOpPool.removeLast()
++        if (drawingOpPool.isEmpty()) DrawingOp() else drawingOpPool.removeAt(drawingOpPool.lastIndex)
+ 
+     private inner class DrawingOp {
+         var canvas: Canvas? = null

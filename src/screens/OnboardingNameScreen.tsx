@@ -26,6 +26,10 @@ export function OnboardingNameScreen({ navigation }: NativeStackScreenProps<any>
 
   const onNext = async () => {
     const ageNum = Number(age);
+    if (ageNum > 0 && ageNum < MIN_USER_AGE) {
+      setError(t('auth.errors.minorNotAllowed'));
+      return;
+    }
     if (!name.trim() || !ageNum || ageNum < MIN_USER_AGE) {
       setError(t('auth.errors.ageTooYoung', { min: MIN_USER_AGE }));
       return;

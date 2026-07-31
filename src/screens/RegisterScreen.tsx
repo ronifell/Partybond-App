@@ -69,6 +69,10 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
       return;
     }
     const ageNum = Number(age);
+    if (ageNum > 0 && ageNum < MIN_USER_AGE) {
+      setError(t('auth.errors.minorNotAllowed'));
+      return;
+    }
     if (!email || !password || !name || !ageNum || ageNum < MIN_USER_AGE) {
       setError(t('auth.errors.ageTooYoung', { min: MIN_USER_AGE }));
       return;
@@ -89,6 +93,7 @@ export function RegisterScreen({ navigation }: NativeStackScreenProps<any>) {
     } catch (err) {
       const apiErr = getApiError(err);
       if (apiErr.code === 'email_in_use') setError(t('auth.errors.emailInUse'));
+      else if (apiErr.code === 'minor_not_allowed') setError(t('auth.errors.minorNotAllowed'));
       else setError(apiErr.message || t('auth.errors.generic'));
     } finally {
       setLoading(false);
