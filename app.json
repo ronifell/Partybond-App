@@ -2,7 +2,7 @@
   "expo": {
     "name": "Partybond",
     "slug": "partybond",
-    "version": "1.1.6",
+    "version": "1.1.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "partybond",
@@ -23,7 +23,7 @@
     },
     "android": {
       "package": "com.partybond.app",
-      "versionCode": 10,
+      "versionCode": 12,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A12"
@@ -51,13 +51,14 @@
         }
       ],
       "expo-font",
+      "expo-iap",
       [
         "expo-build-properties",
         {
           "android": {
             "usesCleartextTraffic": true,
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
           }
         }
       ]

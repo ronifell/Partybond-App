@@ -1,10 +1,10 @@
 import { Platform } from 'react-native';
 
 /**
- * Thin wrapper around `react-native-iap`. We import lazily and guard every call
+ * Thin wrapper around `expo-iap`. We import lazily and guard every call
  * because:
  *
- *  1. `react-native-iap` only works in installed APKs — Expo Go / iOS Simulator
+ *  1. `expo-iap` only works in installed APKs — Expo Go / iOS Simulator
  *     don't ship the native module and importing it eagerly would crash the JS
  *     bundle on startup.
  *  2. We want to keep all the platform-specific Google Play purchase logic in
@@ -31,19 +31,19 @@ export interface IapPurchaseResult {
   originalTransactionId?: string;
 }
 
-let cachedModule: typeof import('react-native-iap') | null = null;
+let cachedModule: typeof import('expo-iap') | null = null;
 let connectionPromise: Promise<boolean> | null = null;
 
-function getModule(): typeof import('react-native-iap') | null {
+function getModule(): typeof import('expo-iap') | null {
   if (cachedModule) return cachedModule;
   try {
     // Lazy require so Expo Go (which has no IAP native module) doesn't crash on import.
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    cachedModule = require('react-native-iap');
+    cachedModule = require('expo-iap');
     return cachedModule;
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.warn('[IAP] react-native-iap unavailable in this build', err);
+    console.warn('[IAP] expo-iap unavailable in this build', err);
     return null;
   }
 }
@@ -91,7 +91,7 @@ export async function loadSubscriptionProducts(skus: string[]): Promise<IapPlan[
   const mod = getModule();
   if (!ok || !mod) return [];
   try {
-    const products = await mod.getSubscriptions({ skus });
+    const products = await mod.getSubscriptions(skus);
     return products.map((p) => normalizeAndroidSubscription(p));
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -114,16 +114,20 @@ interface AndroidSubscriptionOffer {
 }
 
 interface AndroidSubscriptionProduct {
-  productId: string;
+  id?: string;
+  productId?: string;
   title?: string;
   name?: string;
+  nameAndroid?: string;
   description?: string;
   subscriptionOfferDetails?: AndroidSubscriptionOffer[];
+  subscriptionOfferDetailsAndroid?: AndroidSubscriptionOffer[];
 }
 
 function normalizeAndroidSubscription(raw: unknown): IapPlan {
   const p = raw as AndroidSubscriptionProduct;
-  const offers = p.subscriptionOfferDetails ?? [];
+  const productId = p.productId ?? p.id ?? '';
+  const offers = p.subscriptionOfferDetailsAndroid ?? p.subscriptionOfferDetails ?? [];
 
   // Pick the offer whose first paid phase is cheapest.
   let bestOffer: AndroidSubscriptionOffer | undefined;
@@ -141,8 +145,8 @@ function normalizeAndroidSubscription(raw: unknown): IapPlan {
   }
 
   return {
-    productId: p.productId,
-    title: p.title || p.name || p.productId,
+    productId,
+    title: p.title || p.name || p.nameAndroid || productId,
     description: p.description ?? '',
     localizedPrice: bestFormattedPrice,
     price: bestFormattedPrice,
@@ -222,8 +226,10 @@ export async function buyPremiumSubscription(productId: string): Promise<IapPurc
 
     mod
       .requestSubscription({
-        sku: productId,
-        subscriptionOffers: [{ sku: productId, offerToken: plan.offerToken! }],
+        android: {
+          skus: [productId],
+          subscriptionOffers: [{ sku: productId, offerToken: plan.offerToken! }],
+        },
       })
       .catch((err) => {
         if (settled) return;

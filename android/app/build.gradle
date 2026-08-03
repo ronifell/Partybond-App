@@ -114,13 +114,11 @@ android {
         applicationId 'com.partybond.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.1.6"
-        // react-native-iap v12 ships two product flavors under the "store"
-        // dimension (play / amazon). Without this line Gradle can't pick one
-        // and the release build fails with an "ambiguous variant" error.
-        // We only ship through Google Play, so always consume the `play` flavor.
-        missingDimensionStrategy 'store', 'play'
+        versionCode 12
+        versionName "1.1.8"
+    }
+    kotlinOptions {
+        freeCompilerArgs += ["-Xskip-metadata-version-check"]
     }
     signingConfigs {
         debug {
@@ -172,6 +170,9 @@ android {
 }
 
 dependencies {
+    // Google Play requires Billing Library 8.0.0+ (expo-iap also pulls this in).
+    implementation "com.android.billingclient:billing-ktx:8.0.0"
+
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
