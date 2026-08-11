@@ -840,6 +840,16 @@
     "tipNoRequest": "Partybond will never ask for your password, confirmation codes, or payments via chat.",
     "tipReport": "Spot a scam, harassment, or rule-breaking? Use the Report option."
   },
+  "betaNotice": {
+    "title": "🎮 Want to find players faster?",
+    "body1": "We're in beta and our community is still growing.",
+    "body2Prefix": "For a better experience and more players online, we recommend trying Partybond between ",
+    "hours": "6 PM and 8 PM",
+    "body2Suffix": ".",
+    "peakLine": "💜 That's when we're concentrating our tests and active users.",
+    "footer": "Have a great match!",
+    "cta": "GOT IT"
+  },
   "supportFooter": {
     "title": "Found an issue?",
     "body": "Message support on WhatsApp {{phone}} — we reply as fast as we can.",

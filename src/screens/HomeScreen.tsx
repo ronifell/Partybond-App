@@ -20,6 +20,11 @@ import { MatchPreferencesModal } from '../components/MatchPreferencesModal';
 import { SupportProjectModal } from '../components/SupportProjectModal';
 import { SupportFooter } from '../components/SupportFooter';
 import { GameProfileRequiredNotice } from '../components/GameProfileRequiredNotice';
+import { BetaPeakHoursNotice } from '../components/BetaPeakHoursNotice';
+import {
+  dismissBetaPeakHoursNotice,
+  isBetaPeakHoursNoticeDismissed,
+} from '../config/betaNotice';
 import { hasGameProfileForGame } from '../utils/gameProfile';
 import { useAuth } from '../store/authStore';
 import { useMatchEvents } from '../hooks/useMatchEvents';
@@ -41,6 +46,7 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
   const [prefModalGame, setPrefModalGame] = useState<{ id: string; name: string } | null>(null);
   const [profileGateGame, setProfileGateGame] = useState<{ id: string; name: string } | null>(null);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [betaNoticeVisible, setBetaNoticeVisible] = useState(false);
 
   // All games (the new "Active Sessions" list).
   const {
@@ -79,13 +85,32 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
       void refetchGames();
       void refetchSessions();
       void refreshMe();
+
+      let cancelled = false;
+      let showTimer: ReturnType<typeof setTimeout> | undefined;
+
+      void (async () => {
+        const dismissed = await isBetaPeakHoursNoticeDismissed();
+        if (cancelled || dismissed) return;
+        showTimer = setTimeout(() => {
+          if (!cancelled) setBetaNoticeVisible(true);
+        }, 600);
+      })();
+
       return () => {
+        cancelled = true;
+        if (showTimer) clearTimeout(showTimer);
         setJoiningGameId(null);
         setPrefModalGame(null);
         setProfileGateGame(null);
       };
     }, [refetchGames, refetchSessions, refreshMe]),
   );
+
+  const dismissBetaNotice = useCallback(() => {
+    setBetaNoticeVisible(false);
+    void dismissBetaPeakHoursNotice();
+  }, []);
 
   useMatchEvents((payload) => {
     navigation.navigate('Match', { matchId: payload.matchId });
@@ -141,6 +166,8 @@ export function HomeScreen({ navigation }: NativeStackScreenProps<any>) {
           />
         </View>
       </View>
+
+      <BetaPeakHoursNotice visible={betaNoticeVisible} onDismiss={dismissBetaNotice} />
 
       {/* Fixed "Active Sessions" header — does not scroll */}
       <View
