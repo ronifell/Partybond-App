@@ -31,6 +31,10 @@ import {
   loadSubscriptionProducts,
   type IapPlan,
 } from '../utils/iap';
+import {
+  isAlreadyOwnedPurchaseError,
+  syncOwnedPremiumFromPlay,
+} from '../utils/syncPremiumFromPlay';
 
 const BENEFITS: Array<{ icon: keyof typeof Ionicons.glyphMap; key: string }> = [
   { icon: 'sparkles', key: 'autoGroup' },
@@ -137,8 +141,23 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
       Alert.alert(t('premium.successTitle'), t('premium.successBody'));
     } catch (err) {
       const message = (err as Error).message ?? t('premium.errorPurchase');
-      // "user_cancelled" / "E_USER_CANCELLED" from react-native-iap — silent.
       if (/cancel/i.test(message) || /E_USER_CANCELLED/.test(message)) {
+        setPurchasing(false);
+        return;
+      }
+      if (isAlreadyOwnedPurchaseError(message)) {
+        try {
+          const entitled = await syncOwnedPremiumFromPlay();
+          await refresh();
+          if (entitled) {
+            Alert.alert(t('premium.successTitle'), t('premium.restoreSuccessBody'));
+            setPurchasing(false);
+            return;
+          }
+          setError(t('premium.restoreEmpty'));
+        } catch (restoreErr) {
+          setError((restoreErr as Error).message || t('premium.errorRestore'));
+        }
         setPurchasing(false);
         return;
       }
@@ -149,9 +168,29 @@ export function PremiumScreen({ navigation }: NativeStackScreenProps<any>) {
   }, [plans, purchasing, refresh, t, mockEnabled]);
 
   const onRestore = useCallback(async () => {
-    await refresh();
-    await reload();
-  }, [refresh, reload]);
+    if (purchasing) return;
+    setPurchasing(true);
+    setError(null);
+    try {
+      if (mockEnabled) {
+        await refresh();
+        await reload();
+        return;
+      }
+      const entitled = await syncOwnedPremiumFromPlay();
+      await refresh();
+      await reload();
+      if (entitled) {
+        Alert.alert(t('premium.restoreSuccessTitle'), t('premium.restoreSuccessBody'));
+      } else {
+        setError(t('premium.restoreEmpty'));
+      }
+    } catch (err) {
+      setError((err as Error).message || t('premium.errorRestore'));
+    } finally {
+      if (mounted.current) setPurchasing(false);
+    }
+  }, [mockEnabled, purchasing, refresh, reload, t]);
 
   const formatExpiry = (iso: string | null): string | null => {
     if (!iso) return null;

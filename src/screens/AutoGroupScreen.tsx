@@ -32,6 +32,7 @@ import {
   type AutoGroupRequestDetail,
 } from '../api/autoGroup';
 import { getApiError } from '../api/client';
+import { syncOwnedPremiumFromPlay } from '../utils/syncPremiumFromPlay';
 import type { Game, PlayStyle, SessionMode, SessionSkillTier } from '../api/types';
 
 // Brand colors used throughout the configurator. Defined once so the border /
@@ -110,23 +111,33 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
 
   const onStart = useCallback(async () => {
     if (!isPremium) {
-      onUpgrade();
-      return;
+      try {
+        const entitled = await syncOwnedPremiumFromPlay();
+        await refreshPremium();
+        if (!entitled) {
+          onUpgrade();
+          return;
+        }
+      } catch {
+        onUpgrade();
+        return;
+      }
     }
     if (!selectedGameId) {
       setError(t('autoGroup.errorPickGame'));
+      return;
+    }
+    const trimmed = name.trim();
+    if (trimmed.length < 2) {
+      setError(t('autoGroup.errorNameRequired'));
       return;
     }
     if (submitting) return;
     setError(null);
     setSubmitting(true);
     try {
-      // Backend requires name length >= 2, so treat 1-char input as "empty"
-      // and fall back to the localized default instead of surfacing a zod 400.
-      const trimmed = name.trim();
-      const finalName = trimmed.length >= 2 ? trimmed : t('autoGroup.defaultName');
       const result = await createAutoGroup({
-        name: finalName,
+        name: trimmed,
         gameId: selectedGameId,
         gameMode,
         playStyle,
@@ -157,6 +168,7 @@ export function AutoGroupScreen({ navigation, route }: NativeStackScreenProps<an
     playStyle,
     playersNeeded,
     qc,
+    refreshPremium,
     selectedGameId,
     skillTier,
     submitting,

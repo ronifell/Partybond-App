@@ -245,3 +245,52 @@ export async function buyPremiumSubscription(productId: string): Promise<IapPurc
       });
   });
 }
+
+/**
+ * Reads active Google Play subscriptions already owned by this Google account
+ * and returns purchase tokens so the backend can grant entitlement.
+ *
+ * Needed when Play already billed the user but the app never sent the token
+ * (e.g. the purchase sheet closed with "You already own this item").
+ */
+export async function restorePremiumPurchases(
+  productIds: string[],
+): Promise<IapPurchaseResult[]> {
+  if (Platform.OS !== 'android') return [];
+  const mod = getModule();
+  if (!mod) return [];
+  const ok = await ensureConnection();
+  if (!ok) return [];
+
+  const allowed = new Set(productIds.filter(Boolean));
+  const purchases: unknown[] = await mod.restorePurchases();
+  const results: IapPurchaseResult[] = [];
+  const seen = new Set<string>();
+
+  for (const purchase of purchases) {
+    const typed = purchase as {
+      productId?: string;
+      id?: string;
+      purchaseToken?: string;
+      purchaseTokenAndroid?: string;
+    };
+    const productId = typed.productId ?? typed.id ?? '';
+    const purchaseToken = typed.purchaseToken ?? typed.purchaseTokenAndroid ?? '';
+    if (!purchaseToken || seen.has(purchaseToken)) continue;
+
+    seen.add(purchaseToken);
+    try {
+      await mod.finishTransaction({ purchase: purchase as never, isConsumable: false });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('[IAP] finishTransaction on restore failed', err);
+    }
+
+    results.push({
+      productId: allowed.has(productId) ? productId : productId || productIds[0] || '',
+      purchaseToken,
+    });
+  }
+
+  return results;
+}

@@ -165,14 +165,15 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
   };
 
   const onSubmit = async () => {
-    if (!title.trim()) {
-      setError(t('auth.errors.generic'));
+    const teamName = title.trim();
+    if (teamName.length < 2) {
+      setError(t('createSquad.errorTitleRequired'));
       return;
     }
     const gid =
       gameId && activeGames.some((g) => g.id === gameId) ? gameId : activeGames[0]?.id ?? null;
     if (!gid || !selectedGame) {
-      setError(t('createSquad.noActiveGames'));
+      setError(t('createSquad.errorPickGame'));
       return;
     }
     if (!hasGameProfile(gid)) {
@@ -190,7 +191,7 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
 
       const session = await createSession({
         gameId: gid,
-        title: title.trim(),
+        title: teamName,
         gameMode: SQUAD_SESSION_MODE,
         skillTier: SQUAD_SESSION_SKILL_TIER,
         playersNeeded,
@@ -210,8 +211,12 @@ export function CreateSessionScreen({ navigation }: NativeStackScreenProps<any>)
       const apiErr = getApiError(err);
       if (apiErr.code === 'no_game_profile' && selectedGame) {
         setProfileGateGame({ id: selectedGame.id, name: selectedGame.name });
+      } else if (apiErr.code === 'invalid_state') {
+        setError(t('createSquad.errorAlreadyBusy'));
+      } else if (!apiErr.code && /network|timeout|Network Error/i.test(apiErr.message)) {
+        setError(t('createSquad.errorNetwork'));
       } else {
-        setError(apiErr.message);
+        setError(apiErr.message || t('auth.errors.generic'));
       }
     } finally {
       setLoading(false);
