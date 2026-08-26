@@ -1,10 +1,12 @@
 import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import * as NavigationBar from 'expo-navigation-bar';
+import { useFonts } from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
 
 import './src/i18n';
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -53,6 +55,14 @@ function EdgeToEdgeAndroid() {
 }
 
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts({
+    ...Ionicons.font,
+  });
+
+  if (!fontsLoaded && !fontError) {
+    return <View style={{ flex: 1, backgroundColor: '#0A0A12' }} />;
+  }
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>

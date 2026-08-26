@@ -2,7 +2,7 @@
   "expo": {
     "name": "Partybond",
     "slug": "partybond",
-    "version": "1.1.9",
+    "version": "1.1.10",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "partybond",
@@ -23,7 +23,7 @@
     },
     "android": {
       "package": "com.partybond.app",
-      "versionCode": 13,
+      "versionCode": 15,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A12"
@@ -35,6 +35,7 @@
       ]
     },
     "plugins": [
+      "expo-asset",
       "expo-localization",
       [
         "expo-image-picker",
@@ -50,7 +51,14 @@
           "color": "#7B3FF2"
         }
       ],
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf"
+          ]
+        }
+      ],
       "expo-iap",
       [
         "expo-build-properties",

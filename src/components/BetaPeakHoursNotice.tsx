@@ -60,12 +60,13 @@ export function BetaPeakHoursNotice({ visible, onDismiss, style }: Props) {
           <Text style={styles.highlightLine}>{t('betaNotice.peakLine')}</Text>
           <Text style={styles.footer}>{t('betaNotice.footer')}</Text>
 
-          <GradientButton
-            size="sm"
-            title={t('betaNotice.cta')}
-            onPress={onDismiss}
-            style={{ marginTop: 12 }}
-          />
+          <View style={{ marginTop: 12 }}>
+            <GradientButton
+              size="sm"
+              title={t('betaNotice.cta')}
+              onPress={onDismiss}
+            />
+          </View>
         </View>
       </LinearGradient>
     </View>
